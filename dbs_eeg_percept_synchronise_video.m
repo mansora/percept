@@ -16,27 +16,30 @@ function eeg_file_withvid=dbs_eeg_percept_synchronise_video(video_file, eegfile)
     EEGmarker_end=cell2mat(events(3,LED_markersEEG(end)));
     size_EEG=EEGmarker_end-EEGmarker_start;
 
-%     n2=detrend(LED_conditionR_fieldtrip.trial{1});
-    n2=detrend(video_file.LED_signal);
-    TF= abs(n2) > (mean(n2)+3*std(n2)); 
-    temp_start=find(TF(1:floor(size(TF,2)/2)));
-    temp_end=find(TF(floor(size(TF,2)/2):end));
-
-    cfg=[];
-    cfg.begsample= temp_start(1);
-    cfg.endsample= temp_end(end)+ceil(size(TF,2)/2);
-    video_file=ft_redefinetrial(cfg, video_file);
- 
-%     offset_start=0;
+    %     offset_start=0;
     offset_end=video_file.LED_offset_end-video_file.LED_offset_start;
     offset_end=-offset_end;
 
-    if (temp_end(end)+ceil(size(TF,2)/2)-temp_start(1))-size_EEG == offset_end
-        disp('all is well')
-    else
-        disp('there is discrepancy between length of LED sequences in EEG data and in detect_offset_LED')
-        disp('will change the offset based on the LED signal and event markers in EEG data')
-        offset_end= (temp_end(end)+ceil(size(TF,2)/2)-temp_start(1))-size_EEG;
+    if ~isempty(video_file.LED_signal)
+    %     n2=detrend(LED_conditionR_fieldtrip.trial{1});
+        n2=detrend(video_file.LED_signal);
+        TF= abs(n2) > (mean(n2)+3*std(n2)); 
+        temp_start=find(TF(1:floor(size(TF,2)/2)));
+        temp_end=find(TF(floor(size(TF,2)/2):end));
+    
+        cfg=[];
+        cfg.begsample= temp_start(1);
+        cfg.endsample= temp_end(end)+ceil(size(TF,2)/2);
+        video_file=ft_redefinetrial(cfg, video_file);
+     
+    
+        if (temp_end(end)+ceil(size(TF,2)/2)-temp_start(1))-size_EEG == offset_end
+            disp('all is well')
+        else
+            disp('there is discrepancy between length of LED sequences in EEG data and in detect_offset_LED')
+            disp('will change the offset based on the LED signal and event markers in EEG data')
+            offset_end= (temp_end(end)+ceil(size(TF,2)/2)-temp_start(1))-size_EEG;
+        end
     end
 
     

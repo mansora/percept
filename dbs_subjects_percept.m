@@ -13,12 +13,13 @@ details = struct(...
 details.chan = {'LFP'};
 details.badchanthresh = 0.1;
 details.bandstop = [70 180];
-
+details.removespikes=0;
 details.suffix = {'rec_1', 'rec_2', 'rec_3'};
 
-details.eeg_ref = 'StimArt';
+% details.eeg_ref = 'StimArt';
 details.removesync = true;
 details.synch_ecg=0;
+details.synch_percept_stamp=1;
 details.process_logfiles=1;
 details.process_videos=1;
 
@@ -46,6 +47,7 @@ switch initials
             sequence = {'R', 'PMT', 'ACT', 'SST', 'HPT', 'POUR', 'POUR', 'WALK'};
             root='\LN_PR_D001\rec1\';
             details.lfpthresh = 20;
+            details.freqrange=[65 75];
         elseif rec_id == 2
             files={...
                 '\LN_PR_D001\raw_EEG\LN_PR_D001_0=20220107_0012.vhdr',...
@@ -60,10 +62,12 @@ switch initials
             root='\LN_PR_D001\rec2\';
             details.lfpthresh = 50;
             details.badchanthresh = 0.2;
+            details.freqrange=[170 190];
         end
         details.bandstop = [70];
         details.lfp_ref = 'LFP_Gpi_R_02';
         details.chan = {'LFP_Gpi_R_02'};
+        details.eeg_ref=repmat({'StimArt'},1,numel(files));
     case 'LN_PR_D003'
         if rec_id == 1
             files={...
@@ -79,6 +83,12 @@ switch initials
                 };
             sequence = {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SGT', 'SPEAK', 'POUR', 'WALK'};
             root='\LN_PR_D003\rec1\';
+            details.eeg_ref=repmat({'P3'},1,numel(files));
+            details.eeg_ref{1}='StimArt';
+            details.eeg_ref{2}='StimArt';
+            details.eeg_ref{3}='StimArt'; 
+            % TODO last file in here doesn't work with either Pr or StimArt
+            % see if there's another channel you can use
         elseif rec_id == 2
             files={...
                 '\LN_PR_D003\raw_EEG\LN_PR_D003_20220204_0010.vhdr',...
@@ -93,13 +103,14 @@ switch initials
                 };
             sequence = {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SGT', 'SPEAK', 'POUR', 'WALK'};
             root='\LN_PR_D001\rec2\';
+            details.eeg_ref=repmat({'P3'},1,numel(files));
+            details.eeg_ref{end}='StimArt';
+            details.removespikes=1;
         end
         details.lfpthresh = 20;
         details.bandstop = [70];
-        details.eeg_ref='P3'; 
-        % note that it's only necessary to change ref to P3 for some of the files 
-        % but check if it works for all of them and just leave it like this
-
+        details.freqrange=[70 90];
+        details.lfp_ref='LFP_Gpi_R_02';
     case 'LN_PR_D004'
         if rec_id == 2
             files={...
@@ -108,7 +119,6 @@ switch initials
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0003.vhdr',...
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0004.vhdr',...
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0005.vhdr',...
-                '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0006.vhdr',...
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0007.vhdr',...
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0008.vhdr',...
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0019.vhdr',...
@@ -138,6 +148,9 @@ switch initials
         end
         details.lfpthresh = 20;
         details.bandstop = [70];
+        details.freqrange=[90 110];
+        details.eeg_ref=repmat({'EMG2'},1,numel(files));
+        details.lfp_ref = 'LFP_Gpi_R_02';
     case 'LN_PR_D005'
         if rec_id == 2
             files={...
@@ -156,15 +169,17 @@ switch initials
             root='\LN_PR_D005\rec2\';
         elseif rec_id == 1
             files={...
-                '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0009.vhdr',...
+%                 '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0009.vhdr',...
                 '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0010.vhdr',...
                 '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0011.vhdr',...
                 '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0012.vhdr',...
+                '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_00120.vhdr',...
                 '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0013.vhdr',...
                 '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0014.vhdr',...
                 '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0016.vhdr'
                 };
-            sequence = {'R', 'SGT', 'HPT', 'ACT', 'SST', 'R', 'SGT'};
+%             sequence = {'R', 'SGT', 'HPT', 'ACT', 'SST', 'R', 'SGT'};
+            sequence = {'SGT', 'HPT', 'ACT', 'SST', 'R', 'SGT', 'WALK'};
             root='\LN_PR_D005\rec1\';
         elseif rec_id == 3
             files={...
@@ -176,6 +191,8 @@ switch initials
         details.lfpthresh = 20;
         details.bandstop = [70];
         details.lfp_ref = 'LFP_Gpi_L_02';
+        details.freqrange=[110 130];
+        details.eeg_ref=repmat({'StimArt'},1,numel(files));
 end
 
 files = files(:);
@@ -189,11 +206,13 @@ for f=1:length(files)
 
     lfp_file = {};
     log_file = {};
+    video_file={};
+    LED_file={};
     for i = 1:numel(ind)
         lfp_file{i}   =  fullfile(dbsroot, initials, 'raw_LFP', file_table{ind, 2});
         log_file{i}   =  spm_file(fullfile(dbsroot, initials, 'raw_Logfiles', file_table{ind, 4}), 'ext', '.mat');
-        video_file{i} =  fullfile(dbsroot, initials, 'processed_MotionCapture', 'jsons', file_table{2, 3});
-        LED_file{i}   =  fullfile(dbsroot, initials, 'processed_MotionCapture', 'LED_videos', file_table{2, 3});
+        video_file{i} =  fullfile(dbsroot, initials, 'processed_MotionCapture', 'jsons', file_table{ind, 3});
+        LED_file{i}   =  fullfile(dbsroot, initials, 'processed_MotionCapture', 'LED_videos', ['LED_', file_table{ind, 3}]);
     end
 
     if numel(ind)==1
@@ -207,6 +226,7 @@ for f=1:length(files)
         files{f, 4} = video_file;
         files{f, 5} = LED_file;
     end
+ 
 
     files{f, 1} = fullfile(dbsroot, files{f});
     

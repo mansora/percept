@@ -11,6 +11,7 @@ if ~isempty(strfind(eegfile,'LN_PR_D001'))
 else
     % I changed framerate to 25 from the first patient onward 
     % change to the exact number is not exactly 25
+    % actually it is apparently
     framerate=25;
 end
 

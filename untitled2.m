@@ -4,5 +4,5 @@
 % ft_defaults
 % addpath D:\Shared
 addpath D:\SPM
-spm
+% spm
 spm('defaults', 'eeg');

@@ -26,7 +26,7 @@ cd('SPMrest');
 fD = {};
 aD = {};
 %%
-for f = 1:numel(files)
+for f = 1:size(files,1)
     if ~isequal('R', seq{f}(1))
         continue;
     end

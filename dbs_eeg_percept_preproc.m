@@ -96,7 +96,7 @@ end
 
 if details.synch_ecg==0 && details.synch_percept_stamp==1
     if ~isempty(video_file)
-        [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_withvid, files{1}, files{2}, details.freqrange, details.eeg_ref{f})
+        [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_withvid, files{1}, files{2}, details, f)
 
     else
 %         [eeg_file dbs_file]=prepare_dbs_eeg_file(eeg_file_withvid, files{1}, details.freqrange, files{2})

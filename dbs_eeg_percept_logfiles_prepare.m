@@ -33,7 +33,7 @@ function trl=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile)
  
     events=ft_read_event(eegfile); 
     events=squeeze(struct2cell(events));
-
+    header_info=ft_read_header(eegfile);
 
     markers_match=0;
 
@@ -53,7 +53,7 @@ function trl=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile)
         disp('markers in logfile and eegfile do not match. Attempting to find match based on LED sequence')
         for i=1:size(events,2)-size(initstamp_time,1)+1
         events_temp=cell2mat(events(3,i:end));
-        events_temp=((events_temp-events_temp(1))/1000)'; %% TODO change 1000 to cfg.samplerate
+        events_temp=((events_temp-events_temp(1))/header_info.Fs)'; %% TODO change 1000 to cfg.samplerate
             % correspondence between logfile stamps and eeg markers are very
             % good corr should be really close to 1
             if 1-corr(events_temp(1:size(initstamp_time,1)), initstamp_time)< 0.000001
@@ -71,6 +71,7 @@ function trl=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile)
     OutputFile_temp=OutputFile;
     OutputFile_temp(find(strcmp(OutputFile(:,1), 'InitPulses')),:)=[];
     %% TODO add code for the pauses
+    %% TODO for all these tasks you should also add the rest pieces (or at least make sure we can use them as baseline)
     if ~isempty(strfind(input_logfile, 'REST'))
 
         
@@ -144,7 +145,11 @@ function trl=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile)
 
         trl=[trl1; trl2];
     elseif strfind(input_logfile, 'SGT')
-        %% TODO add markers for this
+
+        trl(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'geste on'))-3))';
+        trl(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'geste off'))-3))';
+        trl(:,3)=0;
+        trl(:,4)=1;
 
     elseif strfind(input_logfile, 'HPT')
 
@@ -164,7 +169,11 @@ function trl=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile)
         trl(:,4)=1;
 
     elseif strfind(input_logfile, 'SPEAK')
-        %% TODO add markers for this
+        
+        trl(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'speak'))-3))';
+        trl(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'pause speaking'))-3))';
+        trl(:,3)=0;
+        trl(:,4)=1;
 
     elseif strfind(input_logfile, 'WALK')
 

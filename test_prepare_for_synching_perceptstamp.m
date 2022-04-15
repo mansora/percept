@@ -1,5 +1,5 @@
 
-[files, seq, root, details] =dbs_subjects_percept('LN_PR_D005',1);
+[files, seq, root, details] =dbs_subjects_percept('LN_PR_D001',1);
 
 bad_fs=[];
 for f=setdiff(1:size(files,1),3)

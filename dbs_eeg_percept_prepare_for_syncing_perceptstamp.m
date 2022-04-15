@@ -5,14 +5,11 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
         dbs_file=temp.data;
 
         cfg=[];
-        cfg.resamplefs= 1000;
+        cfg.resamplefs= dataEEG.fsample;
         dbs_file = ft_resampledata(cfg, dbs_file);
 
 
-        cfg = [];
-        cfg.dataset = eegfile;
-        dataEEG=ft_preprocessing(cfg);
-
+       
         % I don't like this here. But there are very few files that need to
         % be cleared up like this. Still maybe we can store that somewhere
         % in dbs_subjects_percept under details.cut_eegdata or something?

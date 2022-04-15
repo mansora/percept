@@ -37,8 +37,6 @@ for f = 1:size(files,1)
     S.outfile = ['spmeeg' num2str(f) '_' spm_file(S.dataset,'basename')];        
     
     D = dbs_eeg_percept_preproc(files(f,:), details, f); 
-    % there must be a better way to read details.vidoffset(f) than to take
-    % it as input into dbs_eeg_percept_preproc(), that's too many inputs
     
     
     D = chantype(D, D.indchannel(details.chan), 'LFP');

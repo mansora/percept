@@ -29,7 +29,7 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
             cfg.endsample= size(dataEEG.time{1},2);
             dataEEG=ft_redefinetrial(cfg, dataEEG);
         elseif contains(eegfile, 'LN_PR_D005_20220401_0012')
-            % take firt half of file
+            % take first half of file
             cfg=[];
             cfg.begsample= 1;
             cfg.endsample= 367768;
@@ -55,7 +55,7 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
            % there are some spikes at the very end with this kind of
            % file for some reason, cutting the last and first 100 ms gets rid of
            % it (has to do with filtering edge artefact, 
-           % figure out a smarte way to do this at some point)
+           % figure out a smarter way to do this at some point)
            cfg=[];
            cfg.begsample= 100;
            cfg.endsample= size(dataEEG.time{1},2)-100;

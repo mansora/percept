@@ -25,32 +25,111 @@ for i=1:size(fileList,1)
     val = jsondecode(str);
 
     people(i)=size(val.people,1);
+    
+    for num_ppl=1:people(i)
+       Person{num_ppl}.pose_keypoints(i,:)=val.people(num_ppl).pose_keypoints_2d;
+        if ~isempty(val.people(num_ppl).hand_left_keypoints_2d)
+        Person{num_ppl}.hand_left_keypoints(i,:)=val.people(1).hand_left_keypoints_2d;
+        end
+        if ~isempty(val.people(num_ppl).hand_right_keypoints_2d)
+        Person{num_ppl}.hand_right_keypoints(i,:)=val.people(num_ppl).hand_right_keypoints_2d;
+        end 
+    end    
 
-    if size(val.people,1)>0
-        Person1.pose_keypoints(i,:)=val.people(1).pose_keypoints_2d;
-        if ~isempty(val.people(1).hand_left_keypoints_2d)
-        Person1.hand_left_keypoints(i,:)=val.people(1).hand_left_keypoints_2d;
+end
+
+% check which Person is the patient
+filename_tracked=strrep(filename_video,'jsons', 'videos');
+filename_tracked=[filename_tracked(1:end-1), '_tracked_anonym.MP4'];
+videoIn=VideoReader(filename_tracked);
+
+goodframe_found=0;
+fr_start=1;
+while goodframe_found==0
+    videoFrame=read(videoIn,fr_start);
+%     for num_ppl=1:people(fr_start)
+%         videoFrame=insertText(videoFrame, Person{num_ppl}.pose_keypoints(fr_start,1:2), num2str(num_ppl),...
+%             'FontSize',18,'TextColor','white');
+%     end
+    
+    imshow(videoFrame);
+    title('Draw a rectangle around the patients head, if patient is not visible make rectangle very big')
+    roi = drawrectangle;
+    bbox=round(roi.Position);
+
+    if bbox(4)<size(videoFrame,1)-100
+        for num_ppl=1:people(fr_start)
+            if bbox(1)<Person{num_ppl}.pose_keypoints(fr_start,1) && ...
+                   Person{num_ppl}.pose_keypoints(fr_start,1)<bbox(1)+bbox(3) &&...
+                   bbox(2)<Person{num_ppl}.pose_keypoints(fr_start,2) && ...
+                   Person{num_ppl}.pose_keypoints(fr_start,2)<bbox(2)+bbox(4)
+                ind_patient=num_ppl;
+            end
         end
-        if ~isempty(val.people(1).hand_right_keypoints_2d)
-        Person1.hand_right_keypoints(i,:)=val.people(1).hand_right_keypoints_2d;
-        end
+        
+        Person_patient.pose_keypoints(fr_start,:)=Person{ind_patient}.pose_keypoints(fr_start,:);
+        goodframe_found=1;
+    else
+        fr_start=fr_start+1;
+        Person_patient.pose_keypoints(fr_start,:)=zeros(size(Person{1}.pose_keypoints(fr_start,:)));
     end
-%     if size(val.people,1)>1
-%         Person2.pose_keypoints(i,:)=val.people(2).pose_keypoints_2d;
-%         Person2.hand_left_keypoints(i,:)=val.people(2).hand_left_keypoints_2d;
-%         Person2.hand_right_keypoints(i,:)=val.people(2).hand_right_keypoints_2d;
-%     end
-%     if size(val.people,1)>2
-%         Person3.pose_keypoints(i,:)=val.people(3).pose_keypoints_2d;
-%         Person3.hand_left_keypoints(i,:)=val.people(3).hand_left_keypoints_2d;
-%         Person3.hand_right_keypoints(i,:)=val.people(3).hand_right_keypoints_2d;
-%     end
-%     if size(val.people,1)>3
-%         Person4.pose_keypoints(i,:)=val.people(4).pose_keypoints_2d;
-%         Person4.hand_left_keypoints(i,:)=val.people(4).hand_left_keypoints_2d;
-%         Person4.hand_right_keypoints(i,:)=val.people(4).hand_right_keypoints_2d;
-%     end
+end
 
+
+
+for fr=fr_start+1:size(fileList,1)
+%     videoFrame=read(videoIn,fr);
+    clear ind_patient
+
+    for num_ppl=1:people(fr)
+%         videoFrame=insertText(videoFrame, Person{num_ppl}.pose_keypoints(fr,1:2), num2str(num_ppl),...
+%             'FontSize',18,'TextColor','white');
+        
+        if bbox(1)<Person{num_ppl}.pose_keypoints(fr,1) && ...
+           Person{num_ppl}.pose_keypoints(fr,1)<bbox(1)+bbox(3) &&...
+           bbox(2)<Person{num_ppl}.pose_keypoints(fr,2) && ...
+           Person{num_ppl}.pose_keypoints(fr,2)<bbox(2)+bbox(4)
+
+            ind_patient=num_ppl;
+        end
+    
+    end
+
+    if exist('ind_patient', 'var')
+%         videoFrame=insertText(videoFrame, Person{ind_patient}.pose_keypoints(fr,1:2)+10, 'P',...
+%             'FontSize',18,'TextColor','white');
+
+        Person_patient.pose_keypoints(fr,:)=Person{ind_patient}.pose_keypoints(fr,:);
+    else
+        for num_ppl=1:people(fr)
+            if bbox(1)-10<Person{num_ppl}.pose_keypoints(fr,1) && ...
+               Person{num_ppl}.pose_keypoints(fr,1)<bbox(1)+bbox(3)+10 &&...
+               bbox(2)-10<Person{num_ppl}.pose_keypoints(fr,2) && ...
+               Person{num_ppl}.pose_keypoints(fr,2)<bbox(2)+bbox(4)+10
+
+                ind_patient=num_ppl;
+                % update bbox
+                bbox(1)=Person{ind_patient}.pose_keypoints(fr,1)-80;
+                bbox(3)=160;
+                bbox(2)=Person{ind_patient}.pose_keypoints(fr,2)-80;
+                bbox(4)=160;
+
+%                 videoFrame=insertText(videoFrame, Person{ind_patient}.pose_keypoints(fr,1:2)+10, 'P',...
+%                'FontSize',18,'TextColor','white');
+
+                Person_patient.pose_keypoints(fr,:)=Person{ind_patient}.pose_keypoints(fr,:);
+            end
+        end
+
+        if ~exist('ind_patient', 'var')
+%         videoFrame=insertText(videoFrame, [10,10], 'No Patient Detected!',...
+%             'FontSize',18,'TextColor','white');
+        Person_patient.pose_keypoints(fr,:)=zeros(size(Person{1}.pose_keypoints(fr,:)));
+        end
+
+    end
+    
+%     imshow(videoFrame);       
 end
 
 % the parts to track are the left and right hand, left and right foot, also
@@ -63,12 +142,13 @@ end
 % quality of the tracking. As it is now there are a lot of missing or
 % jittered frames
 
+
 trial=zeros(14,size(fileList,1));
-temp_right_hand1=interpolate_frames(Person1.pose_keypoints(:,19:21), framerate);
+temp_right_hand1=interpolate_frames(Person_patient.pose_keypoints(:,19:20), framerate);
 trial(1:2,:)=temp_right_hand1(:,1:2)';
 % right hand
-if isfield(Person1, 'hand_right_keypoints')
-    temp_right_hand2=interpolate_frames(Person1.hand_right_keypoints(:,1:3), framerate);
+if isfield(Person_patient, 'hand_right_keypoints')
+    temp_right_hand2=interpolate_frames(Person_patient.hand_right_keypoints(:,1:2), framerate);
     trial(3:4,:)=temp_right_hand2(:,1:2)';
 end
 
@@ -77,12 +157,12 @@ end
 % figure, plot(video_file.right_hand2(:,3))
 
 
-temp_left_hand1=interpolate_frames(Person1.pose_keypoints(:,10:12), framerate);
+temp_left_hand1=interpolate_frames(Person_patient.pose_keypoints(:,10:11), framerate);
 trial(5:6,:)=temp_left_hand1(:,1:2)';
 
 % left hand
 if isfield(Person1, 'hand_left_keypoints')
-    temp_left_hand2=interpolate_frames(Person1.hand_left_keypoints(:,1:3), framerate);
+    temp_left_hand2=interpolate_frames(Person_patient.hand_left_keypoints(:,1:2), framerate);
     trial(7:8,:)=temp_left_hand2(:,1:2)';
 end
 
@@ -90,16 +170,16 @@ end
 % figure, plot(video_file.left_hand2(:,1))
 
 % right foot
-temp_right_foot=interpolate_frames(Person1.pose_keypoints(:,40:42), framerate);
+temp_right_foot=interpolate_frames(Person_patient.pose_keypoints(:,40:41), framerate);
 trial(9:10,:)=temp_right_foot(:,1:2)';
 
 
 % left foot
-temp_left_foot=interpolate_frames(Person1.pose_keypoints(:,31:33), framerate);
+temp_left_foot=interpolate_frames(Person_patient.pose_keypoints(:,31:32), framerate);
 trial(11:12,:)=temp_left_foot(:,1:2)';
 
 % head
-temp_head=interpolate_frames(Person1.pose_keypoints(:,1:3), framerate);
+temp_head=interpolate_frames(Person_patient.pose_keypoints(:,1:2), framerate);
 trial(13:14,:)=temp_head(:,1:2)';
 
 

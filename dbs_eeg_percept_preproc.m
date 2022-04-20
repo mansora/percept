@@ -86,18 +86,28 @@ if details.process_videos==1 && ~isempty(files)
        
     end
 
-    eeg_file_withvid=dbs_eeg_percept_synchronise_video(video_file, eegfile);
-
+    [eeg_file_withvid, offset_end]=dbs_eeg_percept_synchronise_video(video_file, files{1});
+    %TODO save the eeg_file_withvid somewhere as temporary file and include
+    %the option to take this file from memory
+    % TODO this intermediate needs to be saved in home file not where the
+    % code is
+    D1=spm_eeg_ft2spm(eeg_file_withvid, [details.initials, '_withvideo.mat']);
+    
 else
     disp('no motion tracking data added to this EEG dataset')
     video_file=[];
 
+    S = [];
+    S.dataset = files{1};
+    S.mode = 'continuous';
+    D1 = spm_eeg_convert(S);
+
 end
 
-if details.synch_ecg==0 && details.synch_percept_stamp==1
+if details.synch_percept_stamp==1
     if ~isempty(video_file)
         [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_withvid, files{1}, files{2}, details, f);
-        [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, logfile);
+        [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, logfile, details);
 
     else
         cfg = [];
@@ -105,8 +115,40 @@ if details.synch_ecg==0 && details.synch_percept_stamp==1
         eeg_file_temp=ft_preprocessing(cfg);
         [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_temp, files{1}, files{2}, details, f);
         [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, details, logfile);
+        
     end
-     
+
+    D=spm_eeg_ft2spm(eeg_file, [details.initials, '_synchedPerceptStamp.mat']);
+
+end
+
+%% TODO actually you can do both percept and ecg stamping I guess, to fine tune
+% the synching, so make sure you can incorporate that in the script
+if details.synch_ecg==1
+    if details.synch_percept_stamp==1
+        S=[];
+        S.D=D;
+        % there must be a better way to do this
+        S.channels=D.chanlabels(find(~strcmp(D.chantype,'LFP')));
+        D1=spm_eeg_crop(S);
+
+        S=[];
+        S.D=D;
+        S.channels=D.chanlabels(D.indchantype('LFP'));
+        D2=spm_eeg_crop(S);
+    else
+        load(files{2})
+        D2 = spm_eeg_ft2spm(data, [details.initials '_lfp.mat']);
+    end
+    
+    %% TODO add logfiles to this function
+    S = [];
+    S.D1 = D1;
+    S.D2 = D2;
+    S.ref1 = details.eeg_ref;
+    S.ref2 = details.lfp_ref;
+    D = dbs_eeg_percept_noise_merge(S); 
+    
 end
 
 % D = spm_eeg_ft2spm(eeg_file, S.outfile);

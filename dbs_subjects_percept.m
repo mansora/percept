@@ -15,6 +15,7 @@ details.badchanthresh = 0.1;
 details.bandstop = [70 180];
 details.removespikes=0;
 details.suffix = {'rec_1', 'rec_2', 'rec_3'};
+details.initials=initials;
 
 % details.eeg_ref = 'StimArt';
 details.removesync = true;

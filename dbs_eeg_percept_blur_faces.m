@@ -132,7 +132,7 @@ end
         %interpolating. This is because other than the patient the other
         %people are constantly popping in and out of the video and
         %therefore interpolating missed frames doesn't make sense
-        face(:,:,k)=interpolate_frames(Person_patient.pose_keypoints(:,1:2),framerate);
+        vid{k}.face=interpolate_frames(Person_patient.pose_keypoints(:,1:2),framerate);
 %         video_file.face2=interpolate_frames(Person2.pose_keypoints(:,1:2),framerate);
 %         video_file.face3=interpolate_frames(Person3.pose_keypoints(:,1:2),framerate);
 %         video_file.face4=interpolate_frames(Person4.pose_keypoints(:,1:2),framerate);
@@ -148,7 +148,7 @@ end
         open(videoOut);
         for f=1:videoIn.NumFrames
             frame = read(videoIn,f);
-            bbox=[round(face(f,:,k))-150,300,300];
+            bbox=[round(vid{k}.face(f,:))-150,300,300];
             videoFrame_cropped=imcrop(frame, bbox);
             videoFrame_blurred=MyBlur(videoFrame_cropped,15);
 %             videoFrame = insertShape(frame, 'FilledRectangle', bbox, 'Color','black', 'Opacity',1);

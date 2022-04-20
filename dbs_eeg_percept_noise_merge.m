@@ -46,10 +46,12 @@ if isempty(D2.indchannel(S.ref2))
 end
 
 
-S1 = [];
-S1.D = D1;
-S1.fsample_new = D2.fsample;
-D1 = spm_eeg_downsample(S1);
+if D2.fsample<D1.fsample
+    S1 = [];
+    S1.D = D1;
+    S1.fsample_new = D2.fsample;
+    D1 = spm_eeg_downsample(S1);
+end
 
 n1 = D1(D1.indchannel(S.ref1), :);
 n1 = ft_preproc_highpassfilter(n1, D1.fsample, 0.5, 4, 'but','twopass', 'reduce');

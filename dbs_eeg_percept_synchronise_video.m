@@ -1,4 +1,4 @@
-function eeg_file_withvid=dbs_eeg_percept_synchronise_video(video_file, eegfile)
+function [eeg_file_withvid offset_end]=dbs_eeg_percept_synchronise_video(video_file, eegfile)
 
     %% Synchronizing the EEG and the videofile
     % This code currently doesn't work because the video file and eeg file

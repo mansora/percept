@@ -1,4 +1,4 @@
-function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, details, logfile)
+function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, logfile, details)
     if ~any(strcmp(eeg_file.label, 'StimArt_filtered'))
         warning('No stimulator channel found')
         noisematch = 0;
@@ -146,15 +146,20 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
     logfile(:,1:2)=logfile(:,1:2)-eeg_file.time{1,1}(1)*eeg_file.fsample;
     eeg_file.time={reftrl};
     
+    %% TODO this is horrible coding improve as soon as possible
     if offset_stamp_start < 0
         % this is usually what's going to happen because we start the EEG
         % recording first
-        eeg_file.trial{1}(end+1,:)=synched;
-        eeg_file.label{end+1}='LFP';
+        eeg_file.trial{1}(end+1:end+size(synched,1),:)=synched;
+        for ll=1:size(synched,1)
+        eeg_file.label{end+1}=dbs_file.label{ll};
+        end
     elseif offset_stamp_start > 0
         eeg_file.trial{1}=synched;
-        eeg_file.trial{1}(end+1,:)=ref_channel.trial{1}(1:x-1);
-        eeg_file.label{end+1}='LFP';
+        eeg_file.trial{1}(end+1:end+size(synched,1),:)=ref_channel.trial{1}(:,1:x-1);
+        for ll=1:size(synched,1)
+        eeg_file.label{end+1}=dbs_file.label{ll};
+        end
     end
 
 end

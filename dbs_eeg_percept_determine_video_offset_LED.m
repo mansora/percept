@@ -1,6 +1,5 @@
 function [offset_start, offset_end, n2]=dbs_eeg_percept_determine_video_offset_LED(filename_LED_video, input_logfile, eegfile)
 videoIn = VideoReader(filename_LED_video);
-% videoIn = VideoReader('Z:\LN_PR_D001\processed_MotionCapture\LED_videos\LED_GH010164.mp4');
 
 % numFrame=1;
 % frame = read(videoIn,1);
@@ -14,7 +13,6 @@ n_sampling=floor(0.02*(videoIn.Height*videoIn.Width)); % sample 2% of the pixels
 y=randi([1,videoIn.Height],1,n_sampling);
 x=randi([1,videoIn.Width],1,n_sampling);
 
-%% TODO add the option to reconstruct reconstruct_LED from eegfile instead of logfile
 header_info=ft_read_header(eegfile);
 temp=load(input_logfile);
 OutputFile=temp.OutputFile;   
@@ -56,9 +54,9 @@ end
 
 parfor f=1:videoIn.NumFrames
     videoFrame=read(videoIn,f);
-    LED_condition(:,:,f)=[videoFrame(sub2ind(size(videoFrame), y,x,ones(1,n_sampling)))',...
-                          videoFrame(sub2ind(size(videoFrame), y,x,2*ones(1,n_sampling)))',...
-                          videoFrame(sub2ind(size(videoFrame), y,x,3*ones(1,n_sampling)))'];
+    LED_condition(:,:,f)=[videoFrame(sub2ind(size(videoFrame), y, x, ones(1,n_sampling)))',...
+                          videoFrame(sub2ind(size(videoFrame), y, x, 2*ones(1,n_sampling)))',...
+                          videoFrame(sub2ind(size(videoFrame), y, x, 3*ones(1,n_sampling)))'];
 
 %     R=double(videoFrame(y,x,1));
 %     LED_conditionR(:,f)=R(:);
@@ -129,6 +127,8 @@ end
 
 
 %% upsampling both data files to the sampling rate of EEG
+reconstruct_LED=(reconstruct_LED-min(reconstruct_LED))/(max(reconstruct_LED)-min(reconstruct_LED));
+
 reconstruct_LED_fieldtrip.label={'reconstruct_LED'};
 reconstruct_LED_fieldtrip.time={linspace(0,size(reconstruct_LED,2)/videoIn.FrameRate, size(reconstruct_LED,2))};
 reconstruct_LED_fieldtrip.trial={reconstruct_LED};
@@ -174,8 +174,8 @@ elseif endsequence==1
     n1 = detrend(reconstruct_LED_fieldtrip.trial{1});
     n2 = detrend(LED_conditionR_fieldtrip.trial{1});
 
-    TF1=(abs(n1)>mean(n1)+4*std(n1));
-    TF2=(abs(n2)>mean(n2)+4*std(n2)); 
+    TF1=(abs(n1)>mean(n1)+3*std(n1));
+    TF2=(abs(n2)>mean(n2)+3*std(n2)); 
     
     temp1=find(TF1(1:floor(size(TF1,2)/2)));
     temp2=find(TF2(1:floor(size(TF2,2)/2)));
@@ -211,8 +211,8 @@ end
 
 % figure, plot(LED_conditionR(best_pixel,:))
 % % 
-itr_=0*100;
-figure, 
-for i=1+itr_:70+itr_
-subplot(10,10,i-itr_), plot(double(squeeze(LED_conditionR(i,:,1))))
+% itr_=0*100;
+% figure, 
+% for i=1+itr_:70+itr_
+% subplot(10,10,i-itr_), plot(double(squeeze(LED_conditionR(i,:,1))))
 end

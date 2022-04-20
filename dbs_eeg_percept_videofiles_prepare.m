@@ -1,19 +1,19 @@
 function video_file_fieldtrip=dbs_eeg_percept_videofiles_prepare(eegfile, filename_video, videoname);
 
 fileList = dir(fullfile(filename_video, [videoname, '*.json']));
-if ~isempty(strfind(eegfile,'LN_PR_D001'))
-
-    % note this has to be exactly the same in this script and the
-    % detect_offset_LED one otherwise the final number of datapoints after
-    % upsampling won't be the same, which will cause issues for the
-    % synchronization (the offset stamps will be based on a different file length)
-    framerate=23.976043137696813;
-else
-    % I changed framerate to 25 from the first patient onward 
-    % change to the exact number is not exactly 25
-    % actually it is apparently
-    framerate=25;
-end
+% if ~isempty(strfind(eegfile,'LN_PR_D001'))
+% 
+%     % note this has to be exactly the same in this script and the
+%     % detect_offset_LED one otherwise the final number of datapoints after
+%     % upsampling won't be the same, which will cause issues for the
+%     % synchronization (the offset stamps will be based on a different file length)
+%     framerate=23.976043137696813;
+% else
+%     % I changed framerate to 25 from the first patient onward 
+%     % change to the exact number is not exactly 25
+%     % actually it is apparently
+%     framerate=25;
+% end
 
 
 for i=1:size(fileList,1)
@@ -27,6 +27,7 @@ for i=1:size(fileList,1)
     people(i)=size(val.people,1);
     
     for num_ppl=1:people(i)
+        %% TODO add the hand key points to the data later too
        Person{num_ppl}.pose_keypoints(i,:)=val.people(num_ppl).pose_keypoints_2d;
         if ~isempty(val.people(num_ppl).hand_left_keypoints_2d)
         Person{num_ppl}.hand_left_keypoints(i,:)=val.people(1).hand_left_keypoints_2d;
@@ -143,6 +144,8 @@ end
 % jittered frames
 
 
+framerate=videoIn.FrameRate;
+
 trial=zeros(14,size(fileList,1));
 temp_right_hand1=interpolate_frames(Person_patient.pose_keypoints(:,19:20), framerate);
 trial(1:2,:)=temp_right_hand1(:,1:2)';
@@ -161,7 +164,7 @@ temp_left_hand1=interpolate_frames(Person_patient.pose_keypoints(:,10:11), frame
 trial(5:6,:)=temp_left_hand1(:,1:2)';
 
 % left hand
-if isfield(Person1, 'hand_left_keypoints')
+if isfield(Person_patient, 'hand_left_keypoints')
     temp_left_hand2=interpolate_frames(Person_patient.hand_left_keypoints(:,1:2), framerate);
     trial(7:8,:)=temp_left_hand2(:,1:2)';
 end
@@ -199,5 +202,7 @@ header_info=ft_read_header(eegfile);
 cfg=[];
 cfg.resamplefs= header_info.Fs;
 video_file_fieldtrip = ft_resampledata(cfg, video_file_fieldtrip);
+
+% D=spm_eeg_ft2spm(video_file_fieldtrip);
 
 end

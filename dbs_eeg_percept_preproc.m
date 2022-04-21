@@ -58,12 +58,6 @@ else
 end
 
 
-% TODO in the very rare case where you do have LED (video) files
-% available but something happened to the logfile, you can always
-% try synching the video directly with the EEG. Not sure if that's
-% even useful since you will also have lost the markers from your
-% experiment, but if you have extra time you could try adding that
-% feature to this piece of code
 
 if details.process_videos==1 && ~isempty(files)
     disp('Preparing and synchronizing video file with EEG')
@@ -130,11 +124,13 @@ if details.synch_ecg==1
         S.D=D;
         % there must be a better way to do this
         S.channels=D.chanlabels(find(~strcmp(D.chantype,'LFP')));
+        S.prefix='c1';
         D1=spm_eeg_crop(S);
 
         S=[];
         S.D=D;
         S.channels=D.chanlabels(D.indchantype('LFP'));
+        S.prefix='c2';
         D2=spm_eeg_crop(S);
     else
         load(files{2})
@@ -145,12 +141,19 @@ if details.synch_ecg==1
     S = [];
     S.D1 = D1;
     S.D2 = D2;
-    S.ref1 = details.eeg_ref;
+    S.ref1 = details.eeg_ref{f};
     S.ref2 = details.lfp_ref;
     D = dbs_eeg_percept_noise_merge(S); 
+
+    D = chantype(D, D.indchannel(details.chan), 'LFP');
     
+    if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
+        D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
+    end
+    save(D);
 end
 
+save(D);
 % D = spm_eeg_ft2spm(eeg_file, S.outfile);
 
 end

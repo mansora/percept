@@ -29,17 +29,23 @@ function [eeg_file_withvid offset_end]=dbs_eeg_percept_synchronise_video(video_f
     
         cfg=[];
         cfg.begsample= temp_start(1);
-        cfg.endsample= temp_end(end)+ceil(size(TF,2)/2);
+        if ~isempty(temp_end)
+            cfg.endsample= temp_end(end)+ceil(size(TF,2)/2);
+
+            if (temp_end(end)+ceil(size(TF,2)/2)-temp_start(1))-size_EEG == offset_end
+                disp('all is well')
+            else
+                disp('there is discrepancy between length of LED sequences in EEG data and in detect_offset_LED')
+                disp('will change the offset based on the LED signal and event markers in EEG data')
+                offset_end= (temp_end(end)+ceil(size(TF,2)/2)-temp_start(1))-size_EEG;
+            end
+
+        else
+            cfg.endsample= size(n2,2);
+        end
+            
         video_file=ft_redefinetrial(cfg, video_file);
      
-    
-        if (temp_end(end)+ceil(size(TF,2)/2)-temp_start(1))-size_EEG == offset_end
-            disp('all is well')
-        else
-            disp('there is discrepancy between length of LED sequences in EEG data and in detect_offset_LED')
-            disp('will change the offset based on the LED signal and event markers in EEG data')
-            offset_end= (temp_end(end)+ceil(size(TF,2)/2)-temp_start(1))-size_EEG;
-        end
     end
 
     

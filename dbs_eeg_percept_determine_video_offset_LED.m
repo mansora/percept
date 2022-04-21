@@ -61,7 +61,8 @@ parfor f=1:videoIn.NumFrames
 %     R=double(videoFrame(y,x,1));
 %     LED_conditionR(:,f)=R(:);
 end
-
+poolobj = gcp('nocreate');
+delete(poolobj);
 
 LED_conditionR=double(squeeze(LED_condition(:,1,:)));
 % LED_conditionR=squeeze(mean(LED_condition(:,:,:),3)/3);
@@ -213,6 +214,6 @@ end
 % % 
 % itr_=0*100;
 % figure, 
-% for i=1+itr_:70+itr_
+% for i=1+itr_:51+itr_
 % subplot(10,10,i-itr_), plot(double(squeeze(LED_conditionR(i,:,1))))
 end

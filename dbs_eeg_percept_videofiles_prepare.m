@@ -53,7 +53,7 @@ while goodframe_found==0
 %             'FontSize',18,'TextColor','white');
 %     end
     
-    imshow(videoFrame);
+    figure, imshow(videoFrame);
     title('Draw a rectangle around the patients head, if patient is not visible make rectangle very big')
     roi = drawrectangle;
     bbox=round(roi.Position);

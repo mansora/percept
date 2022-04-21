@@ -1,4 +1,18 @@
 function trl=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile)
+% .events - this is a structure array describing events related to
+% each trial.
+%
+% Subfields of .events
+%
+% .type - string (e.g. 'front panel trigger')
+% .value - number or string, can be empty (e.g. 'Trig 1').
+% .time - in seconds in terms of the original file
+% .duration - in seconds
+%
+
+
+
+
     % read LED events from logfile
     temp=load(input_logfile);
     OutputFile=temp.OutputFile;
@@ -144,6 +158,7 @@ function trl=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile)
         trl2(:,4)=2;
 
         trl=[trl1; trl2];
+        
     elseif strfind(input_logfile, 'SGT')
 
         trl(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'geste on'))-3))';

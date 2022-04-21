@@ -1,4 +1,4 @@
-function fD = dbs_eeg_percept_rest_prepare_spm12(initials, rec_id, condition)
+function fD = dbs_eeg_percept_prepare_spm12(initials, rec_id, condition)
 
 if nargin <2
     rec_id = 1;
@@ -41,34 +41,34 @@ for f = 1:size(files, 1)
     S = [];
     S.dataset = files{f};
     S.outfile = ['spmeeg' num2str(f) '_' spm_file(S.dataset,'basename')];        
-    
-    D = dbs_eeg_percept_preproc(files(f,:),details,f);
     %}
-
-    S = [];
-    S.dataset = files{f, 1};
-    S.mode = 'continuous';
-    D1 = spm_eeg_convert(S);
-
-    load(files{f, 2})
-    D2 = spm_eeg_ft2spm(data, [initials '_lfp.mat']);
-
-
-    S = [];
-    S.D1 = D1;
-    S.D2 = D2;
-    S.ref1 = details.eeg_ref;
-    S.ref2 = details.lfp_ref;
-    D = dbs_eeg_percept_noise_merge(S);
-
+    D = dbs_eeg_percept_preproc(files(f,:),details,f);
     
-    D = chantype(D, D.indchannel(details.chan), 'LFP');
-    
-    if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
-        D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
-    end
-    
-    save(D);
+
+%     S = [];
+%     S.dataset = files{f, 1};
+%     S.mode = 'continuous';
+%     D1 = spm_eeg_convert(S);
+% 
+%     load(files{f, 2})
+%     D2 = spm_eeg_ft2spm(data, [initials '_lfp.mat']);
+% 
+% 
+%     S = [];
+%     S.D1 = D1;
+%     S.D2 = D2;
+%     S.ref1 = details.eeg_ref;
+%     S.ref2 = details.lfp_ref;
+%     D = dbs_eeg_percept_noise_merge(S);
+% 
+%     
+%     D = chantype(D, D.indchannel(details.chan), 'LFP');
+%     
+%     if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
+%         D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
+%     end
+%     
+%     save(D);
     
     S = [];
     S.D = D;

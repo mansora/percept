@@ -19,7 +19,7 @@ details.initials=initials;
 
 % details.eeg_ref = 'StimArt';
 details.removesync = true;
-details.synch_ecg=0;
+details.synch_ecg=1;
 details.synch_percept_stamp=1;
 details.process_logfiles=1;
 details.process_videos=1;

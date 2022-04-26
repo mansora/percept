@@ -36,7 +36,7 @@ for f = 1:size(files,1)
     S.dataset = files{f};
     S.outfile = ['spmeeg' num2str(f) '_' spm_file(S.dataset,'basename')];        
     
-    D = dbs_eeg_percept_preproc(files(f,:), details, f); 
+    [D S_trl]= dbs_eeg_percept_preproc(files(f,:), details, f); 
     
     
     D = chantype(D, D.indchannel(details.chan), 'LFP');

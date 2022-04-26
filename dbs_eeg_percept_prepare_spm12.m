@@ -42,8 +42,8 @@ for f = 1:size(files, 1)
     S.dataset = files{f};
     S.outfile = ['spmeeg' num2str(f) '_' spm_file(S.dataset,'basename')];        
     %}
-    D = dbs_eeg_percept_preproc(files(f,:),details,f);
-    
+    [D S_trl]= dbs_eeg_percept_preproc(files(f,:),details,f);
+    save('trialdef.mat', 'S_trl');
 
 %     S = [];
 %     S.dataset = files{f, 1};
@@ -188,6 +188,8 @@ for f = 1:size(files, 1)
     save(D);
     %%
     % Downsample =======================================================
+    % note that the trialdef file is not downsampled, you should include
+    % this
     if D.fsample > 250
         
         S = [];

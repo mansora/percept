@@ -1,4 +1,4 @@
-function [eeg_file, logfile] = dbs_eeg_percept_preproc(files, details, f)
+function [D, S_trl] = dbs_eeg_percept_preproc(files, details, f)
 % Fuse simultaneously recorded EEG and Percept PC datasets based on a
 % stimulation stamps sent by percept PC
 % 
@@ -51,10 +51,10 @@ end
 
 if details.process_logfiles==1 && ~isempty(files{3})
     disp('Preparing logfile...')
-    logfile=dbs_eeg_percept_logfiles_prepare(files{1}, files{3});
+    [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(files{1}, files{3});
 else
     disp('no logfile available for this EEG dataset')
-    logfile=[];
+    trl=[];
 end
 
 
@@ -85,7 +85,7 @@ if details.process_videos==1 && ~isempty(files)
     %the option to take this file from memory
     % TODO this intermediate needs to be saved in home file not where the
     % code is
-    D1=spm_eeg_ft2spm(eeg_file_withvid, [details.initials, '_withvideo.mat']);
+    D1=spm_eeg_ft2spm(eeg_file_withvid, [details.initials, '_synchedVideo.mat']);
     
 else
     disp('no motion tracking data added to this EEG dataset')
@@ -101,18 +101,28 @@ end
 if details.synch_percept_stamp==1
     if ~isempty(video_file)
         [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_withvid, files{1}, files{2}, details, f);
-        [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, logfile, details);
+        [eeg_file, trl]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, trl, details);
 
     else
         cfg = [];
         cfg.dataset = files{1};
         eeg_file_temp=ft_preprocessing(cfg);
         [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_temp, files{1}, files{2}, details, f);
-        [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, details, logfile);
+        [eeg_file, trl]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, trl, details);
         
     end
 
-    D=spm_eeg_ft2spm(eeg_file, [details.initials, '_synchedPerceptStamp.mat']);
+    D=spm_eeg_ft2spm(eeg_file, [details.initials, '_synchPRstamp.mat']);
+%     S1 = [];
+%     S1.D  = D;
+%     S1.bc = 0;
+%     S1.trl = [trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))];
+%     S1.conditionlabels=trialinfo;
+%     D_epoched = spm_eeg_epochs(S1);
+
+    S_trl=[];
+    S_trl.trl=[trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))];
+    S_trl.conditionlabels=trialinfo;
 
 end
 
@@ -124,13 +134,13 @@ if details.synch_ecg==1
         S.D=D;
         % there must be a better way to do this
         S.channels=D.chanlabels(find(~strcmp(D.chantype,'LFP')));
-        S.prefix='c1';
+        S.prefix='eeg';
         D1=spm_eeg_crop(S);
 
         S=[];
         S.D=D;
         S.channels=D.chanlabels(D.indchantype('LFP'));
-        S.prefix='c2';
+        S.prefix='lfp';
         D2=spm_eeg_crop(S);
     else
         load(files{2})
@@ -143,14 +153,29 @@ if details.synch_ecg==1
     S.D2 = D2;
     S.ref1 = details.eeg_ref{f};
     S.ref2 = details.lfp_ref;
-    D = dbs_eeg_percept_noise_merge(S); 
+    D= dbs_eeg_percept_noise_merge(S); 
 
     D = chantype(D, D.indchannel(details.chan), 'LFP');
     
     if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
         D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
     end
+
+%     D.fname=[D.fname, '_synchECG'];
     save(D);
+
+    % Question: do we want to get the epoched data as output for this
+    % function or just output the trl data also (maybe save it somewhere for later use)
+%     S1 = [];
+%     S1.D  = D;
+%     S1.bc = 0;
+%     S1.trl = [trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))];
+%     S1.conditionlabels=trialinfo;
+%     D_epoched = spm_eeg_epochs(S1);
+
+    S_trl=[];
+    S_trl.trl=[trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))];
+    S_trl.conditionlabels=trialinfo;
 end
 
 save(D);

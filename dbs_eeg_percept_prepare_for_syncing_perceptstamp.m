@@ -22,6 +22,14 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
             dataEEG=ft_redefinetrial(cfg, dataEEG);
         end
 
+        if contains(eegfile, 'LN_PR_D005_20220401_0019')
+            cfg=[];
+            cfg.begsample= 13*dataEEG.fsample;
+            cfg.endsample= size(dataEEG.time{1},2);
+            dataEEG=ft_redefinetrial(cfg, dataEEG);
+        end
+
+
         if contains(eegfile, 'LN_PR_D005_20220401_00120')
             % take second half of file
             cfg=[];

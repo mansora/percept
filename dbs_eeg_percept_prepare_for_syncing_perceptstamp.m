@@ -8,8 +8,13 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
         cfg.resamplefs= dataEEG.fsample;
         dbs_file = ft_resampledata(cfg, dbs_file);
 
-
-       
+        if contains(eegfile, 'LN_PR_D003_20220204_0001')
+            cfg=[];
+            cfg.begsample= 49441;
+            cfg.endsample= size(dataEEG.time{1},2);
+            dataEEG=ft_redefinetrial(cfg, dataEEG);
+        else
+        
         % I don't like this here. But there are very few files that need to
         % be cleared up like this. Still maybe we can store that somewhere
         % in dbs_subjects_percept under details.cut_eegdata or something?
@@ -28,6 +33,8 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
             cfg.endsample= size(dataEEG.time{1},2);
             dataEEG=ft_redefinetrial(cfg, dataEEG);
         end
+
+        
 
 
         if contains(eegfile, 'LN_PR_D005_20220401_00120')
@@ -144,7 +151,7 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
 
            dbs_file=ft_redefinetrial(cfg, dbs_file);
        end
-        
+        end
         
         cfg=[];
         cfg.channel=details.eeg_ref{f};

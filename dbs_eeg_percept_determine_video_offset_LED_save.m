@@ -15,7 +15,7 @@ function dbs_eeg_percept_determine_video_offset_LED_save(initials, rec_id)
         return
     end
     
-    for f=1:size(files_tot,2)
+    for f=2:size(files_tot,2)
         files=files_tot(f,:);
 
         [LED_offset_start, LED_offset_end, LED_signal]=...

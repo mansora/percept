@@ -16,6 +16,18 @@ fileList = dir(fullfile(filename_video, [videoname, '*.json']));
 % end
 
 
+% check which Person is the patient
+filename_tracked=strrep(filename_video,'jsons', 'videos');
+filename_tracked=[filename_tracked(1:end-1), '_tracked_anonym.MP4'];
+videoIn=VideoReader(filename_tracked);
+
+if ~isempty(strfind(eegfile,'LN_PR_D006'))
+  data_temp=load(['Z:\LN_PR_D006\processed_MotionCapture\json_signals\json_signals_', videoname,'.mat']);
+  people=data_temp.people;
+  Person=data_temp.Person;
+
+else
+
 for i=1:size(fileList,1)
     fname = [filename_video fileList(i).name];
     fid = fopen(fname);
@@ -39,10 +51,9 @@ for i=1:size(fileList,1)
 
 end
 
-% check which Person is the patient
-filename_tracked=strrep(filename_video,'jsons', 'videos');
-filename_tracked=[filename_tracked(1:end-1), '_tracked_anonym.MP4'];
-videoIn=VideoReader(filename_tracked);
+end
+
+
 
 goodframe_found=0;
 fr_start=1;

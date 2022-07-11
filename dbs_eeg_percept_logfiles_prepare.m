@@ -96,7 +96,7 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
         trialinfo{1}='Rest trial';
 
-    elseif strfind(input_logfile, 'PMT')
+    elseif ~isempty(strfind(input_logfile, 'PMT'))
 
         trl1(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'right hand up'))-3))';
         trl1(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'right hand down'))-3))';
@@ -123,7 +123,7 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
         trialinfo=repelem([{'right hand'}, {'left hand'}, {'right leg'}, {'left leg'}], ...
             [size(trl1,1) size(trl2,1) size(trl3,1) size(trl4,1)])';
 
-    elseif strfind(input_logfile, 'ACT')
+    elseif ~isempty(strfind(input_logfile, 'ACT'))
 
         trl1(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'right hand up'))-3))';
         trl1(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'right hand down'))-3))';
@@ -150,10 +150,10 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
         trialinfo=repelem([{'right hand'}, {'left hand'}, {'right leg'}, {'left leg'}], ...
             [size(trl1,1) size(trl2,1) size(trl3,1) size(trl4,1)])';
 
-    elseif strfind(input_logfile, 'DPT')
+    elseif ~isempty(strfind(input_logfile, 'DPT'))
         %% TODO add markers for this
 
-    elseif strfind(input_logfile, 'SST')
+    elseif ~isempty(strfind(input_logfile, 'SST'))
 
         trl1(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task right on'))-3))';
         trl1(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task right off'))-3))';
@@ -167,10 +167,10 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
         trl=[trl1; trl2];
 
-        trialinfo=repelem([{'SST right'}, {'SST hand'}], ...
+        trialinfo=repelem([{'SST right'}, {'SST left'}], ...
             [size(trl1,1) size(trl2,1)])';
         
-    elseif strfind(input_logfile, 'SGT')
+    elseif ~isempty(strfind(input_logfile, 'SGT'))
 
         trl(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'geste on'))-3))';
         trl(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'geste off'))-3))';
@@ -179,7 +179,7 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
         trialinfo=repelem([{'geste'}], [size(trl,1)])';
 
-    elseif strfind(input_logfile, 'HPT')
+    elseif ~isempty(strfind(input_logfile, 'HPT'))
 
         trl(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'arms up'))-3))';
         trl(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'arms down'))-3))';
@@ -188,10 +188,26 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
         trialinfo=repelem([{'arms up'}], [size(trl,1)])';
 
-    elseif strfind(input_logfile, 'WRITE')
-        %% TODO add markers for this
+    elseif ~isempty(strfind(input_logfile, 'WRITE'))
+        
+        trl1(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'write right'))-3))';
+        x_temp=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'pause writing'))-3))';
+        trl1(:,2)=x_temp(1:size(trl1(:,1),1));
+        trl1(:,3)=0;
+        trl1(:,4)=1;
 
-    elseif strfind(input_logfile, 'POUR')
+        trl2(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'write left'))-3))';
+        trl2(:,2)=x_temp(size(trl1(:,1),1)+1:end);
+        trl2(:,3)=0;
+        trl2(:,4)=2;
+
+        trl=[trl1; trl2];
+
+        trialinfo=repelem([{'write right'}, {'write left'}], ...
+            [size(trl1,1) size(trl2,1)])';
+        
+
+    elseif ~isempty(strfind(input_logfile, 'POUR'))
 
         trl(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'pour'))-3))';
         trl(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'pause pouring'))-3))';
@@ -200,7 +216,7 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
         trialinfo=repelem([{'pour'}], [size(trl,1)])';
 
-    elseif strfind(input_logfile, 'SPEAK')
+    elseif ~isempty(strfind(input_logfile, 'SPEAK'))
         
         trl(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'speak'))-3))';
         trl(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'pause speaking'))-3))';
@@ -209,7 +225,7 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
         trialinfo=repelem([{'speak'}], [size(trl,1)])';
 
-    elseif strfind(input_logfile, 'WALK')
+    elseif ~isempty(strfind(input_logfile, 'WALK'))
 
         trl1(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'walk forward'))-3))';
         trl1(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';

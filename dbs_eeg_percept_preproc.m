@@ -64,9 +64,8 @@ if details.process_videos==1 && ~isempty(files)
     video_file=dbs_eeg_percept_videofiles_prepare(files{1}, fullfile(files{4}, '\'), spm_file(files{4}, 'filename'));
     
     if strcmp(details.vidoffset_tocompute{f}, 'no')
-        [LED_offset_start LED_offset_end]=details.vidoffset(:,f);
-        video_file.LED_offset_start=LED_offset_start;
-        video_file.LED_offset_end=LED_offset_end;
+        video_file.LED_offset_start=details.vidoffset(1,f);
+        video_file.LED_offset_end=details.vidoffset(2,f);
         video_file.LED_signal=load(files{6}).LED_signal;
     else
         [LED_offset_start, LED_offset_end, LED_signal]=dbs_eeg_percept_determine_video_offset_LED([files{5},'.mp4'], files{3}, files{1});

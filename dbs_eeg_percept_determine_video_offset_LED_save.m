@@ -7,11 +7,7 @@ function dbs_eeg_percept_determine_video_offset_LED_save(initials, rec_id)
         rec_id = 1;
     end
     
-    if nargin <3
-        condition = 'R';
-    end
-    
-    
+  
     try
         [files_tot, seq, root, details] = dbs_subjects_percept(initials, rec_id);
     catch

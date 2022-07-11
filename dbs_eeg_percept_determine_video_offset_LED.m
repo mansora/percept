@@ -52,7 +52,19 @@ else
 end
 
 
-parfor f=1:videoIn.NumFrames
+% parfor f=1:videoIn.NumFrames
+%     videoFrame=read(videoIn,f);
+%     LED_condition(:,:,f)=[videoFrame(sub2ind(size(videoFrame), y, x, ones(1,n_sampling)))',...
+%                           videoFrame(sub2ind(size(videoFrame), y, x, 2*ones(1,n_sampling)))',...
+%                           videoFrame(sub2ind(size(videoFrame), y, x, 3*ones(1,n_sampling)))'];
+% 
+% %     R=double(videoFrame(y,x,1));
+% %     LED_conditionR(:,f)=R(:);
+% end
+% poolobj = gcp('nocreate');
+% delete(poolobj);
+
+for f=1:videoIn.NumFrames
     videoFrame=read(videoIn,f);
     LED_condition(:,:,f)=[videoFrame(sub2ind(size(videoFrame), y, x, ones(1,n_sampling)))',...
                           videoFrame(sub2ind(size(videoFrame), y, x, 2*ones(1,n_sampling)))',...
@@ -61,8 +73,6 @@ parfor f=1:videoIn.NumFrames
 %     R=double(videoFrame(y,x,1));
 %     LED_conditionR(:,f)=R(:);
 end
-poolobj = gcp('nocreate');
-delete(poolobj);
 
 LED_conditionR=double(squeeze(LED_condition(:,1,:)));
 % LED_conditionR=squeeze(mean(LED_condition(:,:,:),3)/3);

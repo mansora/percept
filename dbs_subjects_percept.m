@@ -300,6 +300,76 @@ switch initials
             details.freqrange=[1 200];
         end
 
+        case 'LN_PR_D006'
+        details.process_logfiles = 1;
+        details.process_videos = 1;
+        details.bandstop = 124;
+        details.lfpthresh = 3.5;        
+        details.lfp_ref = 'LFP_Gpi_L_13';
+        details.freqrange=[120 130];
+        details.synch_ecg = 1;
+        details.synch_percept_stamp = 1;
+        if rec_id == 2
+            files={...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0001.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0002.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0003.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0004.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0005.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0006.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0007.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0008.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0024.vhdr'
+                };
+            sequence =  {'R', 'PMT', 'ACT', 'HPT', 'HPT', 'WRITE', 'WRITE', 'POUR', 'WALK'};
+            root='\LN_PR_D006\rec2\';
+
+            %details.lfpthresh = 30;
+            details.chan =  {'LFP_Gpi_L_13', 'LFP_Gpi_R_13'};
+        elseif rec_id == 1
+            files={...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0015.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0016.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0017.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0018.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0019.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0020.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0021.vhdr',...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0022.vhdr'                
+                };
+            
+             sequence =  {'R', 'PMT', 'ACT', 'HPT', 'HPT', 'WRITE', 'POUR', 'WALK'};
+            root='\LN_PR_D006\rec1\';
+            details.badchanthresh = 0.35;
+            details.chan =  {'LFP_Gpi_L_13', 'LFP_Gpi_R_13'};
+        elseif rec_id == 5
+            files={...
+                '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0023.vhdr',...
+                };
+            sequence = {'R'};
+            details.lfp_ref = 'LFP_Gpi_L_13';
+            details.eeg_ref = 'StimArt';
+            details.lfpthresh = 5;
+            root='\LN_PR_D006\streaming\';
+            details.process_logfiles = 0;
+            details.chan = {
+                'LFP_Gpi_L_03'
+                'LFP_Gpi_L_13'
+                'LFP_Gpi_L_02'%
+                'LFP_Gpi_R_03'
+                'LFP_Gpi_R_13'
+                'LFP_Gpi_R_02'
+                'LFP_Gpi_L_01'%
+                'LFP_Gpi_L_12'%
+                'LFP_Gpi_L_23'
+                'LFP_Gpi_R_01'
+                'LFP_Gpi_R_12'%
+                'LFP_Gpi_R_23'
+                };
+            details.synch_ecg = 1;
+            details.synch_percept_stamp = 0;
+        end
+    
         details.eeg_ref=repmat({'StimArt'},1,numel(files));
 end
 
@@ -345,6 +415,14 @@ for f=1:length(files)
     else
         details.vidoffset_tocompute{f}='no';
         details.vidoffset(:,f)=[file_table_array(ind-1, 6) file_table_array(ind-1, 7)];
+        for i = 1:numel(ind)
+            LED_signal{i}=fullfile(dbsroot, initials, 'processed_MotionCapture', 'LED_signals', ['LED_', file_table{ind, 3} '.mat']);
+        end
+        if numel(ind)==1
+            files(f, 6) = LED_signal;
+        else
+            files{f, 6} = LED_signal;
+        end
     end
 end
 

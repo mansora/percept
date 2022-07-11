@@ -67,7 +67,7 @@ if details.process_videos==1 && ~isempty(files)
         [LED_offset_start LED_offset_end]=details.vidoffset(:,f);
         video_file.LED_offset_start=LED_offset_start;
         video_file.LED_offset_end=LED_offset_end;
-        
+        video_file.LED_signal=load(files{6}).LED_signal;
     else
         [LED_offset_start, LED_offset_end, LED_signal]=dbs_eeg_percept_determine_video_offset_LED([files{5},'.mp4'], files{3}, files{1});
         video_file.LED_offset_start=LED_offset_start;

@@ -20,6 +20,7 @@ catch
     return
 end
 %%
+
 spm_mkdir(root);
 
 
@@ -36,39 +37,19 @@ for f = 1:size(files, 1)
         continue;
     end
     
-    %{
-    %=============  Conversion =============================================
-    S = [];
-    S.dataset = files{f};
-    S.outfile = ['spmeeg' num2str(f) '_' spm_file(S.dataset,'basename')];        
-    %}
-    [D S_trl]= dbs_eeg_percept_preproc(files(f,:),details,f);
-    save('trialdef.mat', 'S_trl');
+    % =============  Conversion =============================================       
+    
+    [D S_trl]= dbs_eeg_percept_preproc(files(f,:), details, f); 
+    
+    
+    D = chantype(D, D.indchannel(details.chan), 'LFP');
+    
+    if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
+        D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
+    end
+    
+    save(D);
 
-%     S = [];
-%     S.dataset = files{f, 1};
-%     S.mode = 'continuous';
-%     D1 = spm_eeg_convert(S);
-% 
-%     load(files{f, 2})
-%     D2 = spm_eeg_ft2spm(data, [initials '_lfp.mat']);
-% 
-% 
-%     S = [];
-%     S.D1 = D1;
-%     S.D2 = D2;
-%     S.ref1 = details.eeg_ref;
-%     S.ref2 = details.lfp_ref;
-%     D = dbs_eeg_percept_noise_merge(S);
-% 
-%     
-%     D = chantype(D, D.indchannel(details.chan), 'LFP');
-%     
-%     if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
-%         D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
-%     end
-%     
-%     save(D);
     
     S = [];
     S.D = D;
@@ -217,7 +198,7 @@ for f = 1:size(files, 1)
         S.freq = S.freq+50;
     end
         
-    if isfield(details, 'bandstop')
+    if isfield(details, 'bandstop') && ~isempty(details.bandstop)
         for i = 1:length(details.bandstop)
             S.D = D;
             S.freq = [-1 1]+details.bandstop(i);
@@ -230,10 +211,16 @@ for f = 1:size(files, 1)
     ecg = zeros(length(lfpchan), D.nsamples);
     for i = 1:length(lfpchan)
          lfp       = D(lfpchan(i), :,1);
-         ecg_out   = perceive_ecg(lfp, D.fsample,1);
-         cleanlfp  = ecg_out.cleandata;
-         ecg(i, :) = lfp-cleanlfp;
-         D(lfpchan(i), :) = cleanlfp;
+         badsmpl = abs(zscore(lfp))>8;
+         badsmpl = ~~conv(badsmpl, ones(1, round(D.fsample)), 'same');
+         lfp_good  = lfp;
+         lfp_good(badsmpl) = 0;
+         ecg_out   = perceive_ecg(lfp_good, D.fsample,1);
+         if ecg_out.detected
+             cleanlfp  = ecg_out.cleandata;
+             ecg(i, :) = lfp-cleanlfp;
+             D(lfpchan(i), :) = cleanlfp;
+         end
     end
 
     if size(ecg, 1)>1
@@ -333,8 +320,8 @@ for f = 1:size(files, 1)
     S.D = D;
     S.badchanthresh = 1;
     S.methods(1).channels = {'LFP'};
-    S.methods(1).fun = 'threshchan';
-    S.methods(1).settings.threshold =  details.lfpthresh;
+    S.methods(1).fun = 'zscore';
+    S.methods(1).settings.threshold = details.lfpthresh;
 
     D = spm_eeg_artefact(S);
 

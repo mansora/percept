@@ -28,6 +28,8 @@ spm('FigName','Brainamp preproc'); spm('Pointer','Watch');
 %     S = [];
 % end
 
+keep=1;
+
 S = [];
 S.dataset = files{1};
 S.outfile = ['spmeeg' num2str(f) '_' spm_file(S.dataset,'basename')]; 
@@ -120,7 +122,7 @@ if details.synch_percept_stamp==1
 %     D_epoched = spm_eeg_epochs(S1);
 
     S_trl=[];
-    S_trl.trl=[trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))];
+    S_trl.trl=[trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))]; % TODO check why you wrote this bit
     S_trl.conditionlabels=trialinfo;
 
 end
@@ -153,6 +155,8 @@ if details.synch_ecg==1
     S.ref1 = details.eeg_ref{f};
     S.ref2 = details.lfp_ref;
     D= dbs_eeg_percept_noise_merge(S); 
+
+    if ~keep, delete(S.D1); delete(S.D2); end
 
     D = chantype(D, D.indchannel(details.chan), 'LFP');
     

@@ -6,3 +6,5 @@
 addpath D:\SPM
 % spm
 spm('defaults', 'eeg');
+addpath D:\Github_percept\percept
+addpath D:\perceive-master

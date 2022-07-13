@@ -226,26 +226,49 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
         trialinfo=repelem([{'speak'}], [size(trl,1)])';
 
     elseif ~isempty(strfind(input_logfile, 'WALK'))
+        if ~isempty(strfind(input_logfile, 'LN_PR_D006'))
+            trl1(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'standing'))-3))';
+            trl1(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
+            trl1(:,3)=0;
+            trl1(:,4)=1;
+    
+            trl2(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
+            ind_end=find(strcmp(OutputFile_temp(:,1), 'standing'));
+            trl2(:,2)=[cell2mat(events(3,eventstart+size(initstamp_time,1)+ind_end(2:end)-3)), trl2(end,1)+30*1000]'; 
+            % this is bad, I don't have a marker to indicate the end of the
+            % last stand still trial so I just cut the last 10 seconds. Would
+            % be good to add a marker in the logfile or else keep track of the
+            % duration of that trial for different subjects
+            trl2(:,3)=0;
+            trl2(:,4)=2;
+    
+    
+            trl=[trl1; trl2];
+    
+            trialinfo=repelem([{'stand'}, {'sit'}], [size(trl1,1) size(trl2,1)])';
 
-        trl1(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'walk forward'))-3))';
-        trl1(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
-        trl1(:,3)=0;
-        trl1(:,4)=1;
+        else
+            trl1(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'walk forward'))-3))';
+            trl1(:,2)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
+            trl1(:,3)=0;
+            trl1(:,4)=1;
+    
+            trl2(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
+            ind_end=find(strcmp(OutputFile_temp(:,1), 'walk forward'));
+            trl2(:,2)=[cell2mat(events(3,eventstart+size(initstamp_time,1)+ind_end(2:end)-3)), trl2(end,1)+10*1000]'; 
+            % this is bad, I don't have a marker to indicate the end of the
+            % last stand still trial so I just cut the last 10 seconds. Would
+            % be good to add a marker in the logfile or else keep track of the
+            % duration of that trial for different subjects
+            trl2(:,3)=0;
+            trl2(:,4)=2;
+    
+    
+            trl=[trl1; trl2];
+    
+            trialinfo=repelem([{'walk'}, {'stand'}], [size(trl1,1) size(trl2,1)])';
 
-        trl2(:,1)=cell2mat(events(3,eventstart+size(initstamp_time,1)+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
-        ind_end=find(strcmp(OutputFile_temp(:,1), 'walk forward'));
-        trl2(:,2)=[cell2mat(events(3,eventstart+size(initstamp_time,1)+ind_end(2:end)-3)), trl2(end,1)+10*1000]'; 
-        % this is bad, I don't have a marker to indicate the end of the
-        % last stand still trial so I just cut the last 10 seconds. Would
-        % be good to add a marker in the logfile or else keep track of the
-        % duration of that trial for different subjects
-        trl2(:,3)=0;
-        trl2(:,4)=2;
-
-
-        trl=[trl1; trl2];
-
-        trialinfo=repelem([{'walk'}, {'stand'}], [size(trl1,1) size(trl2,1)])';
+        end
         
     else disp('no match found')
     end

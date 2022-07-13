@@ -21,35 +21,38 @@ filename_tracked=strrep(filename_video,'jsons', 'videos');
 filename_tracked=[filename_tracked(1:end-1), '_tracked_anonym.MP4'];
 videoIn=VideoReader(filename_tracked);
 
-if ~isempty(strfind(eegfile,'LN_PR_D006'))
-  data_temp=load(['Z:\LN_PR_D006\processed_MotionCapture\json_signals\json_signals_', videoname,'.mat']);
+
+  
+if exist((fullfile(filename_video, '\..\..\json_signals\', ['json_signals_' videoname,'.mat'])), 'file')
+
+  data_temp=load(fullfile(filename_video, '\..\..\json_signals\', ['json_signals_' videoname,'.mat']));
   people=data_temp.people;
   Person=data_temp.Person;
 
 else
 
-for i=1:size(fileList,1)
-    fname = [filename_video fileList(i).name];
-    fid = fopen(fname);
-    raw = fread(fid,inf);
-    str = char(raw');
-    fclose(fid);
-    val = jsondecode(str);
-
-    people(i)=size(val.people,1);
+    for i=1:size(fileList,1)
+        fname = [filename_video fileList(i).name];
+        fid = fopen(fname);
+        raw = fread(fid,inf);
+        str = char(raw');
+        fclose(fid);
+        val = jsondecode(str);
     
-    for num_ppl=1:people(i)
-        %% TODO add the hand key points to the data later too
-       Person{num_ppl}.pose_keypoints(i,:)=val.people(num_ppl).pose_keypoints_2d;
-        if ~isempty(val.people(num_ppl).hand_left_keypoints_2d)
-        Person{num_ppl}.hand_left_keypoints(i,:)=val.people(1).hand_left_keypoints_2d;
-        end
-        if ~isempty(val.people(num_ppl).hand_right_keypoints_2d)
-        Person{num_ppl}.hand_right_keypoints(i,:)=val.people(num_ppl).hand_right_keypoints_2d;
-        end 
-    end    
-
-end
+        people(i)=size(val.people,1);
+        
+        for num_ppl=1:people(i)
+            %% TODO add the hand key points to the data later too
+           Person{num_ppl}.pose_keypoints(i,:)=val.people(num_ppl).pose_keypoints_2d;
+            if ~isempty(val.people(num_ppl).hand_left_keypoints_2d)
+            Person{num_ppl}.hand_left_keypoints(i,:)=val.people(1).hand_left_keypoints_2d;
+            end
+            if ~isempty(val.people(num_ppl).hand_right_keypoints_2d)
+            Person{num_ppl}.hand_right_keypoints(i,:)=val.people(num_ppl).hand_right_keypoints_2d;
+            end 
+        end    
+    
+    end
 
 end
 

@@ -9,7 +9,8 @@ videoIn = VideoReader(filename_LED_video);
 % x=round(x);
 % y=round(y);
 
-n_sampling=floor(0.02*(videoIn.Height*videoIn.Width)); % sample 2% of the pixels 
+% change sampling rate back to 2 percent
+n_sampling=floor(0.1*(videoIn.Height*videoIn.Width)); % sample 2% of the pixels 
 y=randi([1,videoIn.Height],1,n_sampling);
 x=randi([1,videoIn.Width],1,n_sampling);
 
@@ -224,6 +225,6 @@ end
 % % 
 % itr_=0*100;
 % figure, 
-% for i=1+itr_:51+itr_
-% subplot(10,10,i-itr_), plot(double(squeeze(LED_conditionR(i,:,1))))
-end
+% for i=1+itr_:50+itr_
+% subplot(10,5,i-itr_), plot(double(squeeze(LED_conditionR(i,:,1))))
+% end

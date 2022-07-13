@@ -1,4 +1,5 @@
 function video_file_fieldtrip=dbs_eeg_percept_videofiles_prepare(eegfile, filename_video, videoname);
+automatic_tracking=1;
 
 fileList = dir(fullfile(filename_video, [videoname, '*.json']));
 % if ~isempty(strfind(eegfile,'LN_PR_D001'))
@@ -61,6 +62,7 @@ end
 goodframe_found=0;
 fr_start=1;
 while goodframe_found==0
+
     videoFrame=read(videoIn,fr_start);
 %     for num_ppl=1:people(fr_start)
 %         videoFrame=insertText(videoFrame, Person{num_ppl}.pose_keypoints(fr_start,1:2), num2str(num_ppl),...
@@ -161,7 +163,7 @@ end
 framerate=videoIn.FrameRate;
 
 trial=zeros(14,size(fileList,1));
-temp_right_hand1=interpolate_frames(Person_patient.pose_keypoints(:,19:20), framerate);
+temp_right_hand1=interpolate_frames(Person_patient.pose_keypoints(:,13:14), framerate);
 trial(1:2,:)=temp_right_hand1(:,1:2)';
 % right hand
 if isfield(Person_patient, 'hand_right_keypoints')
@@ -174,7 +176,7 @@ end
 % figure, plot(video_file.right_hand2(:,3))
 
 
-temp_left_hand1=interpolate_frames(Person_patient.pose_keypoints(:,10:11), framerate);
+temp_left_hand1=interpolate_frames(Person_patient.pose_keypoints(:,22:23), framerate);
 trial(5:6,:)=temp_left_hand1(:,1:2)';
 
 % left hand
@@ -187,12 +189,12 @@ end
 % figure, plot(video_file.left_hand2(:,1))
 
 % right foot
-temp_right_foot=interpolate_frames(Person_patient.pose_keypoints(:,40:41), framerate);
+temp_right_foot=interpolate_frames(Person_patient.pose_keypoints(:,34:35), framerate);
 trial(9:10,:)=temp_right_foot(:,1:2)';
 
 
 % left foot
-temp_left_foot=interpolate_frames(Person_patient.pose_keypoints(:,31:32), framerate);
+temp_left_foot=interpolate_frames(Person_patient.pose_keypoints(:,43:44), framerate);
 trial(11:12,:)=temp_left_foot(:,1:2)';
 
 % head

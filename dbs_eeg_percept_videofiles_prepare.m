@@ -162,13 +162,24 @@ end
 
 framerate=videoIn.FrameRate;
 
-trial=zeros(14,size(fileList,1));
+trial=zeros(34,size(fileList,1));
 temp_right_hand1=interpolate_frames(Person_patient.pose_keypoints(:,13:14), framerate);
 trial(1:2,:)=temp_right_hand1(:,1:2)';
 % right hand
 if isfield(Person_patient, 'hand_right_keypoints')
     temp_right_hand2=interpolate_frames(Person_patient.hand_right_keypoints(:,1:2), framerate);
     trial(3:4,:)=temp_right_hand2(:,1:2)';
+    thumb_right=interpolate_frames(Person_patient.hand_right_keypoints(:,10:11), framerate);
+    index_right=interpolate_frames(Person_patient.hand_right_keypoints(:,22:23), framerate);
+    middle_right=interpolate_frames(Person_patient.hand_right_keypoints(:,34:35), framerate);
+    ring_right=interpolate_frames(Person_patient.hand_right_keypoints(:,46:47), framerate);
+    pinkie_right=interpolate_frames(Person_patient.hand_right_keypoints(:,58:59), framerate);
+    trial(15:16,:)=thumb_right';
+    trial(17:18,:)=index_right';
+    trial(19:20,:)=middle_right';
+    trial(21:22,:)=ring_right';
+    trial(23:24,:)=pinkie_right';
+
 end
 
 
@@ -183,6 +194,16 @@ trial(5:6,:)=temp_left_hand1(:,1:2)';
 if isfield(Person_patient, 'hand_left_keypoints')
     temp_left_hand2=interpolate_frames(Person_patient.hand_left_keypoints(:,1:2), framerate);
     trial(7:8,:)=temp_left_hand2(:,1:2)';
+    thumb_left=interpolate_frames(Person_patient.hand_left_keypoints(:,10:11), framerate);
+    index_left=interpolate_frames(Person_patient.hand_left_keypoints(:,22:23), framerate);
+    middle_left=interpolate_frames(Person_patient.hand_left_keypoints(:,34:35), framerate);
+    ring_left=interpolate_frames(Person_patient.hand_left_keypoints(:,46:47), framerate);
+    pinkie_left=interpolate_frames(Person_patient.hand_left_keypoints(:,58:59), framerate);
+    trial(25:26,:)=thumb_left';
+    trial(27:28,:)=index_left';
+    trial(29:30,:)=middle_left';
+    trial(31:32,:)=ring_left';
+    trial(33:34,:)=pinkie_left';
 end
 
 % figure, plot(video_file.left_hand1(:,1))
@@ -206,7 +227,12 @@ trial(13:14,:)=temp_head(:,1:2)';
 label_video={'hand_R1_x', 'hand_R1_y', 'hand_R2_x', 'hand_R2_y', ...
     'hand_L1_x', 'hand_L1_y', 'hand_L2_x', 'hand_L2_y', ...
     'foot_R_x', 'foot_R_y', 'foot_L_x', 'foot_L_y', ...
-    'head_x', 'head_y'}';
+    'head_x', 'head_y', 'thumb_R_x', 'thumb_R_y', ...
+    'index_R_x', 'index_R_y', 'middle_R_x', 'middle_R_y', ...
+    'ring_R_x', 'ring_R_y', 'pinkie_R_x', 'pinkie_R_y', ...
+    'thumb_L_x', 'thumb_L_y', ...
+    'index_L_x', 'index_L_y', 'middle_L_x', 'middle_L_y', ...
+    'ring_L_x', 'ring_L_y', 'pinkie_L_x', 'pinkie_L_y'}';
 
 video_file_fieldtrip.label=label_video;
 video_file_fieldtrip.time={linspace(0,size(fileList,1)/framerate, size(fileList,1))};

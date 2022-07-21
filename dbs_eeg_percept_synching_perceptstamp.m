@@ -144,7 +144,13 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
     % however you change the timing of the EEG file apply the same change to the logfile too
     %% TODO not a 100% sure this is doing the right thing, check with video synchs later
     if ~isempty(logfile)
-        logfile(:,1:2)=logfile(:,1:2)-eeg_file.time{1,1}(1)*eeg_file.fsample;
+%         logfile(:,1:2)=logfile(:,1:2)-eeg_file.time{1,1}(1)*eeg_file.fsample;
+        if offset_stamp_start < 0
+            logfile(:,1:2)=logfile(:,1:2)-eeg_file.time{1,1}(1)*eeg_file.fsample;
+        elseif offset_stamp_start > 0
+            logfile(:,1:2)=logfile(:,1:2)-trl_offset(logfile(:,1:2))-eeg_file.time{1,1}(1)*eeg_file.fsample;
+        end
+
     end
     eeg_file.time={reftrl};
     

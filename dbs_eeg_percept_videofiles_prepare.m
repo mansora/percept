@@ -96,10 +96,10 @@ while goodframe_found==0
         fr_start=fr_start+1;
         Person_patient.pose_keypoints(fr_start,:)=zeros(size(Person{1}.pose_keypoints(fr_start,:)));
         if isfield(Person{1}, 'hand_left_keypoints')
-            Person_patient.hand_left_keypoints(fr_start,:)=zeros(Person{1}.hand_left_keypoints(fr_start,:));
+            Person_patient.hand_left_keypoints(fr_start,:)=zeros(size(Person{1}.hand_left_keypoints(fr_start,:)));
         end
         if isfield(Person{1}, 'hand_right_keypoints')
-            Person_patient.hand_right_keypoints(fr_start,:)=zeros(Person{1}.hand_right_keypoints(fr_start,:));
+            Person_patient.hand_right_keypoints(fr_start,:)=zeros(size(Person{1}.hand_right_keypoints(fr_start,:)));
         end 
     end
 end
@@ -167,10 +167,10 @@ for fr=fr_start+1:size(fileList,1)
 %             'FontSize',18,'TextColor','white');
         Person_patient.pose_keypoints(fr,:)=zeros(size(Person{1}.pose_keypoints(fr,:)));
         if isfield(Person{1}, 'hand_left_keypoints')
-            Person_patient.hand_left_keypoints(fr,:)=zeros(Person{1}.hand_left_keypoints(fr,:));
+            Person_patient.hand_left_keypoints(fr,:)=zeros(size(Person{1}.hand_left_keypoints(fr,:)));
         end
         if isfield(Person{1}, 'hand_right_keypoints')
-            Person_patient.hand_right_keypoints(fr,:)=zeros(Person{1}.hand_right_keypoints(fr,:));
+            Person_patient.hand_right_keypoints(fr,:)=zeros(size(Person{1}.hand_right_keypoints(fr,:)));
         end 
         end
 

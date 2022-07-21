@@ -40,6 +40,25 @@ for f = 1:size(files, 1)
     % =============  Conversion =============================================       
     
     [D S_trl]= dbs_eeg_percept_preproc(files(f,:), details, f); 
+
+
+    switch condition
+        case {'ACT', 'PMT'}
+            nev = size(S_trl.trl, 1);
+            ev = [];            
+            for i = 1:nev
+                ev(i).type  = S_trl.conditionlabels{i};
+                ev(i).value = 'up';
+                ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+                ev(nev+i).type  = S_trl.conditionlabels{i};
+                ev(nev+i).value = 'down';
+                ev(nev+i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
+            end
+            [~, ind] = sort([ev.time]);
+            D = events(D, 1, {ev(ind)});
+        otherwise
+            D.trl = S_trl;
+    end
     
     
     D = chantype(D, D.indchannel(details.chan), 'LFP');
@@ -356,6 +375,9 @@ for f = 1:size(files, 1)
         fD{f} = D;
     end
     
+
+    fD{f} = fD{f}.move([prefix initials '_rec_' num2str(rec_id) '_' condition '_' num2str(f)]);
+
     if ~isempty(ecgind)
         S = [];
         S.D = Da;
@@ -378,14 +400,6 @@ end
 nf = numel(fD);
 
 if numel(fD)>1
-    S = [];
-    S.D = fname(fD{1});
-    for f = 2:numel(fD)
-        S.D = strvcat(S.D, fname(fD{f}));
-    end
-    S.recode = 'same';
-    D = spm_eeg_merge(S);
-    
     if ~isempty(ecgind)
         S.D = fname(aD{1});
         for f = 2:numel(aD)
@@ -393,20 +407,30 @@ if numel(fD)>1
         end
         Da = spm_eeg_merge(S);
     end
-    
-    fileind =[];
-    for f = 1:numel(fD)
-        fileind = [fileind f*ones(1, ntrials(fD{f}))];
-        D = events(D, find(fileind == f), events(fD{f}, ':'));
-        D = trialonset(D, find(fileind == f), trialonset(fD{f}, ':'));
-        
-        if ~keep
-            delete(fD{f});
-        end
-    end
-    D.fileind = fileind;  
 
-    fD = {D};
+    if epoch
+        S = [];
+        S.D = fname(fD{1});
+        for f = 2:numel(fD)
+            S.D = strvcat(S.D, fname(fD{f}));
+        end
+        S.recode = 'same';
+        D = spm_eeg_merge(S);
+
+        fileind =[];
+        for f = 1:numel(fD)
+            fileind = [fileind f*ones(1, ntrials(fD{f}))];
+            D = events(D, find(fileind == f), events(fD{f}, ':'));
+            D = trialonset(D, find(fileind == f), trialonset(fD{f}, ':'));
+
+            if ~keep
+                delete(fD{f});
+            end
+        end
+        D.fileind = fileind;
+
+        fD = {D};
+    end
 elseif  numel(fD)==1    
     fD{1}.fileind = ones(1, ntrials(fD{1}));
     
@@ -442,8 +466,7 @@ if ~keep, delete(Da);  end
 
 for f = 1:numel(fD)
     fD{f}.initials = initials;
-    fD{f} = dbs_eeg_headmodelling(fD{f});
-    fD{f} = fD{f}.move([prefix initials '_rec_' num2str(rec_id) '_' condition '_' num2str(f)]);
+    fD{f} = dbs_eeg_headmodelling(fD{f});   
 end
 
 if numel(fD)==1

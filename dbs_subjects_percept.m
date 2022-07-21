@@ -18,7 +18,7 @@ details.suffix = {'rec_1', 'rec_2', 'rec_3', 'rec_4', 'rec_5'};
 details.initials=initials;
 
 % details.eeg_ref = 'StimArt';
-details.removesync = true;
+details.removesync = false;
 
 details.lfpthresh = 4;
 
@@ -307,7 +307,7 @@ switch initials
         details.lfpthresh = 3.5;        
         details.lfp_ref = 'LFP_Gpi_L_13';
         details.freqrange=[120 130];
-        details.synch_ecg = 1;
+        details.synch_ecg = 0;
         details.synch_percept_stamp = 1;
         if rec_id == 2
             files={...

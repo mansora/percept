@@ -101,14 +101,14 @@ end
 
 if details.synch_percept_stamp==1
     if ~isempty(video_file)
-        [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_withvid, files{1}, files{2}, details, f);
+        [eeg_file, dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_withvid, files{1}, files{2}, details, f);
         [eeg_file, trl]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, trl, details);
 
     else
         cfg = [];
         cfg.dataset = files{1};
         eeg_file_temp=ft_preprocessing(cfg);
-        [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_temp, files{1}, files{2}, details, f);
+        [eeg_file, dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_temp, files{1}, files{2}, details, f);
         [eeg_file, trl]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, trl, details);
         
     end

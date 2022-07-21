@@ -43,14 +43,14 @@ else
         people(i)=size(val.people,1);
         
         for num_ppl=1:people(i)
-            %% TODO add the hand key points to the data later too
+            
            Person{num_ppl}.pose_keypoints(i,:)=val.people(num_ppl).pose_keypoints_2d;
-            if ~isempty(val.people(num_ppl).hand_left_keypoints_2d)
-            Person{num_ppl}.hand_left_keypoints(i,:)=val.people(1).hand_left_keypoints_2d;
-            end
-            if ~isempty(val.people(num_ppl).hand_right_keypoints_2d)
-            Person{num_ppl}.hand_right_keypoints(i,:)=val.people(num_ppl).hand_right_keypoints_2d;
-            end 
+           if isfield(val.people(num_ppl),'hand_left_keypoints_2d')
+           Person{num_ppl}.hand_left_keypoints(i,:)=val.people(1).hand_left_keypoints_2d;
+           end
+           if isfield(val.people(num_ppl), 'hand_right_keypoints_2d')
+           Person{num_ppl}.hand_right_keypoints(i,:)=val.people(num_ppl).hand_right_keypoints_2d;
+           end 
         end    
     
     end
@@ -85,10 +85,22 @@ while goodframe_found==0
         end
         
         Person_patient.pose_keypoints(fr_start,:)=Person{ind_patient}.pose_keypoints(fr_start,:);
+        if isfield(Person{ind_patient},'hand_left_keypoints')
+            Person_patient.hand_left_keypoints(fr_start,:)=Person{ind_patient}.hand_left_keypoints(fr_start,:);
+        end
+        if isfield(Person{ind_patient}, 'hand_right_keypoints')
+            Person_patient.hand_right_keypoints(fr_start,:)=Person{ind_patient}.hand_right_keypoints(fr_start,:);
+        end 
         goodframe_found=1;
     else
         fr_start=fr_start+1;
         Person_patient.pose_keypoints(fr_start,:)=zeros(size(Person{1}.pose_keypoints(fr_start,:)));
+        if isfield(Person{1}, 'hand_left_keypoints')
+            Person_patient.hand_left_keypoints(fr_start,:)=zeros(Person{1}.hand_left_keypoints(fr_start,:));
+        end
+        if isfield(Person{1}, 'hand_right_keypoints')
+            Person_patient.hand_right_keypoints(fr_start,:)=zeros(Person{1}.hand_right_keypoints(fr_start,:));
+        end 
     end
 end
 
@@ -117,6 +129,12 @@ for fr=fr_start+1:size(fileList,1)
 %             'FontSize',18,'TextColor','white');
 
         Person_patient.pose_keypoints(fr,:)=Person{ind_patient}.pose_keypoints(fr,:);
+        if isfield(Person{ind_patient}, 'hand_left_keypoints')
+            Person_patient.hand_left_keypoints(fr,:)=Person{ind_patient}.hand_left_keypoints(fr,:);
+        end
+        if isfield(Person{ind_patient}, 'hand_right_keypoints')
+            Person_patient.hand_right_keypoints(fr,:)=Person{ind_patient}.hand_right_keypoints(fr,:);
+        end 
     else
         for num_ppl=1:people(fr)
             if bbox(1)-10<Person{num_ppl}.pose_keypoints(fr,1) && ...
@@ -135,6 +153,12 @@ for fr=fr_start+1:size(fileList,1)
 %                'FontSize',18,'TextColor','white');
 
                 Person_patient.pose_keypoints(fr,:)=Person{ind_patient}.pose_keypoints(fr,:);
+                if isfield(Person{ind_patient}, 'hand_left_keypoints')
+                    Person_patient.hand_left_keypoints(fr,:)=Person{ind_patient}.hand_left_keypoints(fr,:);
+                end
+                if isfield(Person{ind_patient}, 'hand_right_keypoints')
+                    Person_patient.hand_right_keypoints(fr,:)=Person{ind_patient}.hand_right_keypoints(fr,:);
+                end 
             end
         end
 
@@ -142,6 +166,12 @@ for fr=fr_start+1:size(fileList,1)
 %         videoFrame=insertText(videoFrame, [10,10], 'No Patient Detected!',...
 %             'FontSize',18,'TextColor','white');
         Person_patient.pose_keypoints(fr,:)=zeros(size(Person{1}.pose_keypoints(fr,:)));
+        if isfield(Person{1}, 'hand_left_keypoints')
+            Person_patient.hand_left_keypoints(fr,:)=zeros(Person{1}.hand_left_keypoints(fr,:));
+        end
+        if isfield(Person{1}, 'hand_right_keypoints')
+            Person_patient.hand_right_keypoints(fr,:)=zeros(Person{1}.hand_right_keypoints(fr,:));
+        end 
         end
 
     end

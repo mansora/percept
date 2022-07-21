@@ -45,6 +45,7 @@ else
     disp('no initializing LED sequence found in logfile, attempting to reconstruct from eegfile')
     events=ft_read_event(eegfile); 
     events=squeeze(struct2cell(events));
+    % TODO this needs to change for patient D006 onwards
     stamp_time=cell2mat(events(3,find(strcmp(events(1,:), 'Toggle'))))/header_info.Fs;
     timeline_LED=linspace( 0, videoIn.Duration, videoIn.NumFrames)';
     k=dsearchn(timeline_LED, stamp_time');

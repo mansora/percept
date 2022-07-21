@@ -11,7 +11,8 @@ function [eeg_file_withvid offset_end]=dbs_eeg_percept_synchronise_video(video_f
 
     events=ft_read_event(eegfile); 
     events=squeeze(struct2cell(events));
-    LED_markersEEG=find(strcmp(events(1,:),'Toggle'));
+%     LED_markersEEG=find(strcmp(events(1,:),'Toggle'));
+    LED_markersEEG=find(strcmp(events(2,:),'T  2'));
     EEGmarker_start=cell2mat(events(3,LED_markersEEG(1)));
     EEGmarker_end=cell2mat(events(3,LED_markersEEG(end)));
     size_EEG=EEGmarker_end-EEGmarker_start;

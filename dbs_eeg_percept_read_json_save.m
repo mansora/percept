@@ -14,7 +14,7 @@ dbsroot = '\\piazzolla\vlad_shared';
         return
     end
     
-    for f=7:size(files_tot,1)
+    for f=1:size(files_tot,1)
         files=files_tot(f,:);
 
         [Person, people]=dbs_eeg_percept_read_json(fullfile(files{4}, '\'), spm_file(files{4}, 'filename'));

@@ -16,7 +16,7 @@ function [Person people]=dbs_eeg_percept_read_json(filename_video, videoname);
             %% TODO add the hand key points to the data later too
            Person{num_ppl}.pose_keypoints(i,:)=val.people(num_ppl).pose_keypoints_2d;
             if ~isempty(val.people(num_ppl).hand_left_keypoints_2d)
-            Person{num_ppl}.hand_left_keypoints(i,:)=val.people(1).hand_left_keypoints_2d;
+            Person{num_ppl}.hand_left_keypoints(i,:)=val.people(num_ppl).hand_left_keypoints_2d;
             end
             if ~isempty(val.people(num_ppl).hand_right_keypoints_2d)
             Person{num_ppl}.hand_right_keypoints(i,:)=val.people(num_ppl).hand_right_keypoints_2d;

@@ -99,6 +99,9 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
         trl(1,4)=1;
 
         trialinfo{1}='Rest trial';
+        
+
+
 
     elseif ~isempty(strfind(input_logfile, 'PMT'))
 
@@ -126,6 +129,7 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
         
         trialinfo=repelem([{'right hand'}, {'left hand'}, {'right leg'}, {'left leg'}], ...
             [size(trl1,1) size(trl2,1) size(trl3,1) size(trl4,1)])';
+
 
     elseif ~isempty(strfind(input_logfile, 'ACT'))
 

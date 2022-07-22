@@ -82,4 +82,14 @@ hold on, xline(x);
 title('right pinkie')
 
 
+figure, plot(D.time, D(D.indchannel('StimArt_filtered'),:,:)*10)
+hold on, plot(D.time, D(D.indchannel('LFP_Gpi_L_13'),:,:))
+
+figure, plot(D.time, D(D.indchannel('StimArt'),:,:)*10)
+hold on, plot(D.time, D(D.indchannel('LFP_Gpi_L_13'),:,:))
+legend
+
+
+% figure, plot(D1.time, D1(D1.indchannel('StimArt_filtered'),:,:)*10)
+% hold on, plot(D2.time, D2(D2.indchannel('LFP_Gpi_L_13'),:,:))
 

@@ -56,6 +56,19 @@ for f = 1:size(files, 1)
             end
             [~, ind] = sort([ev.time]);
             D = events(D, 1, {ev(ind)});
+        case {'HPT', 'REACH'}
+            nev = size(S_trl.trl, 1);
+            ev = [];            
+            for i = 1:nev
+                ev(i).type  = 'arms';
+                ev(i).value = 'up';
+                ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+                ev(nev+i).type  = 'arms';
+                ev(nev+i).value = 'down';
+                ev(nev+i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
+            end
+            [~, ind] = sort([ev.time]);
+            D = events(D, 1, {ev(ind)});
         otherwise
             D.trl = S_trl;
     end
@@ -99,9 +112,9 @@ for f = 1:size(files, 1)
     if details.removesync
         % Remove the synchronisation sequence
         lfp = zscore(squeeze(D(D.indchantype('LFP'), :, :))');
-        ind   = find(abs(lfp)>3);
-        onset = round(max(ind(ind<0.3*D.nsamples)) + 0.5*D.fsample);
-        offset= round(min(ind(ind>0.7*D.nsamples)) - 0.5*D.fsample);
+        ind   = find(abs(lfp)>6);
+        onset = round(max(ind(ind<0.1*D.nsamples)) + 0.5*D.fsample);
+        offset= round(min(ind(ind>0.9*D.nsamples)) - 0.5*D.fsample);
 
         if ~isempty(onset)
             if isempty(offset)

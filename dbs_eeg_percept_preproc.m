@@ -63,7 +63,7 @@ end
 
 if details.process_videos==1 && ~isempty(files)
     disp('Preparing and synchronizing video file with EEG')
-    video_file=dbs_eeg_percept_videofiles_prepare(files{1}, fullfile(files{4}, '\'), spm_file(files{4}, 'filename'));
+    video_file=dbs_eeg_percept_videofiles_prepare(files{1}, fullfile(files{4}, '\'), spm_file(files{4}, 'filename'), details);
     
     if strcmp(details.vidoffset_tocompute{f}, 'no')
         video_file.LED_offset_start=details.vidoffset(1,f);

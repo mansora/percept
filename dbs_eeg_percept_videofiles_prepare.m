@@ -1,5 +1,4 @@
-function video_file_fieldtrip=dbs_eeg_percept_videofiles_prepare(eegfile, filename_video, videoname);
-automatic_tracking=1;
+function video_file_fieldtrip=dbs_eeg_percept_videofiles_prepare(eegfile, filename_video, videoname, details);
 
 fileList = dir(fullfile(filename_video, [videoname, '*.json']));
 % if ~isempty(strfind(eegfile,'LN_PR_D001'))
@@ -61,6 +60,7 @@ end
 
 goodframe_found=0;
 fr_start=1;
+ind_patient=[];
 while goodframe_found==0
 
     videoFrame=read(videoIn,fr_start);
@@ -68,22 +68,49 @@ while goodframe_found==0
 %         videoFrame=insertText(videoFrame, Person{num_ppl}.pose_keypoints(fr_start,1:2), num2str(num_ppl),...
 %             'FontSize',18,'TextColor','white');
 %     end
-    
-    figure, imshow(videoFrame);
-    title('Draw a rectangle around the patients head, if patient is not visible make rectangle very big')
-    roi = drawrectangle;
-    bbox=round(roi.Position);
+    if details.automatic_tracking==0
+        figure, imshow(videoFrame);
+        title('Draw a rectangle around the patients head, if patient is not visible make rectangle very big')
+        roi = drawrectangle;
+        bbox=round(roi.Position);
 
-    if bbox(4)<size(videoFrame,1)-100
-        for num_ppl=1:people(fr_start)
-            if bbox(1)<Person{num_ppl}.pose_keypoints(fr_start,1) && ...
-                   Person{num_ppl}.pose_keypoints(fr_start,1)<bbox(1)+bbox(3) &&...
-                   bbox(2)<Person{num_ppl}.pose_keypoints(fr_start,2) && ...
-                   Person{num_ppl}.pose_keypoints(fr_start,2)<bbox(2)+bbox(4)
-                ind_patient=num_ppl;
+        if bbox(4)<size(videoFrame,1)-100
+            for num_ppl=1:people(fr_start)
+                if bbox(1)<Person{num_ppl}.pose_keypoints(fr_start,1) && ...
+                       Person{num_ppl}.pose_keypoints(fr_start,1)<bbox(1)+bbox(3) &&...
+                       bbox(2)<Person{num_ppl}.pose_keypoints(fr_start,2) && ...
+                       Person{num_ppl}.pose_keypoints(fr_start,2)<bbox(2)+bbox(4)
+                    ind_patient=num_ppl;
+                end
             end
         end
+
+    else
+        center_screen=fliplr(size(videoFrame,[1, 2])/2);
+        for num_ppl=1:people(fr_start)
+            coordinate_head(num_ppl,:)=[Person{num_ppl}.pose_keypoints(fr_start,1), Person{num_ppl}.pose_keypoints(fr_start,2)];
+            distance_to_center(num_ppl)=norm((coordinate_head(num_ppl,:)- center_screen));
+        end
+        [~, ind_patient]=min(distance_to_center);
+        bbox=[coordinate_head(ind_patient,1)-80, coordinate_head(ind_patient,2)-80, 160, 160];
+        videoFrame_temp=insertShape(videoFrame,'Rectangle',bbox,'LineWidth',5);
+        figure, imshow(videoFrame_temp);
+        title('Automatic Patient tracking, check if patient is identified correctly')
+
+
+%         videoFrame_temp=insertShape(videoFrame,'Circle',[center_screen 5],'LineWidth',5);
+%         videoFrame_temp=insertShape(videoFrame_temp,'Circle',[coordinate_head(3,:) 5],'LineWidth',5);
+%         figure, imshow(videoFrame_temp);
         
+        
+
+
+    end
+
+
+
+    
+    if ~isempty(ind_patient)
         Person_patient.pose_keypoints(fr_start,:)=Person{ind_patient}.pose_keypoints(fr_start,:);
         if isfield(Person{ind_patient},'hand_left_keypoints')
             Person_patient.hand_left_keypoints(fr_start,:)=Person{ind_patient}.hand_left_keypoints(fr_start,:);

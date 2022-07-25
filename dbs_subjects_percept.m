@@ -26,6 +26,7 @@ details.synch_ecg=1;
 details.synch_percept_stamp=1;
 details.process_logfiles=1;
 details.process_videos=1;
+details.automatic_tracking=0;
 
 
 % details.chanset = getfield(load(details.chanset), 'label');
@@ -323,6 +324,7 @@ switch initials
         details.freqrange=[120 130];
         details.synch_ecg = 1;
         details.synch_percept_stamp = 1;
+        details.automatic_tracking=1;
         if rec_id == 2
             details.lfp_ref = 'LFP_Gpi_L_13';
             details.synch_ecg = 1;

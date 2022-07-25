@@ -90,6 +90,40 @@ hold on, plot(D.time, D(D.indchannel('LFP_Gpi_L_13'),:,:))
 legend
 
 
+%%
+evs=D.events;
+x=[];
+for i=1:numel(evs)
+    if strcmp(evs(i).type, 'right leg')
+        if strcmp(evs(i).value, 'up')
+            x=[x, evs(i).time];
+        end
+    end
+end
+figure, plot(D.time, D(D.indchannel('foot_R_y'),:,:))
+hold on, plot(D.time, D(D.indchannel('foot_R_x'),:,:))
+hold on, xline(x);
+title('right foot')
+
+
+%%
+evs=D.events;
+x=[];
+for i=1:numel(evs)
+    if strcmp(evs(i).type, 'left leg')
+        if strcmp(evs(i).value, 'up')
+            x=[x, evs(i).time];
+        end
+    end
+end
+figure, plot(D.time, D(D.indchannel('foot_L_y'),:,:))
+hold on, plot(D.time, D(D.indchannel('foot_L_x'),:,:))
+hold on, xline(x);
+title('left foot')
+
+
+
+
 % figure, plot(D1.time, D1(D1.indchannel('StimArt_filtered'),:,:)*10)
 % hold on, plot(D2.time, D2(D2.indchannel('LFP_Gpi_L_13'),:,:))
 

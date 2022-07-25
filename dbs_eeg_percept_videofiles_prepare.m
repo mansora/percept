@@ -45,10 +45,10 @@ else
         for num_ppl=1:people(i)
             
            Person{num_ppl}.pose_keypoints(i,:)=val.people(num_ppl).pose_keypoints_2d;
-           if isfield(val.people(num_ppl),'hand_left_keypoints_2d')
+           if ~isempty(val.people(num_ppl).hand_left_keypoints_2d)
            Person{num_ppl}.hand_left_keypoints(i,:)=val.people(num_ppl).hand_left_keypoints_2d;
            end
-           if isfield(val.people(num_ppl), 'hand_right_keypoints_2d')
+           if ~isempty(val.people(num_ppl).hand_right_keypoints_2d)
            Person{num_ppl}.hand_right_keypoints(i,:)=val.people(num_ppl).hand_right_keypoints_2d;
            end 
         end    

@@ -39,48 +39,15 @@ for f = 1:size(files, 1)
     
     % =============  Conversion =============================================       
     
-    [D S_trl]= dbs_eeg_percept_preproc(files(f,:), details, f); 
-
-
-    switch condition
-        case {'ACT', 'PMT'}
-            nev = size(S_trl.trl, 1);
-            ev = [];            
-            for i = 1:nev
-                ev(i).type  = S_trl.conditionlabels{i};
-                ev(i).value = 'up';
-                ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
-                ev(nev+i).type  = S_trl.conditionlabels{i};
-                ev(nev+i).value = 'down';
-                ev(nev+i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
-            end
-            [~, ind] = sort([ev.time]);
-            D = events(D, 1, {ev(ind)});
-        case {'HPT', 'REACH'}
-            nev = size(S_trl.trl, 1);
-            ev = [];            
-            for i = 1:nev
-                ev(i).type  = 'arms';
-                ev(i).value = 'up';
-                ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
-                ev(nev+i).type  = 'arms';
-                ev(nev+i).value = 'down';
-                ev(nev+i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
-            end
-            [~, ind] = sort([ev.time]);
-            D = events(D, 1, {ev(ind)});
-        otherwise
-            D.trl = S_trl;
-    end
-    
-    
-    D = chantype(D, D.indchannel(details.chan), 'LFP');
-    
-    if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
-        D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
-    end
-    
-    save(D);
+    D = dbs_eeg_percept_preproc(files(f,:), details, f); 
+ 
+%     D = chantype(D, D.indchannel(details.chan), 'LFP');
+%     
+%     if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
+%         D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
+%     end
+%     
+%     save(D);
 
     
     S = [];

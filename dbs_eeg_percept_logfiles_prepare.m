@@ -197,22 +197,30 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
         trialinfo=repelem([{'arms up'}], [size(trl,1)])';
 
     elseif ~isempty(strfind(input_logfile, 'WRITE'))
-        
-        trl1(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write right'))-3))';
-        x_temp=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause writing'))-3))';
-        trl1(:,2)=x_temp(1:size(trl1(:,1),1));
-        trl1(:,3)=0;
-        trl1(:,4)=1;
-
-        trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write left'))-3))';
-        trl2(:,2)=x_temp(size(trl1(:,1),1)+1:end);
-        trl2(:,3)=0;
-        trl2(:,4)=2;
-
-        trl=[trl1; trl2];
-
-        trialinfo=repelem([{'write right'}, {'write left'}], ...
-            [size(trl1,1) size(trl2,1)])';
+        if ~isempty(strfind(input_logfile, 'LN_PR_D006'))
+            trl1(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write right'))-3))';
+            x_temp=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause writing'))-3))';
+            trl1(:,2)=x_temp(1:size(trl1(:,1),1));
+            trl1(:,3)=0;
+            trl1(:,4)=1;
+    
+            trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write left'))-3))';
+            trl2(:,2)=x_temp(size(trl1(:,1),1)+1:end);
+            trl2(:,3)=0;
+            trl2(:,4)=2;
+    
+            trl=[trl1; trl2];
+    
+            trialinfo=repelem([{'write right'}, {'write left'}], ...
+                [size(trl1,1) size(trl2,1)])';
+        else
+            trl(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write'))-3))';
+            trl(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause writing'))-3))';
+            trl(:,3)=0;
+            trl(:,4)=1;
+    
+            trialinfo=repelem([{'write'}], [size(trl,1)])';
+        end
         
 
     elseif ~isempty(strfind(input_logfile, 'POUR'))

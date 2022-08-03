@@ -66,12 +66,13 @@ function ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D, input_logfile)
         nev = size(S_trl.trl, 1);
         ev = [];            
         for i = 1:nev
-            ev(i).type  = 'write';
-            ev(i).value = 'right';
-            ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
-            ev(nev+i).type  = 'write';
-            ev(nev+i).value = 'left';
-            ev(nev+i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+            temp=strsplit(S_trl.conditionlabels{i});
+            ev(2*i-1).type  = temp{1};
+            ev(2*i-1).value = temp{size(temp,2)};
+            ev(2*i-1).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+            ev(2*i).type  = ['pause ' temp{1}];
+            ev(2*i).value = temp{size(temp,2)};
+            ev(2*i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
         end
         [~, ind] = sort([ev.time]);
         ev=ev(ind);
@@ -81,9 +82,12 @@ function ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D, input_logfile)
 
     elseif ~isempty(strfind(input_logfile, 'POUR'))
         for i = 1:nev
-            ev(i).type  = S_trl.conditionlabels{i};
-            ev(i).value = S_trl.conditionlabels{i};
-            ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;  
+            ev(2*i-1).type  = S_trl.conditionlabels{i};
+            ev(2*i-1).value = 'start';
+            ev(2*i-1).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+            ev(2*i).type  = S_trl.conditionlabels{i};
+            ev(2*i).value = 'stop';
+            ev(2*i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
         end
         [~, ind] = sort([ev.time]);
         ev=ev(ind);
@@ -91,18 +95,24 @@ function ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D, input_logfile)
 
     elseif ~isempty(strfind(input_logfile, 'SPEAK'))
         for i = 1:nev
-            ev(i).type  = S_trl.conditionlabels{i};
-            ev(i).value = S_trl.conditionlabels{i};
-            ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;  
+            ev(2*i-1).type  = S_trl.conditionlabels{i};
+            ev(2*i-1).value = 'start';
+            ev(2*i-1).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+            ev(2*i).type  = S_trl.conditionlabels{i};
+            ev(2*i).value = 'stop';
+            ev(2*i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
         end
         [~, ind] = sort([ev.time]);
         ev=ev(ind);
 
     elseif ~isempty(strfind(input_logfile, 'WALK'))   
         for i = 1:nev
-            ev(i).type  = S_trl.conditionlabels{i};
-            ev(i).value = S_trl.conditionlabels{i};
-            ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;  
+            ev(2*i-1).type  = S_trl.conditionlabels{i};
+            ev(2*i-1).value = 'start';
+            ev(2*i-1).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+            ev(2*i).type  = S_trl.conditionlabels{i};
+            ev(2*i).value = 'stop';
+            ev(2*i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;  
         end
         [~, ind] = sort([ev.time]);
         ev=ev(ind);

@@ -124,13 +124,13 @@ if details.synch_percept_stamp==1
 %     D_epoched = spm_eeg_epochs(S1);
 
     S_trl=[];
-    S_trl.trl=[trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))]; % TODO check why you wrote this bit
+    S_trl.trl=[trl(:,1), trl(:,2)];
     S_trl.conditionlabels=trialinfo;
     ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D, files{3});
     D = events(D, 1, {ev});
 else
     S_trl=[];
-    S_trl.trl=[trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))]; % TODO check why you wrote this bit
+    S_trl.trl=[trl(:,1), trl(:,2)];
     S_trl.conditionlabels=trialinfo;
     ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D1, files{3});
     D1 = events(D1, 1, {ev});

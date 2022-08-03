@@ -29,18 +29,24 @@ function ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D, input_logfile)
     elseif ~isempty(strfind(input_logfile, 'SST'))
         for i = 1:nev
             temp=strsplit(S_trl.conditionlabels{i});
-            ev(i).type  = temp{1};
-            ev(i).value = temp{2};
-            ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;  
+            ev(2*i-1).type  = temp{1};
+            ev(2*i-1).value = temp{size(temp,2)};
+            ev(2*i-1).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+            ev(2*i).type  = ['pause ' temp{1}];
+            ev(2*i).value = temp{size(temp,2)};
+            ev(2*i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
         end
         [~, ind] = sort([ev.time]);
         ev=ev(ind);
  
     elseif ~isempty(strfind(input_logfile, 'SGT'))
         for i = 1:nev
-            ev(i).type  = S_trl.conditionlabels{i};
-            ev(i).value = S_trl.conditionlabels{i};
-            ev(i).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;  
+            ev(2*i-1).type  = S_trl.conditionlabels{i};
+            ev(2*i-1).value = 'start';
+            ev(2*i-1).time  = D.timeonset+S_trl.trl(i, 1)/D.fsample;
+            ev(2*i).type  = S_trl.conditionlabels{i};
+            ev(2*i).value = 'stop';
+            ev(2*i).time  = D.timeonset+S_trl.trl(i, 2)/D.fsample;
         end
         [~, ind] = sort([ev.time]);
         ev=ev(ind);

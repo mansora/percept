@@ -149,7 +149,7 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
         if offset_stamp_start < 0
             logfile(:,1:2)=logfile(:,1:2)-eeg_file.time{1,1}(1)*eeg_file.fsample;
         elseif offset_stamp_start > 0
-            logfile(:,1:2)=logfile(:,1:2)-trl_offset(logfile(:,1:2))+oth_channel.time{1,1}(1)*oth_channel.fsample;
+            logfile(:,1:2)=logfile(:,1:2)-trl_offset(ceil(logfile(:,1:2)))+oth_channel.time{1,1}(1)*oth_channel.fsample;
 %             logfile(:,1:2)=logfile(:,1:2)+eeg_file.time{1,1}(1)*eeg_file.fsample;
         end
 

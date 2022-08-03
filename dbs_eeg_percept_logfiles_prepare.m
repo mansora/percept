@@ -169,7 +169,7 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
         trl1(:,4)=1;
 
         trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task left on'))-3))';
-        trl2(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task right off'))-3))';
+        trl2(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task left off'))-3))';
         trl2(:,3)=0;
         trl2(:,4)=2;
 

@@ -14,6 +14,7 @@ function keypoint_series_interp=interpolate_frames(keypoint_series, framerate)
         nullpoints=find(keypoint_series(:,k)==0);
         while size(nullpoints,1)>0
             stop_interp=find(keypoint_series(nullpoints(1):end,k)~=0);
+            if ~isempty(stop_interp)
             for points=0:stop_interp(1)-2
                 if nullpoints(1)~=1
                     keypoint_series(nullpoints(1)+points,k)=...
@@ -26,6 +27,9 @@ function keypoint_series_interp=interpolate_frames(keypoint_series, framerate)
                 end
             end
             nullpoints=find(keypoint_series(:,k)==0);
+            else
+                break;
+            end
         end
     
 %         subplot(4,1,2), plot(timeLine, keypoint_series(:,k));

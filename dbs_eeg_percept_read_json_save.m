@@ -17,10 +17,18 @@ dbsroot = '\\piazzolla\vlad_shared';
     for f=1:size(files_tot,1)
         files=files_tot(f,:);
 
-        [Person, people]=dbs_eeg_percept_read_json(fullfile(files{4}, '\'), spm_file(files{4}, 'filename'));
+        try
+            [Person, people]=dbs_eeg_percept_read_json(fullfile(files{4}{1}, '\'), spm_file(files{4}{1}, 'filename'));
+            save(['Z:\', initials, '\processed_MotionCapture\json_signals\json_signals_', spm_file(files{4}{1}, 'filename'), '.mat'], 'people', 'Person')
+        catch
+            [Person, people]=dbs_eeg_percept_read_json(fullfile(files{4}, '\'), spm_file(files{4}, 'filename'));
+            save(['Z:\', initials, '\processed_MotionCapture\json_signals\json_signals_', spm_file(files{4}, 'filename'), '.mat'], 'people', 'Person')
+        end
 
-        save(['Z:\LN_PR_D006\processed_MotionCapture\json_signals\json_signals_', spm_file(files{4}, 'filename'), '.mat'], 'people', 'Person')
+        
 
     end
 
 end
+
+

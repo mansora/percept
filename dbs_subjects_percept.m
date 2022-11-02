@@ -327,7 +327,7 @@ switch initials
         details.automatic_tracking=1;
         if rec_id == 2
             details.lfp_ref = 'LFP_Gpi_L_13';
-            details.synch_ecg = 1;
+            details.synch_ecg = 0;
             details.removesync = 0;
             files={...
                 '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0001.vhdr',...
@@ -392,6 +392,231 @@ switch initials
         end
 
         details.eeg_ref=repmat({'StimArt'},1,numel(files));
+
+    case 'LN_PR_D007'
+        details.process_logfiles = 1;
+        details.process_videos = 1;
+        details.bandstop = 130;
+        details.lfpthresh = 3.5;        
+        details.freqrange=[120 140];
+        details.synch_ecg = 1;
+        details.synch_percept_stamp = 1;
+        details.automatic_tracking=0;
+        if rec_id == 2
+            details.lfp_ref = 'LFP_Gpi_L_03';
+            details.synch_ecg = 1;
+            details.removesync = 0;
+            files={...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0001.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0002.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0003.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0004.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0005.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0006.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0007.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0008.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0018.vhdr'
+                };
+            sequence =  {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'POUR', 'R', 'WALK'};
+            root='\LN_PR_D007\rec2\';
+
+            %details.lfpthresh = 30;
+            details.chan =  {'LFP_Gpi_L_03', 'LFP_Gpi_R_03'};
+        elseif rec_id == 1
+            files={...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0009.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0010.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0011.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0012.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0013.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0014.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0015.vhdr',...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0017.vhdr'
+                };
+            sequence =  {'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'POUR', 'R', 'WALK'};
+            root='\LN_PR_D007\rec1\';
+
+            %details.lfpthresh = 30;
+            details.chan =  {'LFP_Gpi_L_03', 'LFP_Gpi_R_03'};
+
+        elseif rec_id == 5
+            files={...
+                '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0016.vhdr',...
+                };
+            sequence = {'R'};
+            details.lfp_ref = 'LFP_Gpi_L_03';
+            details.eeg_ref = 'StimArt';
+            details.lfpthresh = 5;
+            root='\LN_PR_D007\streaming\';
+            details.process_logfiles = 0;
+            details.chan = {
+                'LFP_Gpi_L_03'
+                'LFP_Gpi_L_13'
+                'LFP_Gpi_L_02'%
+                'LFP_Gpi_R_03'
+                'LFP_Gpi_R_13'
+                'LFP_Gpi_R_02'
+                'LFP_Gpi_L_01'%
+                'LFP_Gpi_L_12'%
+                'LFP_Gpi_L_23'
+                'LFP_Gpi_R_01'
+                'LFP_Gpi_R_12'%
+                'LFP_Gpi_R_23'
+                };
+            details.synch_ecg = 1;
+            details.synch_percept_stamp = 0;
+        end
+    case 'LN_PR_D008'
+        details.process_logfiles = 1;
+        details.process_videos = 1;
+        details.bandstop = 130;
+        details.lfpthresh = 3.5;        
+        details.freqrange=[120 140];
+        details.synch_ecg = 1;
+        details.synch_percept_stamp = 1;
+        details.automatic_tracking=0;
+        if rec_id == 2
+            details.lfp_ref = 'LFP_Gpi_L_03';
+            details.synch_ecg = 1;
+            details.removesync = 0;
+            files={...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0001.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0002.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0003.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0004.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0005.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0006.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0007.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0008.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0019.vhdr'
+                };
+            sequence =  {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'WRITE', 'POUR', 'WALK'};
+            root='\LN_PR_D008\rec2\';
+
+            %details.lfpthresh = 30;
+            details.chan =  {'LFP_Gpi_L_03', 'LFP_Gpi_R_02'};
+
+        elseif rec_id == 1
+            files={...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0009.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0010.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0011.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0012.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0013.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0014.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0015.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0016.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0017.vhdr',...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0020.vhdr'
+                };
+            sequence =  {'R', 'PMT', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'WRITE', 'POUR', 'WALK'};
+            root='\LN_PR_D008\rec1\';
+
+            %details.lfpthresh = 30;
+            details.chan =  {'LFP_Gpi_L_03', 'LFP_Gpi_R_02'};
+            elseif rec_id == 5
+            files={...
+                '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0018.vhdr',...
+                };
+            sequence = {'R'};
+            details.lfp_ref = 'LFP_Gpi_L_03';
+            details.eeg_ref = 'StimArt';
+            details.lfpthresh = 5;
+            root='\LN_PR_D008\streaming\';
+            details.process_logfiles = 0;
+            details.chan = {
+                'LFP_Gpi_L_03'
+                'LFP_Gpi_L_13'
+                'LFP_Gpi_L_02'%
+                'LFP_Gpi_R_03'
+                'LFP_Gpi_R_13'
+                'LFP_Gpi_R_02'
+                'LFP_Gpi_L_01'%
+                'LFP_Gpi_L_12'%
+                'LFP_Gpi_L_23'
+                'LFP_Gpi_R_01'
+                'LFP_Gpi_R_12'%
+                'LFP_Gpi_R_23'
+                };
+            details.synch_ecg = 1;
+            details.synch_percept_stamp = 0;
+        end
+
+    case 'LN_PR_D009'
+        details.process_logfiles = 1;
+        details.process_videos = 1;
+        details.bandstop = 130;
+        details.lfpthresh = 3.5;        
+        details.freqrange=[120 140];
+        details.synch_ecg = 1;
+        details.synch_percept_stamp = 1;
+        details.automatic_tracking=0;
+        if rec_id == 2
+            details.lfp_ref = 'LFP_Gpi_L_03';
+            details.synch_ecg = 1;
+            details.removesync = 0;
+            files={...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0011.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0012.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0013.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0014.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0015.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0016.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0017.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0018.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0019.vhdr'
+                 };
+            sequence =  {'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'WRITE', 'POUR', 'R', 'WALK'};
+            root='\LN_PR_D009\rec2\';
+        elseif rec_id == 1
+            details.lfp_ref = 'LFP_Gpi_L_03';
+            details.synch_ecg = 1;
+            details.removesync = 0;
+            files={...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0001.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0002.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0003.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0004.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0005.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0006.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0007.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0008.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0010.vhdr',...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0020.vhdr'
+                 };
+            sequence =  {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'WRITE', 'POUR', 'R', 'WALK'};
+            root='\LN_PR_D009\rec1\';
+            elseif rec_id == 5
+            files={...
+                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0009.vhdr',...
+                };
+            sequence = {'R'};
+            details.lfp_ref = 'LFP_Gpi_L_03';
+            details.eeg_ref = 'StimArt';
+            details.lfpthresh = 5;
+            root='\LN_PR_D009\streaming\';
+            details.process_logfiles = 0;
+            details.chan = {
+                'LFP_Gpi_L_03'
+                'LFP_Gpi_L_13'
+                'LFP_Gpi_L_02'%
+                'LFP_Gpi_R_03'
+                'LFP_Gpi_R_13'
+                'LFP_Gpi_R_02'
+                'LFP_Gpi_L_01'%
+                'LFP_Gpi_L_12'%
+                'LFP_Gpi_L_23'
+                'LFP_Gpi_R_01'
+                'LFP_Gpi_R_12'%
+                'LFP_Gpi_R_23'
+                };
+            details.synch_ecg = 1;
+            details.synch_percept_stamp = 0;
+
+        end
+
+               
+
 end
 
 

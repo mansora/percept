@@ -17,9 +17,14 @@ function dbs_eeg_percept_determine_video_offset_LED_save(initials, rec_id)
     
     for f=1:size(files_tot,1)
         files=files_tot(f,:);
-
+        
+        try
         [LED_offset_start, LED_offset_end, LED_signal]=...
-            dbs_eeg_percept_determine_video_offset_LED([files{5},'.mp4'], files{3}, files{1});    
+            dbs_eeg_percept_determine_video_offset_LED([files{5},'.mp4'], files{3}, files{1});   
+        catch
+        [LED_offset_start, LED_offset_end, LED_signal]=...
+            dbs_eeg_percept_determine_video_offset_LED([files{5}{1},'.mp4'], files{3}{1}, files{1});   
+        end
         
         file_table = readcell(fullfile(dbsroot, initials, [initials '.xlsx']));
         file_table(cellfun(@(x) any(ismissing(x)), file_table)) = {''};

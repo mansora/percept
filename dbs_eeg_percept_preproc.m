@@ -158,7 +158,7 @@ if details.synch_ecg==1
         load(files{2})
         D2 = spm_eeg_ft2spm(data, [details.initials '_lfp.mat']); 
         S_trl=[];
-        S_trl.trl=[trl(:,1), trl(:,1)+mean(trl(:,2)-trl(:,1))]; % TODO check why you wrote this bit
+        S_trl.trl=[trl(:,1), trl(:,2)]; % TODO check why you wrote this bit
         S_trl.conditionlabels=trialinfo;
         ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D2, files{3});
         D2 = events(D2, 1, {ev});

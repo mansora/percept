@@ -56,7 +56,6 @@ if D2.fsample<D1.fsample
 end
 
 
-
 % S1 = [];
 % S1.D = D1;
 % S1.timewin = 1e3*[20 382];

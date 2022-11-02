@@ -36,20 +36,20 @@ for f = 1:size(files, 1)
     if ~isequal(condition, seq{f})
         continue;
     end
-    
-    % =============  Conversion =============================================       
-    
-    D = dbs_eeg_percept_preproc(files(f,:), details, f); 
- 
-%     D = chantype(D, D.indchannel(details.chan), 'LFP');
-%     
-%     if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
-%         D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
-%     end
-%     
-%     save(D);
 
-    
+    % =============  Conversion =============================================
+
+    D = dbs_eeg_percept_preproc(files(f,:), details, f);
+
+    D = chantype(D, D.indchannel(details.chan), 'LFP');
+
+    if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
+        D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
+    end
+
+    save(D);
+
+
     S = [];
     S.D = D;
     S.type = 'butterworth';
@@ -58,8 +58,8 @@ for f = 1:size(files, 1)
     S.dir = 'twopass';
     S.order = 5;
     D = spm_eeg_filter(S);
-    
-    
+
+
     if ~keep, delete(S.D);  end
 
 
@@ -71,10 +71,10 @@ for f = 1:size(files, 1)
     S.dir = 'twopass';
     S.order = 5;
     D = spm_eeg_filter(S);
-    
-    
+
+
     if ~keep, delete(S.D);  end
-    
+
 
     if details.removesync
         % Remove the synchronisation sequence
@@ -96,20 +96,60 @@ for f = 1:size(files, 1)
             if ~keep, delete(S.D);  end
         end
     end
-    
+
+    eegchan  = D.indchantype('EEG');
+    goodind  = D.indchantype('EEG', 'GOOD');
+
+    goodind = find(ismember(eegchan, goodind));
+
+    tra               =  eye(length(eegchan));
+    tra(: ,goodind)   =  tra(:, goodind) - 1/length(goodind);
+    tra(end+[1:2], 1)     =  1;
+
+    montage          = [];
+    montage.labelorg = D.chanlabels(eegchan);
+    montage.labelnew = [D.chanlabels(eegchan), {'ECG', 'event'}];
+    montage.chantypenew = [repmat({'EEG'}, 1, length(D.indchantype('EEG'))), {'ECG', 'Other'}];
+
+    montage.tra      = tra;
+
+    S = [];
+    S.D = D;
+    S.montage = montage;
+    S.keepothers = 1;
+    D = spm_eeg_montage(S);
+
+    if ~keep, delete(S.D);  end
+
+
+    event     = D.events(1, 'samples');
+    eventdata = zeros(1, D.nsamples);
+
+    if ~isempty(event) && isfield(details, 'eventtype')
+        trigind  = find(strcmp(details.eventtype, {event.type}));
+        eventdata([event(trigind).sample]) = 1;
+    end
+
+    D(D.indchannel('event'), :) = eventdata;
+
+    D(D.indchannel('ECG'), :)  = D(D.indchannel('StimArt'), :);
+
+    D = chantype(D, D.indchannel('event'), 'Other');
+    save(D);
+
     S = [];
     S.D = D;
     S.mode = 'mark';
     S.badchanthresh = details.badchanthresh;
-    
+
     S.methods(1).channels = {'EEG'};
-    S.methods(1).fun = 'flat';    
+    S.methods(1).fun = 'flat';
     S.methods(1).settings.threshold = 0.01;
     S.methods(1).settings.seqlength = 10;
     S.methods(2).channels = {'EEG'};
     S.methods(2).fun = 'jump';
     S.methods(2).settings.threshold = 350;
-    S.methods(2).settings.excwin = 200;   
+    S.methods(2).settings.excwin = 200;
     S.methods(3).channels = {'EEG'};
     S.methods(3).fun = 'threshchan';
     S.methods(3).settings.threshold = 200;
@@ -117,70 +157,34 @@ for f = 1:size(files, 1)
     S.methods(4).fun = 'heartbeat';
     S.methods(4).channels = {'ECG'};
     S.methods(4).settings.excwin = 1;
-    
+
     D = spm_eeg_artefact(S);
-    
+
     %***** Breakpoint 1
     figure;imagesc(badsamples(D, D.indchantype('EEG'), ':', 1))
     % figure;plot(diff(D(D.indchannel('AG083'), :, 1)))
-    
+
     if ~keep
         delete(S.D);
-    end    
-    
-       
-    eegchan  = D.indchantype('EEG');
-    goodind  = D.indchantype('EEG', 'GOOD');
-    
-    goodind = find(ismember(eegchan, goodind));
-    
-    tra               =  eye(length(eegchan));
-    tra(: ,goodind)   =  tra(:, goodind) - 1/length(goodind);  
-    tra(end+[1:2], 1)     =  1;
-    
-    montage          = [];
-    montage.labelorg = D.chanlabels(eegchan);
-    montage.labelnew = [D.chanlabels(eegchan), {'ECG', 'event'}];
-    montage.chantypenew = [repmat({'EEG'}, 1, length(D.indchantype('EEG'))), {'ECG', 'Other'}];         
-    
-    montage.tra      = tra;
-    
-    S = [];
-    S.D = D;
-    S.montage = montage;
-    S.keepothers = 1;
-    D = spm_eeg_montage(S);
-    
-    if ~keep, delete(S.D);  end
-    
-    
-    event     = D.events(1, 'samples');
-    eventdata = zeros(1, D.nsamples);
-    
-    if ~isempty(event) && isfield(details, 'eventtype')
-        trigind  = find(strcmp(details.eventtype, {event.type}));
-        eventdata([event(trigind).sample]) = 1;
     end
-    
-    D(D.indchannel('event'), :) = eventdata;
-    
-    D = chantype(D, D.indchannel('event'), 'Other');
-    save(D);
+
+
+
     %%
     % Downsample =======================================================
     % note that the trialdef file is not downsampled, you should include
     % this
     if D.fsample > 250
-        
+
         S = [];
         S.D = D;
         S.fsample_new = 250;
-        
+
         D = spm_eeg_downsample(S);
-        
+
         if ~keep, delete(S.D);  end
-    end      
-    
+    end
+
     S = [];
     S.D = D;
     S.type = 'butterworth';
@@ -188,15 +192,15 @@ for f = 1:size(files, 1)
     S.freq = [48 52];
     S.dir = 'twopass';
     S.order = 5;
-    
+
     while S.freq(2)<min(600, (D.fsample/2))
         D = spm_eeg_filter(S);
         if ~keep, delete(S.D);  end
-        
+
         S.D = D;
         S.freq = S.freq+50;
     end
-        
+
     if isfield(details, 'bandstop') && ~isempty(details.bandstop)
         for i = 1:length(details.bandstop)
             S.D = D;
@@ -206,33 +210,62 @@ for f = 1:size(files, 1)
         end
     end
 
+
+    ecgmethod = 'svd';
+
     lfpchan = D.indchantype('LFP');
     ecg = zeros(length(lfpchan), D.nsamples);
     for i = 1:length(lfpchan)
-         lfp       = D(lfpchan(i), :,1);
-         badsmpl = abs(zscore(lfp))>8;
-         badsmpl = ~~conv(badsmpl, ones(1, round(D.fsample)), 'same');
-         lfp_good  = lfp;
-         lfp_good(badsmpl) = 0;
-         ecg_out   = perceive_ecg(lfp_good, D.fsample,1);
-         if ecg_out.detected
-             cleanlfp  = ecg_out.cleandata;
-             ecg(i, :) = lfp-cleanlfp;
-             D(lfpchan(i), :) = cleanlfp;
-         end
-    end
+        lfp       = D(lfpchan(i), :,1);
+        switch ecgmethod
+            case 'perceive'
+                badsmpl = abs(zscore(lfp))>8;
+                badsmpl = ~~conv(badsmpl, ones(1, round(D.fsample)), 'same');
+                lfp_good  = lfp;
+                lfp_good(badsmpl) = 0;
+                ecg_out   = perceive_ecg(lfp_good, D.fsample,1);
+                if ecg_out.detected
+                    cleanlfp  = ecg_out.cleandata;
+                    ecg(i, :) = lfp-cleanlfp;
+                    D(lfpchan(i), :) = cleanlfp;
+                end
+            case 'svd'
+                ev    = D.events(':');
+                evv   = ev(strmatch('artefact_heartbeat', {ev.type}));
+                ecg_times  = [evv(:).time];
+               
+                % for PQRST
+                pre_R_time = 0.25;
+                post_R_time = 0.4;
+                settings                        = [];
+                settings.interactive            = 0;
+                settings.art_width_search       = .1;
+                settings.art_time_b4_peak       = pre_R_time;
+                settings.art_time_after_peak    = post_R_time;
+                settings.Fs                     = D.fsample;
+                settings.polarity               = 1;
+                settings.ncomp                  = 2;
+                settings.showfigs               = 1;
+                settings.savefigs               = 1;
 
+                % for left hemisphere:
+                settings.label              = char(D.chanlabels(lfpchan(i)));
+                [cleanlfp,proj_out] = continuous_ecgremoval_new(lfp,settings, D(D.indchannel('ECG'), :), D.indsample(ecg_times));
+                ecg(i, :) = lfp-cleanlfp';
+                D(lfpchan(i), :) = cleanlfp';
+        end
+    end
     if size(ecg, 1)>1
-            [u,s,u] = svd(ecg*ecg');
-            s       = diag(s);
-            u       = u(:,1);
-            ecg       = ecg'*u/sqrt(s(1));
+        [u,s,u] = svd(ecg*ecg');
+        s       = diag(s);
+        u       = u(:,1);
+        ecg       = ecg'*u/sqrt(s(1));
     end
 
-    D(D.indchannel('ECG'), :) = ecg(:)';
+    %D(D.indchannel('ECG'), :) = ecg(:)';
 
     ecgind = [];
-    if ~isempty(ecgind)  
+    if ~isempty(ecgind)
         S   = [];
         S.D = D;
         S.timewin = [-100 200];
@@ -243,10 +276,10 @@ for f = 1:size(files, 1)
         S.reviewtrials = 0;
         S.save = 0;
         trl = spm_eeg_definetrial(S);
-        
+
         ind = repmat(trl(:, 1), 1, mean(trl(:, 2)-trl(:, 1)));
         ind = ind+repmat(1:size(ind, 2), size(ind, 1), 1)-1;
-        
+
         F = spm_figure('GetWin', 'LFP_correction');clf;
         for i = 1:length(details.chan)
             lfpdat = D(D.indchannel(details.chan(i)), :);
@@ -254,23 +287,23 @@ for f = 1:size(files, 1)
             rejind = find(any(abs(lfpseg')>details.lfpthresh));
             lfpseg(rejind, :) = [];
             ind(rejind, :)    = [];
-            
+
             subplot(numel(details.chan), 1, i);
             plot(mean(lfpseg));
             hold on;
-            
+
             if max(abs(mean(lfpseg)))>6 %might need adaptive threshold
                 [U, L, V] = spm_svd(lfpseg');
                 U  = full(U(:, 1:2));
                 clfpseg = ((eye(size(U, 1)) - U*pinv(U))*lfpseg')';
-                
+
                 clfpdat = lfpdat;
                 clfpdat(ind) = clfpseg;
                 D(D.indchannel(details.chan(i)), :) = clfpdat;
                 plot(mean(clfpseg), 'r');
-            end           
-        end                    
-        
+            end
+        end
+
         S = [];
         S.D = D;
         S.timewin = [-500 500];
@@ -284,77 +317,367 @@ for f = 1:size(files, 1)
         Da = spm_eeg_epochs(S);
     end
 
-    epoch = false;
+
+    S = [];
+    S.D = D;
+    D = dbs_percept_mov_preproc(S);
+    if ~keep, delete(S.D);  end
+
+    epoch = true;
     switch condition
         case 'R'
-            epoch = true;
-            % Epoching =========================================
-            S = [];
-            S.D = D;
-            S.trialength = 1000;
-            S.conditionlabels = seq{f}(isstrprop(seq{f}, 'alpha'));
-            S.bc = 0;
-            D = spm_eeg_epochs(S);
+            trialength = 1000;
+            trl = 1:round(1e-3*trialength*D.fsample):D.nsamples;
+            trl = [trl(1:(end-1))' trl(2:end)'-1 0*trl(2:end)'];
+         
+            conditionlabels = seq{f}(isstrprop(seq{f}, 'alpha'));           
+%             conditionlabels = repmat({seq{f}(isstrprop(seq{f}, 'alpha'))},1,size(trl,1));    
+%         case 'PMT' | 'ACT'
+% 
+%             limbs={'right hand', 'left hand', 'right leg', 'left leg'};
+%                 
+%             trl = [];
+%             conditionlabels = {};
+%             ev = [];
+% 
+%             for limb=1:4
+%                 ev1 = D.events(':');
+%                 evv = ev1(contains({ev1.type}, limbs{limb}));
+% 
+%                 start = D.indsample(min([evv.time]));
+%                 stop = D.indsample(max([evv.time]));
+% 
+%                 temp=strsplit(limbs{limb});
+%                 if strcmp(temp(2),'leg')
+%                     temp{2}='foot';
+%                 end
+%                 cmov  = D(D.indchannel([ temp{2} '_' upper(temp{1}(1))]), :);
+% 
+%                 [~, onsets]= findpeaks(zscore(diff(cmov)), "MinPeakHeight",2.5, "MinPeakProminence", 1);
+%                 [~, offsets]= findpeaks(-zscore(diff(cmov)), "MinPeakHeight", 2, "MinPeakProminence", 1);
+% 
+%                 onsets = onsets(onsets>(start-5) & onsets<(stop+5));
+%                 offsets = offsets(offsets>(start-5) & offsets<(stop+5));
+% 
+%                 if length(onsets)~=length(offsets)
+%                     error('mismatch');
+%                 end
+% 
+%                 epochlength = round(D.fsample);
+% 
+%                 
+%                 for i = 1:length(onsets)
+%                     ctrl = round(onsets(i)+epochlength/2):epochlength:round(offsets(i)-epochlength/2);
+%                     trl = [trl; ctrl(:) ctrl(:)+epochlength 0*ctrl(:)];
+%                     conditionlabels = [conditionlabels; repmat({['hold_' hands{k}]}, length(ctrl), 1)];
+% 
+%                     if i<length(onsets)
+%                         ctrl = round(offsets(i)+epochlength/2):epochlength:round(offsets(i+1)-epochlength/2);
+%                     else
+%                         ctrl = round(offsets(i)+epochlength/2)+(0:(n-1))*epochlength;
+%                     end
+%                     n    = length(ctrl);
+%                     trl = [trl; ctrl(:) ctrl(:)+epochlength 0*ctrl(:)];
+%                     conditionlabels = [conditionlabels; repmat({'rest'}, n, 1)];
+% 
+%                     ev = spm_cat_struct(ev, struct('type', 'up', 'value', 1, 'time', D.time(onsets(i))));
+%                     ev = spm_cat_struct(ev, struct('type', 'down', 'value', 1, 'time', D.time(offsets(i))));
+%                 end
+% 
+% 
+%             end
+            
+            
+            
 
-            if ~keep, delete(S.D);  end
+
+            
+
+        case 'HPT'
+            hands = {'right'};%'left'
+
+            ev = D.events(':');
+            evv = ev(strmatch('arms', {ev.type}));
+
+            start = D.indsample(min([evv.time]));
+            stop = D.indsample(max([evv.time]));
+
+
+            for k = 1:numel(hands)
+                cmov  = D(D.indchannel(['hand_' upper(hands{k}(1))]), :);
+
+                [~, onsets]= findpeaks(zscore(diff(cmov)), "MinPeakHeight",2.5, "MinPeakProminence", 1);
+                [~, offsets]= findpeaks(-zscore(diff(cmov)), "MinPeakHeight", 2, "MinPeakProminence", 1);
+
+                onsets = onsets(onsets>(start-5) & onsets<(stop+5));
+                offsets = offsets(offsets>(start-5) & offsets<(stop+80));
+
+                if length(onsets)~=length(offsets)
+                    error('mismatch');
+                end
+
+                epochlength = round(D.fsample);
+
+                trl = [];
+                conditionlabels = {};
+                ev = [];
+
+                for i = 1:length(onsets)
+                    ctrl = round(onsets(i)+epochlength/2):epochlength:round(offsets(i)-epochlength/2);
+                    trl = [trl; ctrl(:) ctrl(:)+epochlength 0*ctrl(:)];
+                    conditionlabels = [conditionlabels; repmat({['hold_' hands{k}]}, length(ctrl), 1)];
+
+                    if i<length(onsets)
+                        ctrl = round(offsets(i)+epochlength/2):epochlength:round(offsets(i+1)-epochlength/2);
+                    else
+                        ctrl = round(offsets(i)+epochlength/2)+(0:(n-1))*epochlength;
+                    end
+                    n    = length(ctrl);
+                    trl = [trl; ctrl(:) ctrl(:)+epochlength 0*ctrl(:)];
+                    conditionlabels = [conditionlabels; repmat({'rest'}, n, 1)];
+
+                    ev = spm_cat_struct(ev, struct('type', 'up', 'value', 1, 'time', D.time(onsets(i))));
+                    ev = spm_cat_struct(ev, struct('type', 'down', 'value', 1, 'time', D.time(offsets(i))));
+                end
+            end
+        case 'REACH'
+            ev    = D.events(':');
+            evv   = ev(strmatch('arms', {ev.type}));
+            start = D.indsample(min([evv.time]'));
+            stop  = D.indsample(max([evv.time]')+5);
+
+            hands = {'right', 'left'};
+
+            trl = [];
+            conditionlabels = {};
+            ev = [];
+
+            for k = 1:numel(hands)
+                handY    = detrend(D(D.indchannel(['hand_' upper(hands{k}(1)) '1_y']), start:stop), 'constant');
+                lift     = round(medfilt1(double(handY < 0), 10));
+                up       = find(diff(lift)>0)+start;
+                down     = find(diff(lift)<0)+start;
+
+
+                if length(up)~=length(down)
+                    error('up/down numbers mismatch');
+                end
+
+                for i = 1:length(up)
+                    ctrl = up(i):D.fsample:down(i);
+                    if length(ctrl)>3
+                        ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+                        conditionlabels = [conditionlabels, repmat({['reach ' hands{k}]}, 1, size(ctrl, 1))];
+                        trl  = [trl; ctrl];
+                        figure;
+                        handX    = detrend(D(D.indchannel(['hand_' upper(hands{k}(1)) '1_x']), up(i):down(i)), 'constant');
+                        plot(handX, 'k');
+                        hold on
+                        handX    = conv(handX, ones(1, 200)./200, 'same');
+                        plot(handX, 'r');
+                        [~, reachpeaks]= findpeaks(handX, "MinPeakHeight",30, "MinPeakProminence", 20);
+                        xline(reachpeaks);
+                        for j=1:length(reachpeaks)
+                            ev = spm_cat_struct(ev, struct('type', 'reachpeak', 'value', hands{k}, 'time', D.time(up(i)+reachpeaks(j)-1)));
+                        end
+                    end
+                    if i<length(up)
+                        ctrl = down(i):D.fsample:up(i+1);
+                        if length(ctrl)>3
+                            ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+                            conditionlabels = [conditionlabels, repmat({'rest'}, 1, size(ctrl, 1))];
+                            trl  = [trl; ctrl];
+                        end
+                    end                    
+                end
+            end
+
+        case 'POUR'
+            ev  = D.events(':');
+            evv = ev(strmatch('pour', {ev.type}));
+            pourstart = [evv(strmatch('start', {evv.value})).time]+5;
+            pourstop  = [evv(strmatch('stop', {evv.value})).time];
+            reststart = [5 pourstop+5];
+            reststop  = [pourstart-10 D.time(end)-5];
+
+            trl = [];
+            conditionlabels = {};
+
+            if length(pourstart)~=length(pourstop)
+                error('start/stop numbers mismatch');
+            end
+            for i = 1:length(pourstart)
+                ctrl = D.indsample(pourstart(i)):D.fsample:D.indsample(pourstop(i));
+                if length(ctrl)>3
+                    ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+                    conditionlabels = [conditionlabels, repmat({'pour'}, 1, size(ctrl, 1))];
+                    trl  = [trl; ctrl];
+                end
+            end
+            if length(reststart)~=length(reststop)
+                error('start/stop numbers mismatch');
+            end
+            for i = 1:length(reststart)
+                ctrl = D.indsample(reststart(i)):D.fsample:D.indsample(reststop(i));
+                if length(ctrl)>3
+                    ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+                    conditionlabels = [conditionlabels, repmat({'rest'}, 1, size(ctrl, 1))];
+                    trl  = [trl; ctrl];
+                end
+            end
+        case 'WRITE'
+            ev  = D.events(':');
+            evv = spm_cat_struct(ev(strmatch('write', {ev.type})),...
+                ev(strmatch('pause write', {ev.type})));
+
+            [~, ind] = unique([evv.time]);
+
+            evv = evv(ind);
+
+            trl = [];
+            conditionlabels = {};
+            state = 'rest';
+            for i = 1:numel(evv)
+                if isequal(state, 'rest')
+                    if ~isequal(evv(i).type, 'write')
+                        error('wrong event sequence')
+                    end
+                    if i == 1
+                        ctrl = D.indsample(5):D.fsample:D.indsample(evv(i).time);
+                    else
+                        ctrl = D.indsample(evv(i-1).time+5):D.fsample:D.indsample(evv(i).time);
+                    end
+                    ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+                    conditionlabels = [conditionlabels, repmat({'rest'}, 1, size(ctrl, 1))];
+                    trl  = [trl; ctrl];
+                    state = evv(i).value;
+                else
+                    if ~(isequal(evv(i).type, 'pause write') && isequal(evv(i).value, state))
+                        error('wrong event sequence')
+                    end
+                    ctrl = D.indsample(evv(i-1).time+5):D.fsample:D.indsample(evv(i).time);
+                    ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+                    conditionlabels = [conditionlabels, repmat({state}, 1, size(ctrl, 1))];
+                    trl  = [trl; ctrl];
+                    state = 'rest';
+                end
+            end
+            ctrl = D.indsample(evv(end).time+5):D.fsample:D.indsample(D.time(end)-5);
+            ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+            conditionlabels = [conditionlabels, repmat({'rest'}, 1, size(ctrl, 1))];
+            trl  = [trl; ctrl];
+        case 'WALK'
+            headY = detrend(D(D.indchannel('head_y'), :), 'constant');
+            sit      = headY > 50;
+            standing = find(diff(sit)<0);
+            standing = standing(standing>0.05*length(sit) & standing<0.95*length(sit));
+            standing = unique([standing length(sit)]);
+            sitting  = find(diff(sit)>0);
+            sitting  = sitting(sitting>0.05*length(sit) & sitting<0.95*length(sit));
+            sitting = unique([1 sitting]);
+
+            if length(sitting)~=length(standing)
+                error('sitting/standing numbers mismatch');
+            end
+
+            ev  = [];
+            trl = [];
+            conditionlabels = {};
+            for i = 1:length(sitting)
+                if i>1
+                    ev = spm_cat_struct(ev, struct('type', 'sit', 'value', 1, 'time', D.time(sitting(i))));
+                end
+                ctrl = sitting(i):D.fsample:standing(i);
+                if length(ctrl)>3
+                    ctrl = [ctrl(2:(end-2))' ctrl(3:(end-1))' 0*ctrl(2:(end-2))'];
+                    conditionlabels = [conditionlabels, repmat({'sit'}, 1, size(ctrl, 1))];
+                    trl  = [trl; ctrl];
+                end
+                if i<length(sitting)
+                    ctrl = standing(i):D.fsample:standing(i+1);
+                    if length(ctrl)>3
+                        ctrl = [ctrl(2:(end-2))' ctrl(3:(end-1))' 0*ctrl(2:(end-2))'];
+                        conditionlabels = [conditionlabels, repmat({'stand'}, 1, size(ctrl, 1))];
+                        trl  = [trl; ctrl];
+                    end
+                    ev = spm_cat_struct(ev, struct('type', 'stand', 'value', 1, 'time', D.time(standing(i))));
+                end
+            end
+        otherwise
+            epoch = false;
     end
     
+    S = [];
+    S.D = D;
+    Dcont = copy(S.D, [prefix initials '_rec_' num2str(rec_id) '_' condition '_' num2str(f) '_cont']);
+
+    Dcont = events(Dcont, 1, ev);
+    Dcont.initials = initials;
+    Dcont = dbs_eeg_headmodelling(Dcont);
+
+
     if epoch
 
-
-    S = [];
-    S.D = D;
-    S.badchanthresh = details.badchanthresh;
-    S.methods(1).fun = 'events';
-    S.methods(1).channels = {'EEG'};
-    S.methods(1).settings.whatevents.artefacts = 1;
-    
-    D = spm_eeg_artefact(S);       
-    
-    if ~keep, delete(S.D);  end  
-    
-
-    % Trial rejection =========================================
-    S = [];
-    S.D = D;
-    S.badchanthresh = 1;
-    S.methods(1).channels = {'LFP'};
-    S.methods(1).fun = 'zscore';
-    S.methods(1).settings.threshold = details.lfpthresh;
-
-    D = spm_eeg_artefact(S);
-
-    % ************ Breakpoint 2
-    % ind = D.indchantype('LFP')
-    % figure;plot(D.time, squeeze(D(ind(1), :, :)))
-
-    %  details.badchanthresh = 0.02;
-    %  S.badchanthresh = details.badchanthresh;
-    %  D = spm_eeg_artefact(S);
-
-    if ~keep, delete(S.D);  end 
+        S = [];
+        S.D = D;
+        S.trl = trl;
+        S.conditionlabels = conditionlabels(:);
+        D = spm_eeg_epochs(S);
 
 
-     if ~isempty(ecgind)  
-         S.D = Da;
-         Da = spm_eeg_artefact(S);   
-         
-         if ~keep, delete(S.D);  end  
-     end
-    
-     %%
-     S = [];
-     S.D = D;
-     fD{f} = spm_eeg_remove_bad_trials(S);
+        S = [];
+        S.D = D;
+        S.badchanthresh = details.badchanthresh;
+        S.methods(1).fun = 'events';
+        S.methods(1).channels = {'EEG'};
+        S.methods(1).settings.whatevents.artefacts = 1;
 
-     if ~keep && ~isequal(fname(fD{f}), fname(S.D))
-         delete(S.D);
-     end
+        D = spm_eeg_artefact(S);
+
+        if ~keep, delete(S.D);  end
+
+
+        % Trial rejection =========================================
+        S = [];
+        S.D = D;
+        S.badchanthresh = 1;
+        S.methods(1).channels = {'LFP'};
+        S.methods(1).fun = 'zscore';
+        S.methods(1).settings.threshold = details.lfpthresh;
+
+        D = spm_eeg_artefact(S);
+
+        % ************ Breakpoint 2
+        % ind = D.indchantype('LFP')
+        % figure;plot(D.time, squeeze(D(ind(1), :, :)))
+
+        %  details.badchanthresh = 0.02;
+        %  S.badchanthresh = details.badchanthresh;
+        %  D = spm_eeg_artefact(S);
+
+        if ~keep, delete(S.D);  end
+
+
+        if ~isempty(ecgind)
+            S.D = Da;
+            Da = spm_eeg_artefact(S);
+
+            if ~keep, delete(S.D);  end
+        end
+
+        %%
+        S = [];
+        S.D = D;
+        fD{f} = spm_eeg_remove_bad_trials(S);
+
+        if ~keep && ~isequal(fname(fD{f}), fname(S.D))
+            delete(S.D);
+        end
 
     else
         fD{f} = D;
     end
-    
+
 
     fD{f} = fD{f}.move([prefix initials '_rec_' num2str(rec_id) '_' condition '_' num2str(f)]);
 
@@ -362,13 +685,13 @@ for f = 1:size(files, 1)
         S = [];
         S.D = Da;
         aD{f} = spm_eeg_remove_bad_trials(S);
-        
+
         if ~keep && ~isequal(fname(aD{f}), fname(S.D))
             delete(S.D);
         end
-    end        
-    
-    
+    end
+
+
 end
 %%
 fD(cellfun('isempty', fD)) = [];
@@ -376,7 +699,7 @@ fD(cellfun('isempty', fD)) = [];
 if ~isempty(ecgind)
     aD(cellfun('isempty', fD)) = [];
 end
- 
+
 nf = numel(fD);
 
 if numel(fD)>1
@@ -411,9 +734,9 @@ if numel(fD)>1
 
         fD = {D};
     end
-elseif  numel(fD)==1    
+elseif  numel(fD)==1
     fD{1}.fileind = ones(1, ntrials(fD{1}));
-    
+
     if ~isempty(ecgind)
         Da = aD{1};
     end
@@ -446,7 +769,7 @@ if ~keep, delete(Da);  end
 
 for f = 1:numel(fD)
     fD{f}.initials = initials;
-    fD{f} = dbs_eeg_headmodelling(fD{f});   
+    fD{f} = dbs_eeg_headmodelling(fD{f});
 end
 
 if numel(fD)==1

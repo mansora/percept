@@ -1,5 +1,5 @@
 function anonymize_videos_for_LED(patient_name)
-    % file to  cut out oly LED section in the videos and discard the rest
+    % file to  cut out only LED section in the videos and discard the rest
     % This needs to be run only once for every patients
     filename_video=['Z:\', patient_name,'\processed_MotionCapture\LED_videos\'];
     vids=dir(fullfile(filename_video, 'GH*.MP4'));

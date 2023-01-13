@@ -13,6 +13,12 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
             cfg.begsample= 49441;
             cfg.endsample= size(dataEEG.time{1},2);
             dataEEG=ft_redefinetrial(cfg, dataEEG);
+        elseif contains (eegfile, 'LN_PR_D008_20221014_0010')
+            cfg=[];
+            cfg.begsample= 8561;
+            cfg.endsample= 300808;
+            dataEEG=ft_redefinetrial(cfg, dataEEG);
+
         else
         
         % I don't like this here. But there are very few files that need to
@@ -33,6 +39,13 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
             cfg.endsample= size(dataEEG.time{1},2);
             dataEEG=ft_redefinetrial(cfg, dataEEG);
         end
+
+        if contains(eegfile, 'LN_PR_D009_20221021_0019')
+            cfg=[];
+            cfg.begsample= 743;
+            cfg.endsample= 168802;
+            dataEEG=ft_redefinetrial(cfg, dataEEG);
+       end
 
         
 
@@ -61,10 +74,28 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
        cfg.channel=  details.eeg_ref{f};
        cfg.bpfreq  = details.freqrange;
        cfg.bpfilter = 'yes';
-       n2=ft_preprocessing(cfg, dataEEG);   
+       n2=ft_preprocessing(cfg, dataEEG);  
        n2=n2.trial{1};
        n2=envelope(n2);
        n2=n2-mean(n2);
+
+       
+
+       if isfield(details, 'switch_stimoff') && details.switch_stimoff(f)==1
+           n2=diff(n2);
+           cfg=[];
+           cfg.begsample= 100;
+           cfg.endsample= size(dataEEG.time{1},2)-100;
+           dataEEG=ft_redefinetrial(cfg, dataEEG);
+           n2=n2(100:end-100);
+           if strcmp(details.initials, 'LN_PR_D009') && f==1
+               cfg.begsample= 5000;
+               cfg.endsample= size(dbs_file.time{1},2)+5000-1;
+               dataEEG=ft_redefinetrial(cfg, dataEEG);
+               n2=n2(5000:numel(n1)+5000-1);
+           end
+
+       end
 
        if details.removespikes==1
            % there are some spikes at the very end with this kind of
@@ -76,6 +107,7 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
            cfg.endsample= size(dataEEG.time{1},2)-100;
            dataEEG=ft_redefinetrial(cfg, dataEEG);
            n2=n2(100:end-100);
+           
         end
 
             
@@ -88,9 +120,22 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
        % complicated and add stimulation condition as an input
        TF1= abs(n1) > (mean(n1)+3*std(n1));
        TF2= abs(n2) > (mean(n2)+2.9*std(n2)); 
+
        
        temp1_start=find(TF1(1:floor(size(TF1,2)/2)));
        temp2_start=find(TF2(1:floor(size(TF2,2)/2)));
+
+%        % not sure if this will also work for non-rest blocks or blocks
+%             % where stim is turned on not off
+%             if isfield(details, 'switch_stimoff') && details.switch_stimoff(f)==1
+%                 TF2= abs(n2) > (mean(n2)+2*std(n2));
+%                 n2_temp=detrend(n2((1:max(temp2_start)-5)));
+%                 TF2_temp=(abs(n2_temp)>mean(n2_temp)+2*std(n2_temp));
+%                 temp2_temp=find(TF2_temp);
+%                 temp2_start=[temp2_temp, temp2_start];
+%                 temp2_start=unique(temp2_start);
+%                 details.switch_stimoff(f)=1;
+%             end
         
        temp1_end=find(TF1(floor(size(TF1,2)/2):end));
        temp_TF1=floor(size(TF1,2)/2);
@@ -106,7 +151,9 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
            incr_=incr_+1;
        end
 
-
+        if contains(eegfile, 'LN_PR_D009_20221021_0020')
+            temp1_start=1;
+        end
         
        size_wind1=size(temp1_start(1):temp1_end(end)+temp_TF1,2);
        size_wind2=size(temp2_start(1):temp2_end(end)+temp_TF2,2);
@@ -146,10 +193,12 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
            if cfg.endsample>size(dbs_file.time{1},2)
                time_temp=linspace(dbs_file.time{1}(end)-dbs_file.time{1}(1), cfg.endsample/dbs_file.fsample,cfg.endsample-size(dbs_file.time{1},2)+1);
                dbs_file.time{1}=[dbs_file.time{1}, time_temp(2:end)+dbs_file.time{1}(end)];
-               dbs_file.trial{1}=[dbs_file.trial{1}, zeros(size(dbs_file.trial{1},1), size(time_temp(2:end),2))];
+               dbs_file.trial{1}=[zeros(size(dbs_file.trial{1},1), size(time_temp(2:end),2)), dbs_file.trial{1}];
            end
 
            dbs_file=ft_redefinetrial(cfg, dbs_file);
+      
+       
        end
         end
         

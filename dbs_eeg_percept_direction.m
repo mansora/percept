@@ -5,7 +5,7 @@ function dbs_eeg_percept_direction(initials, rec_id, condition)
 keep = 0;
 
 try
-    [files, seq, root, details] = dbs_subjects(initials, rec_id);
+    [files, seq, root, details] = dbs_subjects_percept(initials, rec_id);
 catch
     return;
 end

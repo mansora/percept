@@ -45,32 +45,34 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
     % read LED event from eegfile
  
-    events=ft_read_event(eegfile); 
-    events=squeeze(struct2cell(events));
+    events_exp=ft_read_event(eegfile); 
+    events_exp=squeeze(struct2cell(events_exp));
     header_info=ft_read_header(eegfile);
 
     markers_match=0;
 
-    if num_markers-2==size(events,2)-1
+    if num_markers-2==size(events_exp,2)-1
         % looking at total number of events
         markers_match=1;
         eventstart=2+size(initstamp_time,1);
-    elseif num_stimulus-2==size(find(strcmp(events(1,:), 'Stimulus')),2)
+    elseif or(num_stimulus-2==size(find(strcmp(events_exp(1,:), 'Stimulus')),2),...
+            size(find(strcmp(events_exp(2,:), 'T  2')),2)+size(find(strcmp(events_exp(2,:), 'S  1')),2))
+            
         % looking at only stimulation markers 
         % (which are called Stimulus in file as opposed to LED which are called Toggle for some reason)
         markers_match=1;
-        xx=find(strcmp(events(1,:), 'Toggle'));
+        xx=find(strcmp(events_exp(1,:), 'Toggle'));
         eventstart=xx(1);
-        missing_LEDs=LED_markers-size(find(strcmp(events(1,:), 'Toggle')),2);
+        missing_LEDs=LED_markers-size(find(strcmp(events_exp(1,:), 'Toggle')),2);
         disp(['your EEG file is missing ', num2str(missing_LEDs), ' LED markers'])
 %         initstamp_time=cell2mat(events(3,find(strcmp(events(2,1:find(strcmp(events(1,:), 'Stimulus'),1)), 'T  2'))));
-        eventstart=eventstart+size(cell2mat(events(3,find(strcmp(events(1,1:find(strcmp(events(1,:), 'Stimulus'),1)), 'Toggle')))),2);
+        eventstart=eventstart+size(cell2mat(events_exp(3,find(strcmp(events_exp(1,1:find(strcmp(events_exp(1,:), 'Stimulus'),1)), 'Toggle')))),2);
         
 
     else
         disp('markers in logfile and eegfile do not match. Attempting to find match based on LED sequence')
-        for i=1:size(events,2)-size(initstamp_time,1)+1
-        events_temp=cell2mat(events(3,i:end));
+        for i=1:size(events_exp,2)-size(initstamp_time,1)+1
+        events_temp=cell2mat(events_exp(3,i:end));
         events_temp=((events_temp-events_temp(1))/header_info.Fs)'; %% TODO change 1000 to cfg.samplerate
             % correspondence between logfile stamps and eeg markers are very
             % good corr should be really close to 1
@@ -93,8 +95,8 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
     if ~isempty(strfind(input_logfile, 'REST'))
 
         
-        trl(1,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'Start Rest'))-3));
-        trl(1,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'End Rest'))-3));
+        trl(1,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'Start Rest'))-3));
+        trl(1,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'End Rest'))-3));
         trl(1,3)=0;
         trl(1,4)=1;
 
@@ -104,52 +106,63 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
 
     elseif ~isempty(strfind(input_logfile, 'PMT'))
-
-        trl1(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right hand up'))-3))';
-        trl1(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right hand down'))-3))';
-        trl1(:,3)=0;
-        trl1(:,4)=1;
-
-        trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left hand up'))-3))';
-        trl2(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left hand down'))-3))';
-        trl2(:,3)=0;
-        trl2(:,4)=2;
-
-        trl3(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right leg up'))-3))';
-        trl3(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right leg down'))-3))';
-        trl3(:,3)=0;
-        trl3(:,4)=3;
-
-        trl4(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg up'))-3))';
-        trl4(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg down'))-3))';
-        trl4(:,3)=0;
-        trl4(:,4)=4;
-
-        trl=[trl1; trl2; trl3; trl4];
         
-        trialinfo=repelem([{'right hand'}, {'left hand'}, {'right leg'}, {'left leg'}], ...
-            [size(trl1,1) size(trl2,1) size(trl3,1) size(trl4,1)])';
+        if ~isempty(strfind(input_logfile, 'LN_PR_D008_OFF_PMT_repetition2_PerceptPC.mat'))
 
+            trl(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg up'))-3))';
+            trl(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg down'))-3))';
+            trl(:,3)=0;
+            trl(:,4)=4;
+    
+            
+            trialinfo=repelem({'left leg'},[size(trl,1)])';
+        else
+            trl1(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right hand up'))-3))';
+            trl1(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right hand down'))-3))';
+            trl1(:,3)=0;
+            trl1(:,4)=1;
+    
+            trl2(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left hand up'))-3))';
+            trl2(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left hand down'))-3))';
+            trl2(:,3)=0;
+            trl2(:,4)=2;
+    
+            trl3(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right leg up'))-3))';
+            trl3(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right leg down'))-3))';
+            trl3(:,3)=0;
+            trl3(:,4)=3;
+    
+            trl4(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg up'))-3))';
+            trl4(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg down'))-3))';
+            trl4(:,3)=0;
+            trl4(:,4)=4;
+    
+            trl=[trl1; trl2; trl3; trl4];
+            
+            trialinfo=repelem([{'right hand'}, {'left hand'}, {'right leg'}, {'left leg'}], ...
+                [size(trl1,1) size(trl2,1) size(trl3,1) size(trl4,1)])';
+        end
+    
 
     elseif ~isempty(strfind(input_logfile, 'ACT'))
 
-        trl1(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right hand up'))-3))';
-        trl1(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right hand down'))-3))';
+        trl1(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right hand up'))-3))';
+        trl1(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right hand down'))-3))';
         trl1(:,3)=0;
         trl1(:,4)=1;
 
-        trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left hand up'))-3))';
-        trl2(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left hand down'))-3))';
+        trl2(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left hand up'))-3))';
+        trl2(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left hand down'))-3))';
         trl2(:,3)=0;
         trl2(:,4)=2;
 
-        trl3(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right leg up'))-3))';
-        trl3(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right leg down'))-3))';
+        trl3(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right leg up'))-3))';
+        trl3(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'right leg down'))-3))';
         trl3(:,3)=0;
         trl3(:,4)=3;
 
-        trl4(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg up'))-3))';
-        trl4(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg down'))-3))';
+        trl4(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg up'))-3))';
+        trl4(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'left leg down'))-3))';
         trl4(:,3)=0;
         trl4(:,4)=4;
 
@@ -163,13 +176,13 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
     elseif ~isempty(strfind(input_logfile, 'SST'))
 
-        trl1(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task right on'))-3))';
-        trl1(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task right off'))-3))';
+        trl1(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task right on'))-3))';
+        trl1(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task right off'))-3))';
         trl1(:,3)=0;
         trl1(:,4)=1;
 
-        trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task left on'))-3))';
-        trl2(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task left off'))-3))';
+        trl2(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task left on'))-3))';
+        trl2(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'sensory stimulation task left off'))-3))';
         trl2(:,3)=0;
         trl2(:,4)=2;
 
@@ -180,8 +193,8 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
         
     elseif ~isempty(strfind(input_logfile, 'SGT'))
 
-        trl(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'geste on'))-3))';
-        trl(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'geste off'))-3))';
+        trl(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'geste on'))-3))';
+        trl(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'geste off'))-3))';
         trl(:,3)=0;
         trl(:,4)=1;
 
@@ -189,8 +202,8 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
     elseif ~isempty(strfind(input_logfile, 'HPT'))
 
-        trl(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'arms up'))-3))';
-        trl(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'arms down'))-3))';
+        trl(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'arms up'))-3))';
+        trl(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'arms down'))-3))';
         trl(:,3)=0;
         trl(:,4)=1;
 
@@ -198,13 +211,13 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
     elseif ~isempty(strfind(input_logfile, 'WRITE'))
         if ~isempty(strfind(input_logfile, 'LN_PR_D006'))
-            trl1(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write right'))-3))';
-            x_temp=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause writing'))-3))';
+            trl1(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write right'))-3))';
+            x_temp=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause writing'))-3))';
             trl1(:,2)=x_temp(1:size(trl1(:,1),1));
             trl1(:,3)=0;
             trl1(:,4)=1;
     
-            trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write left'))-3))';
+            trl2(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write left'))-3))';
             trl2(:,2)=x_temp(size(trl1(:,1),1)+1:end);
             trl2(:,3)=0;
             trl2(:,4)=2;
@@ -214,8 +227,8 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
             trialinfo=repelem([{'write right'}, {'write left'}], ...
                 [size(trl1,1) size(trl2,1)])';
         else
-            trl(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write'))-3))';
-            trl(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause writing'))-3))';
+            trl(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'write'))-3))';
+            trl(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause writing'))-3))';
             trl(:,3)=0;
             trl(:,4)=1;
     
@@ -225,8 +238,8 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
     elseif ~isempty(strfind(input_logfile, 'POUR'))
 
-        trl(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pour'))-3))';
-        trl(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause pouring'))-3))';
+        trl(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pour'))-3))';
+        trl(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause pouring'))-3))';
         trl(:,3)=0;
         trl(:,4)=1;
 
@@ -234,8 +247,8 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
     elseif ~isempty(strfind(input_logfile, 'SPEAK'))
         
-        trl(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'speak'))-3))';
-        trl(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause speaking'))-3))';
+        trl(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'speak'))-3))';
+        trl(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'pause speaking'))-3))';
         trl(:,3)=0;
         trl(:,4)=1;
 
@@ -243,14 +256,14 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
 
     elseif ~isempty(strfind(input_logfile, 'WALK'))
         if ~isempty(strfind(input_logfile, 'LN_PR_D006'))
-            trl1(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'standing'))-3))';
-            trl1(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
+            trl1(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'standing'))-3))';
+            trl1(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
             trl1(:,3)=0;
             trl1(:,4)=1;
     
-            trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
+            trl2(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
             ind_end=find(strcmp(OutputFile_temp(:,1), 'standing'));
-            trl2(:,2)=[cell2mat(events(3,eventstart+ind_end(2:end)-3)), trl2(end,1)+mean(cell2mat(events(3,eventstart+ind_end(2:end)-3))'-trl2(1:end-1,1))]'; 
+            trl2(:,2)=[cell2mat(events_exp(3,eventstart+ind_end(2:end)-3)), trl2(end,1)+mean(cell2mat(events_exp(3,eventstart+ind_end(2:end)-3))'-trl2(1:end-1,1))]'; 
             trl2(:,3)=0;
             trl2(:,4)=2;
     
@@ -260,14 +273,14 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
             trialinfo=repelem([{'stand'}, {'sit'}], [size(trl1,1) size(trl2,1)])';
 
         else
-            trl1(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'walk forward'))-3))';
-            trl1(:,2)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
+            trl1(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'walk forward'))-3))';
+            trl1(:,2)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
             trl1(:,3)=0;
             trl1(:,4)=1;
     
-            trl2(:,1)=cell2mat(events(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
+            trl2(:,1)=cell2mat(events_exp(3,eventstart+find(strcmp(OutputFile_temp(:,1), 'stand still'))-3))';
             ind_end=find(strcmp(OutputFile_temp(:,1), 'walk forward'));
-            trl2(:,2)=[cell2mat(events(3,eventstart+ind_end(2:end)-3)), trl2(end,1)+mean(cell2mat(events(3,eventstart+ind_end(2:end)-3))'-trl2(1:end-1,1))]'; 
+            trl2(:,2)=[cell2mat(events_exp(3,eventstart+ind_end(2:end)-3)), trl2(end,1)+mean(cell2mat(events_exp(3,eventstart+ind_end(2:end)-3))'-trl2(1:end-1,1))]'; 
             trl2(:,3)=0;
             trl2(:,4)=2;
     

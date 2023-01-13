@@ -40,13 +40,28 @@ if ~isempty(t)
     k=dsearchn(timeline_LED, stamp_time);
     reconstruct_LED=zeros(1,videoIn.NumFrames);
     reconstruct_LED(1,k)=1;
+
+%     % or when video is cut in half you can use this
+%     timeline_LED=linspace( 0, header_info.nSamples/header_info.Fs, ...
+%     header_info.nSamples*(videoIn.FrameRate/header_info.Fs))';
+%     k=dsearchn(timeline_LED, stamp_time);
+%     reconstruct_LED=zeros(1,42530);
+%     reconstruct_LED(1,k)=1;
+% %     figure, plot(reconstruct_LED)
+% to fix LN_PR_D001, PMT, 2: LED_signal=[LED_signal_part1, linspace(LED_signal_part1(end), LED_signal_part2(1), 173),LED_signal_part2];
     
 else
     disp('no initializing LED sequence found in logfile, attempting to reconstruct from eegfile')
-    events=ft_read_event(eegfile); 
-    events=squeeze(struct2cell(events));
+    eventss=ft_read_event(eegfile); 
+    eventss=squeeze(struct2cell(eventss));
+    if contains(eegfile, 'LN_PR_D005_20220401_00120.vhdr')
+        eventss=eventss(:,142:end);
+        eventss(3,:)=num2cell(cell2mat(eventss(3,:))-eventss{3,1});
+    elseif contains(eegfile, 'LN_PR_D005_20220401_0012.vhdr')
+        eventss=eventss(:,1:141);
+    end
     % TODO this needs to change for patient D006 onwards
-    stamp_time=cell2mat(events(3,find(strcmp(events(1,:), 'Toggle'))))/header_info.Fs;
+    stamp_time=cell2mat(eventss(3,find(strcmp(eventss(1,:), 'Toggle'))))/header_info.Fs;
     timeline_LED=linspace( 0, videoIn.Duration, videoIn.NumFrames)';
     k=dsearchn(timeline_LED, stamp_time');
     reconstruct_LED=zeros(1,videoIn.NumFrames);
@@ -192,31 +207,48 @@ elseif endsequence==1
     
     temp1=find(TF1(1:floor(size(TF1,2)/2)));
     temp2=find(TF2(1:floor(size(TF2,2)/2)));
-    
-    size_window_start=[min(temp1(1), temp2(1)), max(temp1(end), temp2(end))];
+
+    if isempty(temp1) || isempty(temp2)
+        offset_start=[];
+    else
+        size_window_start=[min(temp1(1), temp2(1)), max(temp1(end), temp2(end))];
+        
+        [c, lags] = xcorr(n1(size_window_start(1):size_window_start(2)), n2(size_window_start(1):size_window_start(2)), 'coeff');
+        [mc, mci] = max(abs(c));
+
+        offset_start=lags(mci);
+    end
     
     temp1=find(TF1(floor(size(TF1,2)/2):end));
     temp2=find(TF2(floor(size(TF2,2)/2):end));
-    
-    size_window_end=[min(temp1(1), temp2(1)), max(temp1(end), temp2(end))];
-    
-    [c, lags] = xcorr(n1(size_window_start(1):size_window_start(2)), n2(size_window_start(1):size_window_start(2)), 'coeff');
-    [mc, mci] = max(abs(c));
-    
-    
-    offset_start=lags(mci);
-    
-    %% TODO: add checks to see if there is good crosscorrelation
-    % issue with that is that you have to first figure out what a good
-    % value is because it is generally lower than what vladimir has in his
-    % data
 
-    [c, lags] = xcorr(n1(size_window_end(1)+floor(size(TF1,2)/2):size_window_end(2)+floor(size(TF1,2)/2)), ...
-        n2(size_window_end(1)+floor(size(TF2,2)/2):size_window_end(2)+floor(size(TF2,2)/2)), 'coeff');
-    
-    [mc, mci] = max(abs(c));
+    if isempty(temp1) || isempty(temp2)
+        offset_end=0;
+    else
+        
+        
+        size_window_end=[min(temp1(1), temp2(1)), max(temp1(end), temp2(end))];
 
-    offset_end=lags(mci);
+        %% TODO: add checks to see if there is good crosscorrelation
+        % issue with that is that you have to first figure out what a good
+        % value is because it is generally lower than what vladimir has in his
+        % data
+    
+        [c, lags] = xcorr(n1(size_window_end(1)+floor(size(TF1,2)/2):size_window_end(2)+floor(size(TF1,2)/2)), ...
+            n2(size_window_end(1)+floor(size(TF2,2)/2):size_window_end(2)+floor(size(TF2,2)/2)), 'coeff');
+        
+        [mc, mci] = max(abs(c));
+
+        offset_end=lags(mci);
+    end
+
+    if isempty(offset_end) || offset_end==0
+        offset_end=offset_start;
+    end
+
+    if isempty(offset_start) || offset_start==0
+        offset_start=offset_end;
+    end
 end
 
 % TODO convert offsets to the sampling rate of EEG 
@@ -224,8 +256,8 @@ end
 
 % figure, plot(LED_conditionR(best_pixel,:))
 % % 
-% itr_=0*100;
+% itr_=1*100;
 % figure, 
-% for i=1+itr_:50+itr_
-% subplot(10,5,i-itr_), plot(double(squeeze(LED_conditionR(i,:,1))))
+% for i=1+itr_:100+itr_
+% subplot(10,10,i-itr_), plot(double(squeeze(LED_conditionR(i,:,1))))
 % end

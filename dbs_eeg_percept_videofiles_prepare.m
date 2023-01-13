@@ -1,4 +1,4 @@
-function video_file_fieldtrip=dbs_eeg_percept_videofiles_prepare(eegfile, filename_video, videoname, details);
+function video_file_fieldtrip=dbs_eeg_percept_videofiles_prepare(eegfile, filename_video, videoname, automatic_tracking);
 
 fileList = dir(fullfile(filename_video, [videoname, '*.json']));
 % if ~isempty(strfind(eegfile,'LN_PR_D001'))
@@ -61,6 +61,16 @@ end
 goodframe_found=0;
 fr_start=1;
 ind_patient=[];
+
+Person_patient.pose_keypoints=zeros(size(Person{1}.pose_keypoints));
+if isfield(Person{1}, 'hand_left_keypoints')
+    Person_patient.hand_left_keypoints=zeros(size(Person{1}.hand_left_keypoints));
+end
+if isfield(Person{1}, 'hand_right_keypoints')
+    Person_patient.hand_right_keypoints=zeros(size(Person{1}.hand_right_keypoints));
+end 
+
+
 while goodframe_found==0
 
     videoFrame=read(videoIn,fr_start);
@@ -68,12 +78,25 @@ while goodframe_found==0
 %         videoFrame=insertText(videoFrame, Person{num_ppl}.pose_keypoints(fr_start,1:2), num2str(num_ppl),...
 %             'FontSize',18,'TextColor','white');
 %     end
-    if details.automatic_tracking==0
-        figure, imshow(videoFrame);
-        title('Draw a rectangle around the patients head, if patient is not visible make rectangle very big')
-        roi = drawrectangle;
-        bbox=round(roi.Position);
+    if automatic_tracking==0
+        if exist((fullfile(filename_video, '\..\..\tracking_frame\', ['tracking_frame_' videoname,'.mat'])), 'file')
+            data_temp=load(fullfile(filename_video, '\..\..\tracking_frame\', ['tracking_frame_' videoname,'.mat']));
+            bbox=data_temp.bbox;
+            fr_start=data_temp.fr_start;
+            videoFrame=read(videoIn,fr_start);
+            videoFrame_temp=insertShape(videoFrame,'Rectangle',bbox,'LineWidth',5);
+            figure, imshow(videoFrame_temp);
+            title('Previously saved tracking of first frame')
+            
+        else
 
+            figure, imshow(videoFrame);
+            title('Draw a rectangle around the patients head, if patient is not visible make rectangle very big')
+            roi = drawrectangle;
+            bbox=round(roi.Position);
+            
+        end
+    
         if bbox(4)<size(videoFrame,1)-100
             for num_ppl=1:people(fr_start)
                 if bbox(1)<Person{num_ppl}.pose_keypoints(fr_start,1) && ...
@@ -84,6 +107,8 @@ while goodframe_found==0
                 end
             end
         end
+
+
 
     else
         center_screen=fliplr(size(videoFrame,[1, 2])/2);
@@ -119,15 +144,10 @@ while goodframe_found==0
             Person_patient.hand_right_keypoints(fr_start,:)=Person{ind_patient}.hand_right_keypoints(fr_start,:);
         end 
         goodframe_found=1;
+               
+        save(fullfile(filename_video, '\..\..\tracking_frame\', ['tracking_frame_' videoname,'.mat']), 'bbox', 'fr_start');
     else
         fr_start=fr_start+1;
-        Person_patient.pose_keypoints(fr_start,:)=zeros(size(Person{1}.pose_keypoints(fr_start,:)));
-        if isfield(Person{1}, 'hand_left_keypoints')
-            Person_patient.hand_left_keypoints(fr_start,:)=zeros(size(Person{1}.hand_left_keypoints(fr_start,:)));
-        end
-        if isfield(Person{1}, 'hand_right_keypoints')
-            Person_patient.hand_right_keypoints(fr_start,:)=zeros(size(Person{1}.hand_right_keypoints(fr_start,:)));
-        end 
     end
 end
 

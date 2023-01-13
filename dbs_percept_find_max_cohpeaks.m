@@ -1,4 +1,4 @@
-function mXYZ=dbs_percept_find_max_cohpeaks(initials, rec_id, condition, band, hemisphere, smooth, n_peaks)
+function [gXYZ, mXYZ, region]=dbs_percept_find_max_cohpeaks(initials, rec_id, condition, band, hemisphere, smooth, n_peaks)
 
 %     smooth = 4;
     
@@ -10,22 +10,33 @@ function mXYZ=dbs_percept_find_max_cohpeaks(initials, rec_id, condition, band, h
     end
     
     banddir = sprintf('band_%d_%dHz', band);
-
-    if strcmp(details.chan{1}(end-3),'L')
+    
+    if numel(details.chan)>1
         chan_L=details.chan{1};
         chan_R=details.chan{2};
-    else
-        chan_R=details.chan{1};
-        chan_L=details.chan{2};
+        switch hemisphere
+            case 'Left'
+                chan=chan_L;
+            case 'Right'
+                chan=chan_R;      
+        end
+    elseif strcmp(details.chan{1}(end-3),'L')
+        chan=details.chan{1};
+        if strcmp(hemisphere, 'Right')
+            warning('only left LFP available')
+            [gXYZ, mXYZ, region]=deal([]);
+            return
+        end
+    elseif strcmp(details.chan{1}(end-3),'R')
+        chan=details.chan{1};
+        if strcmp(hemisphere, 'Left')
+            warning('only right LFP available')
+            [gXYZ, mXYZ, region]=deal([]);
+            return
+        end
     end
     
-    switch hemisphere
-        case 'Left'
-            chan=chan_L;
-        case 'Right'
-            chan=chan_R;      
-    end
-
+   
     
     cd(fullfile(root, condition, banddir, chan));
     
@@ -49,12 +60,21 @@ function mXYZ=dbs_percept_find_max_cohpeaks(initials, rec_id, condition, band, h
     Y=Y(:);
     XYZ(:,isnan(Y))=[];
     Y(isnan(Y))=[];
-    [N,Z,M,A] = spm_max(Y,XYZ);
-    
+    [N,Z,M,A, XYZ_] = spm_max(Y,XYZ);
+
+    [Z,ind_]=sort(Z,'descend');
+    M=M(:,ind_);
+    A=A(ind_);
+
     mXYZ = vol.mat*[M;ones(1,size(M,2))];
     mXYZ = mXYZ(1:3,:)';
     mXYZ=mXYZ(1:n_peaks,:);
 
+    region=XYZ_{A(1:n_peaks)};
 
+
+    [junk, ind] = max(Y);
+    gXYZ = vol.mat*[XYZ(:, ind); 1];
+    gXYZ = gXYZ(1:3,:)';
 
 end

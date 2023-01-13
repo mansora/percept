@@ -87,15 +87,26 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
                 if sub_condition==1
                     legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off reversed','EEG -> LFP on reversed')
                 end
-
-                subplot(4,numel(D.condlist),numel(D.condlist)+sub_condition),
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(1)), 1)),'r','LineWidth',3);
-                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(1)), 1)),'b','LineWidth',3);
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(2)), 1)),'r--','LineWidth',3);
-                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(2)), 1)),'b--','LineWidth',3);
-                xlim([5 x_lim]);
-                title(['R Gpi ', subcondition])
-%                 legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off reversed','EEG -> LFP on reversed')
+                
+                if numel(lfp)>1
+                    subplot(4,numel(D.condlist),numel(D.condlist)+sub_condition),
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(1)), 1)),'r','LineWidth',3);
+                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(1)), 1)),'b','LineWidth',3);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(2)), 1)),'r--','LineWidth',3);
+                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(2)), 1)),'b--','LineWidth',3);
+                    xlim([5 x_lim]);
+                    title(['R Gpi ', subcondition])
+    %                 legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off reversed','EEG -> LFP on reversed')
+    
+                    subplot(4,numel(D.condlist),3*numel(D.condlist)+sub_condition),
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,2), :, :, trialind(1)), 1)),'k','LineWidth',3);
+                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,2), :, :, trialind(1)), 1)),'g','LineWidth',3);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,2), :, :, trialind(2)), 1)),'k--','LineWidth',3);
+                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,2), :, :, trialind(2)), 1)),'g--','LineWidth',3);
+                    xlim([5 x_lim]);
+                    title(['R Gpi ', subcondition])
+    %                 legend('LFP -> EEG off','LFP -> EEG on','LFP -> EEG off reversed','LFP -> EEG on reversed')
+                end
 
                 subplot(4,numel(D.condlist),2*numel(D.condlist)+sub_condition),
                 plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,1), :, :, trialind(1)), 1)),'k','LineWidth',3);
@@ -108,15 +119,7 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
                     legend('LFP -> EEG off','LFP -> EEG on','LFP -> EEG off reversed','LFP -> EEG on reversed')
                 end
         
-                subplot(4,numel(D.condlist),3*numel(D.condlist)+sub_condition),
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,2), :, :, trialind(1)), 1)),'k','LineWidth',3);
-                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,2), :, :, trialind(1)), 1)),'g','LineWidth',3);
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,2), :, :, trialind(2)), 1)),'k--','LineWidth',3);
-                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,2), :, :, trialind(2)), 1)),'g--','LineWidth',3);
-                xlim([5 x_lim]);
-                title(['R Gpi ', subcondition])
-%                 legend('LFP -> EEG off','LFP -> EEG on','LFP -> EEG off reversed','LFP -> EEG on reversed')
-
+                
                 
             case 'Coherence'
                 
@@ -131,15 +134,17 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
                 if sub_condition==1
                     legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off shifted','EEG -> LFP on shifted')
                 end
-
-                subplot(2,numel(D.condlist),numel(D.condlist)+sub_condition),
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(1)), 1)),'r','LineWidth',3);
-                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(1)), 1)),'b','LineWidth',3);
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(2)), 1)),'r--','LineWidth',3);
-                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(2)), 1)),'b--','LineWidth',3);
-                xlim([5 x_lim]);
-                title(['R Gpi ', subcondition])
-%                 legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off shifted','EEG -> LFP on shifted')
+                
+                if numel(lfp)>1
+                    subplot(2,numel(D.condlist),numel(D.condlist)+sub_condition),
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(1)), 1)),'r','LineWidth',3);
+                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(1)), 1)),'b','LineWidth',3);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(2)), 1)),'r--','LineWidth',3);
+                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(2)), 1)),'b--','LineWidth',3);
+                    xlim([5 x_lim]);
+                    title(['R Gpi ', subcondition])
+    %                 legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off shifted','EEG -> LFP on shifted')
+                end
 
         end
         
@@ -150,6 +155,8 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
               
     end
 
-    saveas(gcf, ['D:\home\results Percept Project\Connectivity_', method, '_',condition, '.png'])      
+    spm_mkdir(['D:\home\results Percept Project\', initials]);
+    saveas(gcf, ['D:\home\results Percept Project\', initials,'\',initials,'_Connectivity_', method, '_',condition, '.png'])
+
 
     end

@@ -32,7 +32,8 @@ end
 
 %     D = spm_eeg_load(files{n,:});
     D = spm_eeg_load(files);
-    
+
+  
     S = [];
     S.D = D;
     S.channels = details.chan;

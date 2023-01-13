@@ -12,17 +12,17 @@ details = struct(...
 
 details.chan = {'LFP'};
 details.badchanthresh = 0.1;
-details.bandstop = [70 180];
+details.bandstop = [100 180];
 details.removespikes=0;
 details.suffix = {'rec_1', 'rec_2', 'rec_3', 'rec_4', 'rec_5'};
 details.initials=initials;
 
 % details.eeg_ref = 'StimArt';
-details.removesync = false;
+details.removesync = true;
 
 details.lfpthresh = 4;
 
-details.synch_ecg=1;
+details.synch_ecg=0;
 details.synch_percept_stamp=1;
 details.process_logfiles=1;
 details.process_videos=1;
@@ -71,7 +71,7 @@ switch initials
             root='\LN_PR_D001\rec2\';
             %details.lfpthresh = 50;
             details.badchanthresh = 0.2;
-            details.freqrange=[170 190];
+            details.freqrange=[110 130];
         end
         details.bandstop = [70];
         details.lfp_ref = 'LFP_Gpi_R_02';
@@ -176,8 +176,9 @@ switch initials
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0007.vhdr',...
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0008.vhdr',...
                 '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0019.vhdr',...
+                '\LN_PR_D004\raw_EEG\LN_PR_D004_20220304_0020.vhdr',...
                 };
-            sequence =  {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'POUR', 'WALK'};
+            sequence =  {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'POUR', 'WALK', 'R'};
             root='\LN_PR_D004\rec2\';
 
             details.lfp_ref = 'LFP_Gpi_R_02';
@@ -200,7 +201,6 @@ switch initials
                 };
             sequence = {'STIMOFF', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'POUR', 'R', 'WALK'};
             root='\LN_PR_D004\rec1\';
-
             details.lfp_ref = 'LFP_Gpi_R_02';
             details.eeg_ref = 'EMG2';
             details.chan = {'LFP_Gpi_R_02'};
@@ -264,6 +264,8 @@ switch initials
 
             %details.lfpthresh = 30;
             details.chan = {'LFP_Gpi_L_02', 'LFP_Gpi_R_02'};
+            details.lfpthresh=6;
+%             details.vidoffset_tocompute={'yes','yes','yes','yes','yes','yes','no','yes','yes'};
         elseif rec_id == 1
             files={...
                 %                 '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0009.vhdr',...
@@ -328,7 +330,7 @@ switch initials
         if rec_id == 2
             details.lfp_ref = 'LFP_Gpi_L_13';
             details.synch_ecg = 0;
-            details.removesync = 0;
+%             details.removesync = 0;
             files={...
                 '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0001.vhdr',...
                 '\LN_PR_D006\raw_EEG\LN_PR_D006_20220531_0002.vhdr',...
@@ -396,16 +398,17 @@ switch initials
     case 'LN_PR_D007'
         details.process_logfiles = 1;
         details.process_videos = 1;
-        details.bandstop = 130;
+        details.bandstop = 124;
         details.lfpthresh = 3.5;        
         details.freqrange=[120 140];
         details.synch_ecg = 1;
         details.synch_percept_stamp = 1;
         details.automatic_tracking=0;
+        details.lfp_ref = 'LFP_Gpi_L_03';
         if rec_id == 2
-            details.lfp_ref = 'LFP_Gpi_L_03';
-            details.synch_ecg = 1;
-            details.removesync = 0;
+            
+            details.synch_ecg = 0;
+%             details.removesync = 0;
             files={...
                 '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0001.vhdr',...
                 '\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0002.vhdr',...
@@ -466,19 +469,23 @@ switch initials
             details.synch_ecg = 1;
             details.synch_percept_stamp = 0;
         end
+
+        details.eeg_ref=repmat({'StimArt'},1,numel(files));
+
     case 'LN_PR_D008'
         details.process_logfiles = 1;
         details.process_videos = 1;
-        details.bandstop = 130;
+        details.bandstop = 124;
         details.lfpthresh = 3.5;        
         details.freqrange=[120 140];
         details.synch_ecg = 1;
         details.synch_percept_stamp = 1;
         details.automatic_tracking=0;
+        details.lfp_ref = 'LFP_Gpi_R_02';
         if rec_id == 2
-            details.lfp_ref = 'LFP_Gpi_L_03';
+            
             details.synch_ecg = 1;
-            details.removesync = 0;
+%             details.removesync = 0;
             files={...
                 '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0001.vhdr',...
                 '\LN_PR_D008\raw_EEG\LN_PR_D008_20221014_0002.vhdr',...
@@ -513,6 +520,7 @@ switch initials
             root='\LN_PR_D008\rec1\';
 
             %details.lfpthresh = 30;
+            details.switch_stimoff=[1,0,0,0,0,0,0,0,0,0];
             details.chan =  {'LFP_Gpi_L_03', 'LFP_Gpi_R_02'};
             elseif rec_id == 5
             files={...
@@ -541,20 +549,20 @@ switch initials
             details.synch_ecg = 1;
             details.synch_percept_stamp = 0;
         end
-
+        details.eeg_ref=repmat({'StimArt'},1,numel(files));
     case 'LN_PR_D009'
         details.process_logfiles = 1;
         details.process_videos = 1;
-        details.bandstop = 130;
+        details.bandstop = 124;
         details.lfpthresh = 3.5;        
         details.freqrange=[120 140];
         details.synch_ecg = 1;
         details.synch_percept_stamp = 1;
         details.automatic_tracking=0;
         if rec_id == 2
-            details.lfp_ref = 'LFP_Gpi_L_03';
-            details.synch_ecg = 1;
-            details.removesync = 0;
+            details.lfp_ref = 'LFP_Gpi_L_02';
+            details.synch_ecg = 0;
+%             details.removesync = 0;
             files={...
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0011.vhdr',...
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0012.vhdr',...
@@ -568,10 +576,24 @@ switch initials
                  };
             sequence =  {'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'WRITE', 'POUR', 'R', 'WALK'};
             root='\LN_PR_D009\rec2\';
+            
         elseif rec_id == 1
-            details.lfp_ref = 'LFP_Gpi_L_03';
-            details.synch_ecg = 1;
-            details.removesync = 0;
+            details.lfp_ref = 'LFP_Gpi_L_02';
+            details.synch_ecg = 0;
+%             details.removesync = 0;
+%             files={...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0001.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0002.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0003.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0004.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0005.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0006.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0007.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0008.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0010.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0010.vhdr',...
+%                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0020.vhdr'
+%                  };
             files={...
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0001.vhdr',...
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0002.vhdr',...
@@ -581,17 +603,18 @@ switch initials
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0006.vhdr',...
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0007.vhdr',...
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0008.vhdr',...
-                '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0010.vhdr',...
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0020.vhdr'
                  };
-            sequence =  {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'WRITE', 'POUR', 'R', 'WALK'};
+%             sequence =  {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'WRITE', 'POUR', 'STIMON1', 'STIMON2','WALK'};
+            sequence =  {'R', 'PMT', 'ACT', 'SST', 'HPT', 'SPEAK', 'WRITE', 'POUR','WALK'};
+            details.switch_stimoff=[1,0,0,0,0,0,0,0,0];
             root='\LN_PR_D009\rec1\';
             elseif rec_id == 5
             files={...
                 '\LN_PR_D009\raw_EEG\LN_PR_D009_20221021_0009.vhdr',...
                 };
             sequence = {'R'};
-            details.lfp_ref = 'LFP_Gpi_L_03';
+            details.lfp_ref = 'LFP_Gpi_L_02';
             details.eeg_ref = 'StimArt';
             details.lfpthresh = 5;
             root='\LN_PR_D009\streaming\';
@@ -614,6 +637,8 @@ switch initials
             details.synch_percept_stamp = 0;
 
         end
+        details.chan =  {'LFP_Gpi_L_02', 'LFP_Gpi_R_02'};
+        details.eeg_ref=repmat({'StimArt'},1,numel(files));
 
                
 

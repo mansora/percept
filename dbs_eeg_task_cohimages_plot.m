@@ -3,15 +3,23 @@ function dbs_eeg_task_cohimages_plot(initials, condition)
     [files, seq, root, details] = dbs_subjects(initials, 1);
     cd(fullfile(root, condition));
     
-    D_off_L = spm_eeg_load('rCOH_sensors_LFP_Gpi_L_13');
-    D_off_R = spm_eeg_load('rCOH_sensors_LFP_Gpi_R_13');
+    files = spm_select('FPList','.', ['rCOH_sensors_LFP_Gpi_\w*.mat']);
+
+%     D_off_L = spm_eeg_load('rCOH_sensors_LFP_Gpi_L_13');
+%     D_off_R = spm_eeg_load('rCOH_sensors_LFP_Gpi_R_13');
+    D_off_L = spm_eeg_load(files(1,:));
+    D_off_R = spm_eeg_load(files(2,:));
 
 
     [files, seq, root, details] = dbs_subjects(initials, 2);
     cd(fullfile(root, condition));
+
+    files = spm_select('FPList','.', ['rCOH_sensors_LFP_Gpi_\w*.mat']);
     
-    D_on_L = spm_eeg_load('rCOH_sensors_LFP_Gpi_L_13');
-    D_on_R = spm_eeg_load('rCOH_sensors_LFP_Gpi_R_13');
+%     D_on_L = spm_eeg_load('rCOH_sensors_LFP_Gpi_L_13');
+%     D_on_R = spm_eeg_load('rCOH_sensors_LFP_Gpi_R_13');
+    D_on_L = spm_eeg_load(files(1,:));
+    D_on_R = spm_eeg_load(files(2,:));
 
     x_min=round(min(min(squeeze(mean(D_off_L(:,:,:,1),1)))));
     x_max=round(max(max(squeeze(mean(D_off_L(:,:,:,1),1)))));
@@ -34,7 +42,9 @@ function dbs_eeg_task_cohimages_plot(initials, condition)
         ylabel('freq (Hz)')
     end
 
-    saveas(gcf, ['D:\home\results Percept Project\Coherence_', condition, '_LeftGPi.png'])
+    spm_mkdir(['D:\home\results Percept Project\', initials]);
+    saveas(gcf, ['D:\home\results Percept Project\', initials,'\',initials,'_Coherence_', condition, '_LeftGPi.png'])
+
 
 
 
@@ -54,8 +64,10 @@ function dbs_eeg_task_cohimages_plot(initials, condition)
         xlabel('time (s)')
         ylabel('freq (Hz)')
     end
+    
+    spm_mkdir(['D:\home\results Percept Project\', initials]);
+    saveas(gcf, ['D:\home\results Percept Project\', initials,'\',initials,'_Coherence_', condition, '_RightGPi.png'])
 
-    saveas(gcf, ['D:\home\results Percept Project\Coherence_', condition, '_RightGPi.png'])
 
 
 end

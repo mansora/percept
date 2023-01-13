@@ -1,18 +1,53 @@
-D = spm_eeg_load;
+function dbs_percept_stand_analyse(initials, rec_id, condition)
+
+    % analysis of WALK, POUR, REACH, and HPT condition assuming these as
+    % evoked tasks. Analysis starts from the continuous data (I think)
+    try
+    [   files, seq, root, details] = dbs_subjects(initials, rec_id);
+    catch
+        return;
+    end
+
+    cd(fullfile(root, condition));
+
+    % files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
+    try
+        files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
+    catch
+        files = spm_select('FPList','.', ['regexp_.*c|.*' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
+    end
+    
+    if isempty(files)
+        files = spm_select('FPList','.', ['^' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
+    end
+
+    
+
+    D = spm_eeg_load(files);
 %%
-cond = 'POUR';%'HPT';%'REACH'; %'WALK';%'STAND'
+% cond = 'POUR';%'HPT';%'REACH'; %'WALK';%'STAND'
 %%
 S = [];
 S.D = D;
 switch cond
     case 'WALK'
-        S.timewin = [-1000 2000];
-        S.trialdef(1).conditionlabel = 'sit';
-        S.trialdef(1).eventtype = 'sit';
-        S.trialdef(1).eventvalue = 1;        
-        S.trialdef(2).conditionlabel = 'stand';
-        S.trialdef(2).eventtype = 'stand';
-        S.trialdef(2).eventvalue = 1;        
+        if sctrmp(initials, 'LN_PR_D006')
+            S.timewin = [-1000 2000];
+            S.trialdef(1).conditionlabel = 'sit';
+            S.trialdef(1).eventtype = 'sit';
+            S.trialdef(1).eventvalue = 1;        
+            S.trialdef(2).conditionlabel = 'stand';
+            S.trialdef(2).eventtype = 'stand';
+            S.trialdef(2).eventvalue = 1;        
+        else
+            S.timewin = [-1000 2000];
+            S.trialdef(1).conditionlabel = 'walk';
+            S.trialdef(1).eventtype = 'walk';
+            S.trialdef(1).eventvalue = 1;        
+            S.trialdef(2).conditionlabel = 'stand';
+            S.trialdef(2).eventtype = 'stand';
+            S.trialdef(2).eventvalue = 1;
+        end
     case 'POUR'
         S.timewin = [-2000 10000];
         S.trialdef(1).conditionlabel = 'start';

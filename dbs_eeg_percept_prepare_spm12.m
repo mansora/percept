@@ -1,5 +1,5 @@
 function fD = dbs_eeg_percept_prepare_spm12(initials, rec_id, condition)
-
+close all
 if nargin <2
     rec_id = 1;
 end
@@ -38,16 +38,21 @@ for f = 1:size(files, 1)
     end
 
     % =============  Conversion =============================================
+    try 
+        D=spm_eeg_load(fullfile(root, condition, [initials, '_rec_', num2str(rec_id), '_' condition, '_' num2str(f), '_preproc','.mat']));
+    catch
+        D = dbs_eeg_percept_preproc(files(f,:), details, f);
 
-    D = dbs_eeg_percept_preproc(files(f,:), details, f);
+        D = chantype(D, D.indchannel(details.chan), 'LFP');
 
-    D = chantype(D, D.indchannel(details.chan), 'LFP');
-
-    if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
-        D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
+        if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
+            D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
+        end
+    
+        save(D);
     end
 
-    save(D);
+    
 
 
     S = [];
@@ -60,7 +65,7 @@ for f = 1:size(files, 1)
     D = spm_eeg_filter(S);
 
 
-    if ~keep, delete(S.D);  end
+%     if ~keep, delete(S.D);  end
 
 
     S = [];
@@ -72,29 +77,65 @@ for f = 1:size(files, 1)
     S.order = 5;
     D = spm_eeg_filter(S);
 
+%     if strcmp(details.initials,'LN_PR_D008') && strcmp(condition,'SST')
+%         S = [];
+%         S.D = D;
+%         S.type = 'butterworth';
+%         S.band = 'stop';
+%         S.freq = [48 52];
+%         S.dir = 'twopass';
+%         S.order = 5;
+%     end
 
-    if ~keep, delete(S.D);  end
+
+if ~keep, delete(S.D);  end
+
+
+%     if ~keep, delete(S.D);  end
 
 
     if details.removesync
         % Remove the synchronisation sequence
+        lfpchan = D.indchantype('LFP');
         lfp = zscore(squeeze(D(D.indchantype('LFP'), :, :))');
-        ind   = find(abs(lfp)>6);
-        onset = round(max(ind(ind<0.1*D.nsamples)) + 0.5*D.fsample);
-        offset= round(min(ind(ind>0.9*D.nsamples)) - 0.5*D.fsample);
-
-        if ~isempty(onset)
-            if isempty(offset)
-                offset = D.nsamples;
-            end
-
-            S = [];
-            S.D = D;
-            S.timewin = [D.time(onset, 'ms') D.time(offset, 'ms')];
-            D = spm_eeg_crop(S);
-
-            if ~keep, delete(S.D);  end
+        if numel(lfpchan)>1 lfp=lfp(:,1); end
+        
+        onset=[];
+        tresh_=7;
+        while isempty(onset) 
+            ind   = find(abs(lfp)>tresh_);
+            onset = round(max(ind(ind<0.5*D.nsamples)) + 0.5*D.fsample);
+            tresh_=tresh_-0.5;
         end
+
+        offset=[];
+        tresh_=7;
+        while isempty(offset) 
+            ind   = find(abs(lfp)>tresh_);
+            offset= round(min(ind(ind>0.5*D.nsamples)) - 0.5*D.fsample);
+            tresh_=tresh_-0.5;
+        end
+
+%         if isempty(onset) 
+%             onset=1; end
+%         if isempty(offset) offset = D.nsamples; end
+
+
+        figure, plot(lfp), hold on, xline(onset,'k'), xline(offset,'k')
+        print(gcf,[details.initials,'_',...
+        condition, '_', num2str(rec_id),'_removesynch.jpg'],'-djpeg');
+
+        
+        S = [];
+        S.D = D;
+        S.timewin = [D.time(onset, 'ms') D.time(offset, 'ms')];
+        D = spm_eeg_crop(S);
+        
+        if ~keep, delete(S.D);  end
+
+        figure, plot(lfp), hold on, xline(onset,'k'), xline(offset,'k')
+        print(gcf,['D:\home\Data\', details.initials,'_',...
+        condition, '_', num2str(rec_id),'_removesynch.jpg'],'-djpeg');
     end
 
     eegchan  = D.indchantype('EEG');
@@ -154,10 +195,13 @@ for f = 1:size(files, 1)
     S.methods(3).fun = 'threshchan';
     S.methods(3).settings.threshold = 200;
     S.methods(3).settings.excwin = 200;
-    S.methods(4).fun = 'heartbeat';
-    S.methods(4).channels = {'ECG'};
-    S.methods(4).settings.excwin = 1;
-
+    
+    if ~contains(files{f,3}, 'LN_PR_D008_ON_SST_repetition1')
+        S.methods(4).fun = 'heartbeat';
+        S.methods(4).channels = {'ECG'};
+        S.methods(4).settings.excwin = 1;
+    end
+    
     D = spm_eeg_artefact(S);
 
     %***** Breakpoint 1
@@ -244,6 +288,7 @@ for f = 1:size(files, 1)
                 settings.art_time_after_peak    = post_R_time;
                 settings.Fs                     = D.fsample;
                 settings.polarity               = 1;
+                settings.thr                    = 0.1;
                 settings.ncomp                  = 2;
                 settings.showfigs               = 1;
                 settings.savefigs               = 1;
@@ -252,7 +297,7 @@ for f = 1:size(files, 1)
                 settings.label              = char(D.chanlabels(lfpchan(i)));
                 [cleanlfp,proj_out] = continuous_ecgremoval_new(lfp,settings, D(D.indchannel('ECG'), :), D.indsample(ecg_times));
                 ecg(i, :) = lfp-cleanlfp';
-                D(lfpchan(i), :) = cleanlfp';
+                D(lfpchan(i), :, 1) = cleanlfp';
         end
     end
     if size(ecg, 1)>1
@@ -317,11 +362,12 @@ for f = 1:size(files, 1)
         Da = spm_eeg_epochs(S);
     end
 
-
-    S = [];
-    S.D = D;
-    D = dbs_percept_mov_preproc(S);
-    if ~keep, delete(S.D);  end
+    if condition~='R'
+        S = [];
+        S.D = D;
+        D = dbs_percept_mov_preproc(S);
+        if ~keep, delete(S.D);  end
+    end
 
     epoch = true;
     switch condition
@@ -405,15 +451,65 @@ for f = 1:size(files, 1)
 
             for k = 1:numel(hands)
                 cmov  = D(D.indchannel(['hand_' upper(hands{k}(1))]), :);
+                
+                thresh1=2;
+                stop_loop=0;
+                onsets=[];
+                
+                while (length(onsets)<5 && stop_loop==0)
+                    [~, onsets]= findpeaks(zscore(diff(cmov)), "MinPeakHeight",thresh1, "MinPeakProminence", 1);
+                    thresh1=thresh1-0.1;
+                    if thresh1<1.5
+                        stop_loop=1;
+                        error('threshold is too low')
+                    end
+                end
 
-                [~, onsets]= findpeaks(zscore(diff(cmov)), "MinPeakHeight",2.5, "MinPeakProminence", 1);
-                [~, offsets]= findpeaks(-zscore(diff(cmov)), "MinPeakHeight", 2, "MinPeakProminence", 1);
+                thresh2=2;
+                stop_loop=0;
+                offsets=[];
+                while (length(offsets)<5 && stop_loop==0)
+                    [~, offsets]= findpeaks(-zscore(diff(cmov)), "MinPeakHeight", thresh2, "MinPeakProminence", 1);
+                    thresh2=thresh2-0.05;
+                    if thresh2<1.5
+                        stop_loop=1;
+                        error('threshold is too low')
+                    end
+                end
 
-                onsets = onsets(onsets>(start-5) & onsets<(stop+5));
-                offsets = offsets(offsets>(start-5) & offsets<(stop+80));
+                if strcmp(details.initials, 'LN_PR_D005') && f==2
+                        [~, onsets]= findpeaks(zscore(diff(cmov)), "MinPeakHeight",1.5, "MinPeakProminence", 1);
+                        [~, offsets]= findpeaks(-zscore(diff(cmov)), "MinPeakHeight", 1.5, "MinPeakProminence", 1);
+                end
 
+                    
+                    
+                onsets = onsets(onsets>(start-1000) & onsets<(stop+5));
+                offsets = offsets(offsets>(start-5) & offsets<(stop+1000));
+                
+                if length(onsets)>length(offsets)
+                    if (onsets(1)<offsets(1) && onsets(2)<offsets(1))
+                        onsets(1)=[];
+                    elseif onsets(end)>offsets(end)
+                        onsets(end)=[];
+                    end
+                elseif length(onsets)<length(offsets)
+                    if (onsets(end)<offsets(end) && onsets(end)<offsets(end-1))
+                        offsets(end)=[];
+                    elseif offsets(1)<onsets(1)
+                        offsets(1)=[];
+                    end
+                end
+
+                   
+                
                 if length(onsets)~=length(offsets)
-                    error('mismatch');
+                    figure, plot(cmov)
+                    hold on, plot(zscore(diff(cmov))*std(cmov))
+                    plot(onsets, mean(zscore(diff(cmov))), '*g') 
+                    plot(offsets, mean(zscore(diff(cmov))), '*r')
+                    plot([start, stop], mean(zscore(diff(cmov))), '*k')
+                    error('mismatch, manual intervention needed');
                 end
 
                 epochlength = round(D.fsample);
@@ -566,43 +662,177 @@ for f = 1:size(files, 1)
             ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
             conditionlabels = [conditionlabels, repmat({'rest'}, 1, size(ctrl, 1))];
             trl  = [trl; ctrl];
-        case 'WALK'
-            headY = detrend(D(D.indchannel('head_y'), :), 'constant');
-            sit      = headY > 50;
-            standing = find(diff(sit)<0);
-            standing = standing(standing>0.05*length(sit) & standing<0.95*length(sit));
-            standing = unique([standing length(sit)]);
-            sitting  = find(diff(sit)>0);
-            sitting  = sitting(sitting>0.05*length(sit) & sitting<0.95*length(sit));
-            sitting = unique([1 sitting]);
 
-            if length(sitting)~=length(standing)
-                error('sitting/standing numbers mismatch');
-            end
 
-            ev  = [];
+        case 'SPEAK'
+            ev  = D.events(':');
+            evv = ev(strmatch('speak', {ev.type}));
+            speakstart = [evv(strmatch('start', {evv.value})).time]+5;
+            speakstop  = [evv(strmatch('stop', {evv.value})).time];
+            reststart = [5 speakstop+5];
+            reststop  = [speakstart-10 D.time(end)-5];
+
             trl = [];
             conditionlabels = {};
-            for i = 1:length(sitting)
-                if i>1
-                    ev = spm_cat_struct(ev, struct('type', 'sit', 'value', 1, 'time', D.time(sitting(i))));
-                end
-                ctrl = sitting(i):D.fsample:standing(i);
+
+            if length(speakstart)~=length(speakstop)
+                error('start/stop numbers mismatch');
+            end
+            for i = 1:length(speakstart)
+                ctrl = D.indsample(speakstart(i)):D.fsample:D.indsample(speakstop(i));
                 if length(ctrl)>3
-                    ctrl = [ctrl(2:(end-2))' ctrl(3:(end-1))' 0*ctrl(2:(end-2))'];
-                    conditionlabels = [conditionlabels, repmat({'sit'}, 1, size(ctrl, 1))];
+                    ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+                    conditionlabels = [conditionlabels, repmat({'speak'}, 1, size(ctrl, 1))];
                     trl  = [trl; ctrl];
                 end
-                if i<length(sitting)
-                    ctrl = standing(i):D.fsample:standing(i+1);
-                    if length(ctrl)>3
-                        ctrl = [ctrl(2:(end-2))' ctrl(3:(end-1))' 0*ctrl(2:(end-2))'];
-                        conditionlabels = [conditionlabels, repmat({'stand'}, 1, size(ctrl, 1))];
-                        trl  = [trl; ctrl];
-                    end
-                    ev = spm_cat_struct(ev, struct('type', 'stand', 'value', 1, 'time', D.time(standing(i))));
+            end
+            if length(reststart)~=length(reststop)
+                error('start/stop numbers mismatch');
+            end
+            for i = 1:length(reststart)
+                ctrl = D.indsample(reststart(i)):D.fsample:D.indsample(reststop(i));
+                if length(ctrl)>3
+                    ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:(end-1))'];
+                    conditionlabels = [conditionlabels, repmat({'rest'}, 1, size(ctrl, 1))];
+                    trl  = [trl; ctrl];
                 end
             end
+
+
+
+        case 'WALK'
+
+            headY = detrend(D(D.indchannel('head_y'), :), 'constant');
+            
+            if strcmp(details.initials, 'LN_PR_D006')
+           
+                sit      = headY > 50;
+                standing = find(diff(sit)<0);
+                standing = standing(standing>0.05*length(sit) & standing<0.95*length(sit));
+                standing = unique([standing length(sit)]);
+                sitting  = find(diff(sit)>0);
+                sitting  = sitting(sitting>0.05*length(sit) & sitting<0.95*length(sit));
+                sitting = unique([1 sitting]);
+    
+                if length(sitting)~=length(standing)
+                    error('sitting/standing numbers mismatch');
+                end
+    
+                ev  = [];
+                trl = [];
+                conditionlabels = {};
+                for i = 1:length(sitting)
+                    if i>1
+                        ev = spm_cat_struct(ev, struct('type', 'sit', 'value', 1, 'time', D.time(sitting(i))));
+                    end
+                    ctrl = sitting(i):D.fsample:standing(i);
+                    if length(ctrl)>3
+                        ctrl = [ctrl(2:(end-2))' ctrl(3:(end-1))' 0*ctrl(2:(end-2))'];
+                        conditionlabels = [conditionlabels, repmat({'sit'}, 1, size(ctrl, 1))];
+                        trl  = [trl; ctrl];
+                    end
+                    if i<length(sitting)
+                        ctrl = standing(i):D.fsample:standing(i+1);
+                        if length(ctrl)>3
+                            ctrl = [ctrl(2:(end-2))' ctrl(3:(end-1))' 0*ctrl(2:(end-2))'];
+                            conditionlabels = [conditionlabels, repmat({'stand'}, 1, size(ctrl, 1))];
+                            trl  = [trl; ctrl];
+                        end
+                        ev = spm_cat_struct(ev, struct('type', 'stand', 'value', 1, 'time', D.time(standing(i))));
+                    end
+                end
+            else
+                ev= D.events(':');
+                evv_walk = ev(strmatch('walk', {ev.type}));
+                evv_stand = ev(strmatch('stand', {ev.type}));
+                
+                start = D.indsample(min([evv_walk.time]));
+                stop = D.indsample(max([evv_walk.time]));
+                
+                [~, onsets1]= findpeaks(zscore(diff(headY(start:stop))),...
+                    "MinPeakHeight", 2, "MinPeakProminence", 3, 'MinPeakDistance', 5*D.fsample);
+                onsets1=onsets1+start;
+                [~, onsets2]= findpeaks(-zscore(diff(headY(start:stop))),...
+                    "MinPeakHeight", 2, "MinPeakProminence", 3, 'MinPeakDistance', 5*D.fsample);
+                onsets2=onsets2+start;
+                
+                onsets=sort([onsets1,onsets2], 'ascend');
+                
+                k=[]; m=1;
+                for i=1:numel(onsets)-1
+                    if abs(onsets(i)-onsets(i+1))<5*D.fsample
+                        k(m)=i;
+                        m=m+1;
+                    end
+                end
+
+%                 idx=kmeans(onsets',10);
+                
+
+                if numel(onsets)-numel(k)~=5
+                    figure, plot((diff(headY)))
+                    hold on, plot(headY)
+                    plot(onsets, mean(headY), '*k')
+                    plot(onsets(k), mean(headY), '*r')
+%                     color={'r','g','k','y','c','r','g','k','y','c'};
+%                     for i=1:10
+%                     plot(onsets(find(idx==i)), mean(headY), '*', 'Color',color{i})
+%                     end
+                    warning("walking numbers don't match number of 5 trials");
+                end
+                
+                epochlength = round(D.fsample);
+                
+                trl = [];
+                conditionlabels = {};
+                ev = [];
+                
+                i=1;
+                while i<numel(onsets)+1
+                    if ismember(i,k)
+                        ctrl = round(onsets(i)-2*epochlength):epochlength:round(onsets(i+1)+2*epochlength);
+                        ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:end-1)'];
+                        conditionlabels = [conditionlabels, repmat({'walk'}, 1, size(ctrl, 1))];
+                        trl=[trl; ctrl];
+                        i=i+2;
+                    else
+                        ctrl = round(onsets(i)-epochlength):epochlength:round(onsets(i)+epochlength);
+                        ctrl = [ctrl(1:(end-1))' ctrl(2:end)' 0*ctrl(1:end-1)'];
+                        conditionlabels = [conditionlabels, repmat({'walk'}, 1, size(ctrl, 1))];
+                        trl=[trl; ctrl];
+                        i=i+1;
+                    end 
+                end
+                
+                 ev = arrayfun(@(x) ...
+                     spm_cat_struct(ev, struct('type', 'walk', 'value', 1, 'time', D.time(trl(x,1)))), [1:size(trl,1)]);
+                
+                 start = D.indsample(min([evv_stand.time]));
+                 stop = D.indsample(max([evv_stand.time]));
+                 trl_stand=[(start:epochlength:stop-epochlength)'  ...
+                     (start+epochlength:epochlength:stop)' 0*(start:epochlength:stop-epochlength)'];
+                 delete_trials=[];
+                 for i=1:numel(trl_stand(:,1))
+                     check_overlap=ismember(trl_stand(i,1):trl_stand(i,2), ...
+                             cell2mat(arrayfun(@(x) trl(x,1):trl(x,2), [1:size(trl,1)], 'UniformOutput', false))');
+                     if any(check_overlap(2:end-2))
+                         delete_trials=[delete_trials, i];
+                     end
+                 end 
+                 trl_stand(delete_trials,:)=[];
+
+                 ev_temp=[];
+                 ev_temp = arrayfun(@(x) ...
+                     spm_cat_struct(ev_temp, struct('type', 'stand', 'value', 1, 'time', D.time(trl_stand(x,1)))),...
+                     [1:size(trl_stand,1)]);
+
+                 ev=spm_cat_struct(ev,ev_temp);
+
+                 conditionlabels = [conditionlabels, repmat({'stand'}, 1, size(trl_stand, 1))];
+                 trl=[trl; trl_stand];
+                                
+
+        end
         otherwise
             epoch = false;
     end
@@ -624,6 +854,7 @@ for f = 1:size(files, 1)
         S.conditionlabels = conditionlabels(:);
         D = spm_eeg_epochs(S);
 
+        if ~keep, delete(S.D);  end
 
         S = [];
         S.D = D;

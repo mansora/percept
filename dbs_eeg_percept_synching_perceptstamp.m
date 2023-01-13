@@ -1,4 +1,4 @@
-function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, logfile, details)
+function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, logfile, details,f)
     if ~any(strcmp(eeg_file.label, 'StimArt_filtered'))
         warning('No stimulator channel found')
         noisematch = 0;
@@ -18,24 +18,47 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
     
     if noisematch
         
-        n1 = detrend(eeg_stim.trial{1});
-        n2 = detrend(dbs_stim.trial{1});
+        n1 = zscore(detrend(eeg_stim.trial{1}));
+        n2 = zscore(detrend(dbs_stim.trial{1}));
+
+        if isfield(details, 'switch_stimoff') && details.switch_stimoff(f)==1
+            n1=diff(n1);
+        end
         
 %         if stim==0
-            TF1=(abs(n1)>mean(n1)+3*std(n1));
+            TF1=(abs(n1)>mean(n1)+2.5*std(n1));
             TF2=(abs(n2)>mean(n2)+4*std(n2)); 
             
             temp1=find(TF1(1:floor(size(TF1,2)/2)));
             temp2=find(TF2(1:floor(size(TF2,2)/2)));
+            
+%             % not sure if this will also work for non-rest blocks or blocks
+%             % where stim is turned on not off
+%             if isfield(details, 'switch_stimoff') && details.switch_stimoff==1
+%                 n1_temp=detrend(eeg_stim.trial{1}((1:max(temp1)-5)));
+%                 TF1_temp=(abs(n1_temp)>mean(n1_temp)+2*std(n1_temp));
+%                 temp1_temp=find(TF1_temp);
+%                 temp1=[temp1_temp, temp1];
+%                 temp1=unique(temp1);
+%             end
 
             if isempty(temp1) temp1=1; end
             if isempty(temp2) temp2=1; end
 
             size_window_start=[min(temp1(1), temp2(1)), max(temp1(end), temp2(end))];
             
+            if strcmp(details.initials, 'LN_PR_D009') && f==1
+                n2_temp=n2;
+                n2_temp(1,1:floor(size(n2,2)/2))=0;
+                n2_temp=zscore(n2_temp);
+                TF2=(abs(n2_temp)>7*std(n2_temp)); 
+            end
+
             temp1=find(TF1(floor(size(TF1,2)/2):end));
             temp2=find(TF2(floor(size(TF2,2)/2):end));
             temp_TF= floor(size(TF1,2)/2);
+
+
 
             incr_=1;
             while isempty(temp1) || isempty(temp2)
@@ -43,6 +66,12 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
                 temp2=find(TF2(floor(size(TF2,2)/2)-10*incr_*dbs_file.fsample:end));
                 temp_TF=temp_TF-10*incr_*dbs_file.fsample;
                 incr_=incr_+1;
+            end
+
+            if temp_TF<0
+                temp1=[-10 -5] + floor(size(TF1,2)/2);
+                temp2=[-10 -5] + floor(size(TF2,2)/2);
+                temp_TF= floor(size(TF1,2)/2);
             end
 
             size_window_end=[min(temp1(1), temp2(1)), max(temp1(end), temp2(end))];
@@ -56,11 +85,14 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
 %             end
 
             
-            [c, lags] = xcorr(n1(size_window_start(1):size_window_start(2)), n2(size_window_start(1):size_window_start(2)), 'coeff');
+            [c, lags] = xcorr((n1(size_window_start(1):size_window_start(2))), (n2(size_window_start(1):size_window_start(2))), 'coeff');
             [mc, mci] = max(abs(c));
-            
-            
-            offset_stamp_start=lags(mci);
+
+%             if mc/median(abs(c)) < 25
+%                 offset_stamp_start=[];
+%             else
+                offset_stamp_start=lags(mci);
+%             end
             
             %% TODO: add checks to see if there is good crosscorrelation
             % issue with that is that you have to first figure out what a good
@@ -69,12 +101,41 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
             
 %             temp_=min([size(TF1,2)  size(TF2,2)]);
 
-            [c, lags] = xcorr(n1(size_window_end(1)+temp_TF:size_window_end(2)+temp_TF-1), ...
-                n2(size_window_end(1)+temp_TF:size_window_end(2)+temp_TF-1), 'coeff');
+            [c, lags] = xcorr((n1(size_window_end(1)+temp_TF:size_window_end(2)+temp_TF-1)), ...
+                (n2(size_window_end(1)+temp_TF:size_window_end(2)+temp_TF-1)), 'coeff');
             
             [mc, mci] = max(abs(c));
         
-            offset_stamp_end=lags(mci);
+
+%             if mc/median(abs(c)) < 25
+%                 offset_stamp_end=[];
+%             else
+                offset_stamp_end=lags(mci);
+%             end
+            
+
+
+            if isempty(offset_stamp_end) || offset_stamp_end==0
+                offset_stamp_end=offset_stamp_start;
+            end
+
+            if isempty(offset_stamp_start) || offset_stamp_start==0
+                offset_stamp_start=offset_stamp_end;
+            end
+
+            if abs(offset_stamp_start-offset_stamp_end)>eeg_file.fsample*3
+                if strcmp(details.initials,'LN_PR_D001')
+                    warning('difference between offset and stamp is too much for LN_PR_D001')
+                    offset_stamp_start=offset_stamp_end;
+                elseif strcmp(details.initials,'LN_PR_D004') && f==1
+                    offset_stamp_end=offset_stamp_start;
+                elseif strcmp(details.initials,'LN_PR_D007') && f==2
+                    offset_stamp_start=offset_stamp_end;
+                else
+                    error('difference between start and end offset of percept stamping is too large')
+                end
+            end
+
     
 %         elseif stim==1
 %     

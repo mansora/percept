@@ -18,14 +18,14 @@ details.suffix = {'rec_1', 'rec_2', 'rec_3', 'rec_4', 'rec_5'};
 details.initials=initials;
 
 % details.eeg_ref = 'StimArt';
-details.removesync = true;
+details.removesync = true;  %usually true, or ECG artefact will be removed badly!
 
 details.lfpthresh = 4;
-
+details.save_LED_info=0;
 details.synch_ecg=0;
 details.synch_percept_stamp=1;
 details.process_logfiles=1;
-details.process_videos=1;
+details.process_videos=1;  % usually 1, or videos will not be processed!
 details.automatic_tracking=0;
 
 
@@ -72,11 +72,24 @@ switch initials
             %details.lfpthresh = 50;
             details.badchanthresh = 0.2;
             details.freqrange=[110 130];
+         elseif rec_id==4
+        files={...
+            '\LN_PR_D001\raw_EEG\LN_PR_D001_0=20220107_0010.vhdr',...
+            '\LN_PR_D001\raw_EEG\LN_PR_D001_0=20220107_0011.vhdr',...
+            '\LN_PR_D001\raw_EEG\LN_PR_D001_0=20220107_0012.vhdr'};
+        root='\LN_PR_D001\rec4\';
+        sequence = {'R','R','R'};
+        details.badchanthresh = 0.2;
+        details.freqrange=[110 190];
+
         end
         details.bandstop = [70];
         details.lfp_ref = 'LFP_Gpi_R_02';
         details.chan = {'LFP_Gpi_R_02'};
         details.eeg_ref=repmat({'StimArt'},1,numel(files));
+
+   
+
     case 'LN_PR_D003'
         details.lfp_ref = 'LFP_Gpi_R_02';
         details.chan = {'LFP_Gpi_R_02'};
@@ -131,6 +144,12 @@ switch initials
             details.lfp_ref = 'LFP_Gpi_R_02';
             details.chan = {'LFP_Gpi_R_02'};
             details.eeg_ref=repmat({'StimArt'},1,numel(files));
+        elseif rec_id==4
+            files={'\LN_PR_D003\raw_EEG\LN_PR_D003_20220204_0009.vhdr',...
+                '\LN_PR_D003\raw_EEG\LN_PR_D003_20220204_0010.vhdr.'};
+            sequence = {'R', 'R'};
+            root='\LN_PR_D003\rec4\';
+            details.lfp_ref = 'LFP_Gpi_R_02';
         elseif rec_id == 5
             files= {'\LN_PR_D003\raw_EEG\LN_PR_D003_20220204_0019.vhdr'};
             sequence = {'R'};
@@ -282,12 +301,14 @@ switch initials
             root='\LN_PR_D005\rec1\';
             details.badchanthresh = 0.35;
             details.chan = {'LFP_Gpi_L_02', 'LFP_Gpi_R_02'};
-        elseif rec_id == 3            
+        elseif rec_id == 4            
             files={...
-                '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0017.vhdr',...
+                '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0009.vhdr',...
+                '\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_0017.vhdr'
                 };
-            sequence = {'R'};
-            root='\LN_PR_D005\rec3\';
+            sequence = {'R', 'R'};
+            details.removespikes=1;
+            root='\LN_PR_D005\rec4\';
 
             details.lfp_ref = 'LFP_Gpi_L_02';
         elseif rec_id == 5
@@ -441,6 +462,14 @@ switch initials
 
             %details.lfpthresh = 30;
             details.chan =  {'LFP_Gpi_L_03', 'LFP_Gpi_R_03'};
+
+        elseif rec_id==4
+
+            files={'\LN_PR_D007\raw_EEG\LN_PR_D007_20220805_0008.vhdr'};
+            root='\LN_PR_D007\rec4\';
+            sequence={'R'};
+            details.chan =  {'LFP_Gpi_L_03', 'LFP_Gpi_R_03'};
+            details.process_videos=0;
 
         elseif rec_id == 5
             files={...
@@ -644,6 +673,8 @@ switch initials
 
 end
 
+
+details.rec_id=rec_id;
 
 files = files(:);
 

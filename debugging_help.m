@@ -1,3 +1,14 @@
+n1=zscore(detrend(n1));
+n2=zscore(detrend(n2));
+figure, plot(diff(n2))
+hold on, plot(TF2*max(n2))
+figure, plot(n1)
+hold on, plot(TF1*max(n1))
+
+figure, plot(n1)
+hold on, figure, plot(TF1*mean(n1))
+
+
 reftrl = linspace(0, size_EEG/dataEEG.fsample, size_EEG);
     
 trl_offset  = zeros(1, size(reftrl,2));
@@ -14,7 +25,7 @@ synched_padded(:,EEGmarker_start:EEGmarker_start+size(n2_synched,2)-1)=n2_synche
 figure, plot(synched_padded)
 hold on, plot(cell2mat(eventss(3,LED_markersEEG)), mean(n2_synched),'r*')
 
-figure, plot(n2)
+figure, plot(n2(offss:end)), hold on, yline(10)
 
 hold on, plot([temp_start,temp_end], mean(n2), 'k*')
 hold on, plot([EEGmarker_start,EEGmarker_end], mean(n2), 'r*')

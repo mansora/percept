@@ -1,4 +1,4 @@
-function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, logfile, details,f)
+function [eeg_file, logfile, offset_stamp_start, offset_stamp_end]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, logfile, details,f)
     if ~any(strcmp(eeg_file.label, 'StimArt_filtered'))
         warning('No stimulator channel found')
         noisematch = 0;
@@ -23,6 +23,8 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
 
         if isfield(details, 'switch_stimoff') && details.switch_stimoff(f)==1
             n1=diff(n1);
+        elseif strcmp(details.initials, 'LN_PR_D005') && details.rec_id==4 && f==2
+            n1=zscore(diff(detrend(eeg_stim.trial{1})));
         end
         
 %         if stim==0
@@ -85,6 +87,7 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
 %             end
 
             
+            
             [c, lags] = xcorr((n1(size_window_start(1):size_window_start(2))), (n2(size_window_start(1):size_window_start(2))), 'coeff');
             [mc, mci] = max(abs(c));
 
@@ -100,7 +103,8 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
             % data
             
 %             temp_=min([size(TF1,2)  size(TF2,2)]);
-
+            
+            
             [c, lags] = xcorr((n1(size_window_end(1)+temp_TF:size_window_end(2)+temp_TF-1)), ...
                 (n2(size_window_end(1)+temp_TF:size_window_end(2)+temp_TF-1)), 'coeff');
             
@@ -127,14 +131,22 @@ function [eeg_file, logfile]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs
                 if strcmp(details.initials,'LN_PR_D001')
                     warning('difference between offset and stamp is too much for LN_PR_D001')
                     offset_stamp_start=offset_stamp_end;
-                elseif strcmp(details.initials,'LN_PR_D004') && f==1
+                elseif strcmp(details.initials,'LN_PR_D004') && f==1 % add details.rec_id
                     offset_stamp_end=offset_stamp_start;
-                elseif strcmp(details.initials,'LN_PR_D007') && f==2
+                elseif strcmp(details.initials,'LN_PR_D007') && f==2 % add details.rec_id
                     offset_stamp_start=offset_stamp_end;
                 else
                     error('difference between start and end offset of percept stamping is too large')
                 end
             end
+
+            if  abs(offset_stamp_start-offset_stamp_end)>eeg_file.fsample*2
+                if strcmp(details.initials,'LN_PR_D005') && f==1
+                    offset_stamp_end=offset_stamp_start;
+                end
+                    
+            end
+
 
     
 %         elseif stim==1

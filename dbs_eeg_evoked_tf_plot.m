@@ -1,6 +1,6 @@
 function dbs_eeg_evoked_tf_plot(initials, condition)
 
-    [files, seq, root, details] = dbs_subjects(initials, 1);
+    [files_, seq, root, details] = dbs_subjects(initials, 1);
     cd(fullfile(root, condition));
     
     files = spm_select('FPList','.', ['rmtf_', '.', initials '_rec_' num2str(1) '_' condition '\w*.mat']);
@@ -9,7 +9,7 @@ function dbs_eeg_evoked_tf_plot(initials, condition)
     end
     D_off = spm_eeg_load(files);
 
-    [files, seq, root, details] = dbs_subjects(initials, 2);
+    [files_, seq, root, details] = dbs_subjects(initials, 2);
     cd(fullfile(root, condition));
     
     files = spm_select('FPList','.', ['rmtf_', '.', initials '_rec_' num2str(2) '_' condition '\w*.mat']);

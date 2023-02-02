@@ -121,7 +121,11 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
        TF1= abs(n1) > (mean(n1)+3*std(n1));
        TF2= abs(n2) > (mean(n2)+2.9*std(n2)); 
 
-       
+       if contains(eegfile, 'LN_PR_D005_20220401_0009')
+           TF2= abs(n2) > (mean(n2)+1.5*std(n2)); 
+       elseif contains(eegfile, 'LN_PR_D005_20220401_0017')
+           TF2= abs(n2) > (mean(n2)+2*std(n2)); 
+       end
        temp1_start=find(TF1(1:floor(size(TF1,2)/2)));
        temp2_start=find(TF2(1:floor(size(TF2,2)/2)));
 
@@ -141,6 +145,10 @@ function [eeg_file dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(da
        temp_TF1=floor(size(TF1,2)/2);
        temp2_end=find(TF2(floor(size(TF2,2)/2):end));
        temp_TF2=floor(size(TF2,2)/2);
+
+       if contains(eegfile, 'LN_PR_D001_0=20220107_0011')
+            temp1_end=688418-temp_TF1;
+        end
 
        incr_=1;
        while isempty(temp1_end) || isempty(temp2_end)

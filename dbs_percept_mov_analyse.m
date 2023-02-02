@@ -1,11 +1,11 @@
 function dbs_percept_mov_analyse(initials, rec_id, condition)
-    
+
     % analysis of ACT, PMT condition assuming these as
     % evoked tasks (they are only evoked and not induced). Analysis starts from the continuous data (I think)
     keep=0;
     
     try
-    [files, seq, root, details] = dbs_subjects(initials, rec_id);
+    [files_, seq, root, details] = dbs_subjects(initials, rec_id);
     catch
         return;
     end
@@ -13,18 +13,22 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
     cd(fullfile(root, condition));
 
     % files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
-    try
-        files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
-    catch
-        files = spm_select('FPList','.', ['regexp_.*c|.*' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
-    end
-    
-    if isempty(files)
-        files = spm_select('FPList','.', ['^' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
-    end
+    files = spm_select('FPList','.', ['^' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
 
- if ~exist(fullfile(root, condition, ['evokedTF_' details.initials '_rec_' num2str(rec_id) '_' condition '.mat']), 'file') 
     
+%     try
+%         files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
+%     catch
+%         files = spm_select('FPList','.', ['regexp_.*c|.*' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
+%     end
+%     
+%     if isempty(files)
+%         files = spm_select('FPList','.', ['^' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*', '_cont.mat']);
+%     end
+
+%  if ~exist(fullfile(root, condition, ['rmtf_' details.initials '_rec_' num2str(rec_id) '_' condition '.mat']), 'file') 
+   if 1
+       
     fD = {};
     for f=1:size(files, 1)
         D = spm_eeg_load(files(f,:));
@@ -104,7 +108,7 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
         S.D = D;
         S.trl = trl;
         S.conditionlabels = conditionlabels(:);
-        D = spm_eeg_epochs(S);
+        fD{f} = spm_eeg_epochs(S);
         %%
 %         for i = 1:size(lbl, 1)
 %             for j = 1:numel(dirs)
@@ -113,33 +117,7 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
 %             end
 %         end
         %%
-        
 
-        freq = 1:2.5:100;
-        res  = 2.5*ones(size(freq));
-        res(freq>25) = 0.1*freq(freq>25);
-        res(freq>50) = 5;
-        
-        S = [];
-        S.D = D;
-        S.channels = {'EEG', 'LFP'};
-        S.frequencies = freq;
-        S.timewin = [-Inf Inf];
-        S.phase = 0;
-        S.method = 'mtmconvol';
-        S.settings.taper = 'dpss';
-        S.settings.timeres = 400;%;200;
-        S.settings.timestep = 50;%25;
-        S.settings.freqres = res;%5;%
-        D = spm_eeg_tf(S);
-
-        if ~keep, delete(S.D);  end
-
-
-        fD{f} = D;
-        
-        
- 
     end
     if numel(fD)>1
         S = [];
@@ -149,10 +127,33 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
         end
         S.recode = 'same';
         S.prefix='';
-        D = spm_eeg_merge(S);
+        De= spm_eeg_merge(S);
 
         if ~keep, delete(S.D);  end
+    else
+        De = fD{1};
     end
+
+    
+
+    freq = 1:2.5:100;
+    res  = 2.5*ones(size(freq));
+    res(freq>25) = 0.1*freq(freq>25);
+    res(freq>50) = 5;
+    
+    S = [];
+    S.D = De;
+    S.channels = {'EEG', 'LFP'};
+    S.frequencies = freq;
+    S.timewin = [-Inf Inf];
+    S.phase = 0;
+    S.method = 'mtmconvol';
+    S.settings.taper = 'dpss';
+    S.settings.timeres = 400;%;200;
+    S.settings.timestep = 50;%25;
+    S.settings.freqres = res;%5;%
+    D = spm_eeg_tf(S);
+
 
     S = [];
     S.D = D;
@@ -162,7 +163,6 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
 
     if ~keep, delete(S.D);  end
 
-    
     
     S = [];
     S.D = D;
@@ -177,9 +177,54 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
     S = [];
     S.D = D;
     
-    D = move(S.D, ['evokedTF_' details.initials '_rec_' num2str(rec_id) '_' condition]);
+    D = move(S.D, ['rmtf_' details.initials '_rec_' num2str(rec_id) '_' condition]);
 
     delete(S.D)
+
+    D=De;
+    lfpind = D.indchantype('LFP');
+    for i = 1:length(lfpind)
+        S = [];
+        S.D = D;
+        S.pretrig = D.time(1, 'ms');
+        S.posttrig = D.time(D.nsamples, 'ms');
+        S.timewin = 400;
+        S.timestep = 50;
+        S.freqwin = [0 90];
+        S.robust = 'no';
+        S.chancomb = [D.chanlabels(D.indchantype('EEG', 'GOOD'))' repmat(D.chanlabels(lfpind(i)), length(D.indchantype('EEG', 'GOOD')), 1)];
+        Dc = spm_eeg_ft_multitaper_coherence(S);
+        
+        Dc = chanlabels(Dc, ':', S.chancomb(:, 1));
+        Dc = chantype(Dc, ':', 'EEG');
+        Dc = type(Dc, 'evoked');
+        save(Dc);
+        
+        S = [];
+        S.D = Dc;
+        S.task = 'project3D';
+        S.modality = 'EEG';
+        S.updatehistory = 0;
+        S.save = 1;
+        
+        Dc = spm_eeg_prep(S);
+        
+        Dc = move(Dc, ['COH_sensors_' char(D.chanlabels(lfpind(i)))]);   
+        
+        S = [];
+        S.D = Dc;
+        S.method = 'Rel';
+        S.timewin = [-Inf 0];
+        Dc = spm_eeg_tf_rescale(S);
+
+        if ~keep, delete(S.D);  end
+    end
+
+    S = [];
+    S.D = De;
+    
+    De = move(S.D, erase(S.D.fname, '_cont'));
+
 
 end
 

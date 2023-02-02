@@ -1,7 +1,7 @@
 function dbs_eeg_percept_direction_plot(initials, condition, method)
     
 %     method='Granger'; %Coherence
-    [files, seq, root, details] = dbs_subjects(initials, 1);
+    [files_, seq, root, details] = dbs_subjects(initials, 1);
     cd(fullfile(root, condition));
 
     try
@@ -23,7 +23,7 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
     for sub_condition=1:numel(D.condlist)
         subcondition =D.condlist{sub_condition};% 'foot_L_up';
     
-        [files, seq, root, details] = dbs_subjects(initials, 1);
+        [files_, seq, root, details] = dbs_subjects(initials, 1);
         cd(fullfile(root, condition));
     
         files = spm_select('FPList','.', ['C_', condition, '_', subcondition, '.', initials '_rec_' num2str(1) '_' condition '\w*.mat']);
@@ -33,7 +33,7 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
 
         Dc_off=spm_eeg_load(files);
     
-        [files, seq, root, details] = dbs_subjects(initials, 2);
+        [files_, seq, root, details] = dbs_subjects(initials, 2);
         cd(fullfile(root, condition));
 
         files = spm_select('FPList','.', ['C_', condition, '_', subcondition, '.', initials '_rec_' num2str(2) '_' condition '\w*.mat']);

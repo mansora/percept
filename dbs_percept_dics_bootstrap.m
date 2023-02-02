@@ -11,7 +11,7 @@ function dbs_percept_dics_bootstrap(initials, rec_id, condition, band)
     space = 'mni';%'native';%
 
     try
-        [files, seq, root, details] = dbs_subjects_percept(initials, rec_id);
+        [files_, seq, root, details] = dbs_subjects_percept(initials, rec_id);
     catch
         return;
     end

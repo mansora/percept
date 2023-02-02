@@ -1,7 +1,7 @@
 function dbs_percept_lfp_spectra_plot(initials, condition)
 
     
-    [files, seq, root, details] = dbs_subjects_percept(initials, 1);
+    [files_, seq, root, details] = dbs_subjects_percept(initials, 1);
     cd(fullfile(root, condition));
     
     files = spm_select('FPList','.', ['LFP_spect_', '.', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
@@ -16,7 +16,7 @@ function dbs_percept_lfp_spectra_plot(initials, condition)
     end
     D1_EEG = spm_eeg_load(files);
 
-    [files, seq, root, details] = dbs_subjects_percept(initials, 2);
+    [files_, seq, root, details] = dbs_subjects_percept(initials, 2);
     cd(fullfile(root, condition));
     
     files = spm_select('FPList','.', ['LFP_spect_', '.', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);

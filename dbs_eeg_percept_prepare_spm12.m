@@ -163,6 +163,51 @@ if ~keep, delete(S.D);  end
     if ~keep, delete(S.D);  end
 
 
+    
+
+
+    %%
+    % Downsample =======================================================
+    % note that the trialdef file is not downsampled, you should include
+    % this
+    if D.fsample > 250
+
+        S = [];
+        S.D = D;
+        S.fsample_new = 250;
+
+        D = spm_eeg_downsample(S);
+
+        if ~keep, delete(S.D);  end
+    end
+
+    S = [];
+    S.D = D;
+    S.type = 'butterworth';
+    S.band = 'stop';
+    S.freq = [48 52];
+    S.dir = 'twopass';
+    S.order = 5;
+
+    while S.freq(2)<min(600, (D.fsample/2))
+        D = spm_eeg_filter(S);
+        if ~keep, delete(S.D);  end
+
+        S.D = D;
+        S.freq = S.freq+50;
+    end
+
+    if isfield(details, 'bandstop') && ~isempty(details.bandstop)
+        for i = 1:length(details.bandstop)
+            S.D = D;
+            S.freq = [-1 1]+details.bandstop(i);
+            D = spm_eeg_filter(S);
+            if ~keep, delete(S.D);  end
+        end
+    end
+
+
+    %% artefact detection=======================================================
     event     = D.events(1, 'samples');
     eventdata = zeros(1, D.nsamples);
 
@@ -214,48 +259,9 @@ if ~keep, delete(S.D);  end
 
 
 
-    %%
-    % Downsample =======================================================
-    % note that the trialdef file is not downsampled, you should include
-    % this
-    if D.fsample > 250
-
-        S = [];
-        S.D = D;
-        S.fsample_new = 250;
-
-        D = spm_eeg_downsample(S);
-
-        if ~keep, delete(S.D);  end
-    end
-
-    S = [];
-    S.D = D;
-    S.type = 'butterworth';
-    S.band = 'stop';
-    S.freq = [48 52];
-    S.dir = 'twopass';
-    S.order = 5;
-
-    while S.freq(2)<min(600, (D.fsample/2))
-        D = spm_eeg_filter(S);
-        if ~keep, delete(S.D);  end
-
-        S.D = D;
-        S.freq = S.freq+50;
-    end
-
-    if isfield(details, 'bandstop') && ~isempty(details.bandstop)
-        for i = 1:length(details.bandstop)
-            S.D = D;
-            S.freq = [-1 1]+details.bandstop(i);
-            D = spm_eeg_filter(S);
-            if ~keep, delete(S.D);  end
-        end
-    end
 
 
-    ecgmethod = 'svd';
+    ecgmethod = 'perceive';
 
     lfpchan = D.indchantype('LFP');
     ecg = zeros(length(lfpchan), D.nsamples);
@@ -271,12 +277,20 @@ if ~keep, delete(S.D);  end
                 if ecg_out.detected
                     cleanlfp  = ecg_out.cleandata;
                     ecg(i, :) = lfp-cleanlfp;
-                    D(lfpchan(i), :) = cleanlfp;
+                    D(lfpchan(i), :, 1) = cleanlfp;
                 end
             case 'svd'
                 ev    = D.events(':');
                 evv   = ev(strmatch('artefact_heartbeat', {ev.type}));
                 ecg_times  = [evv(:).time];
+
+                figure, plot(D.time,  squeeze(D(lfpchan(i), :,1)))
+                hold on, plot(ecg_times, mean(squeeze(D(lfpchan(i), :,1))), 'r*')
+                hold on, plot(ecg_times-0.1630, mean(squeeze(D(lfpchan(i), :,1))), 'k*')
+
+
+%                 ecg_times=ecg_times-0.2530;
+%                 ecg_times=ecg_times-0.1630;
                
                 % for PQRST
                 pre_R_time = 0.25;
@@ -295,7 +309,7 @@ if ~keep, delete(S.D);  end
 
                 % for left hemisphere:
                 settings.label              = char(D.chanlabels(lfpchan(i)));
-                [cleanlfp,proj_out] = continuous_ecgremoval_new(lfp,settings, D(D.indchannel('ECG'), :), D.indsample(ecg_times));
+                [cleanlfp,proj_out] = continuous_ecgremoval_new(lfp,settings, D(D.indchannel('ECG'), :));
                 ecg(i, :) = lfp-cleanlfp';
                 D(lfpchan(i), :, 1) = cleanlfp';
         end
@@ -370,8 +384,10 @@ if ~keep, delete(S.D);  end
     end
 
     epoch = true;
+    ev    = D.events(':');
     switch condition
         case 'R'
+            ev    = D.events(':');
             trialength = 1000;
             trl = 1:round(1e-3*trialength*D.fsample):D.nsamples;
             trl = [trl(1:(end-1))' trl(2:end)'-1 0*trl(2:end)'];
@@ -715,6 +731,10 @@ if ~keep, delete(S.D);  end
                 sitting = unique([1 sitting]);
     
                 if length(sitting)~=length(standing)
+                    figure, plot(headY)
+                    hold on, plot(diff(sit)*100)
+                    hold on, plot(sitting, mean(headY), 'r*')
+                    plot(standing, mean(headY), 'k*')
                     error('sitting/standing numbers mismatch');
                 end
     
@@ -732,7 +752,7 @@ if ~keep, delete(S.D);  end
                         trl  = [trl; ctrl];
                     end
                     if i<length(sitting)
-                        ctrl = standing(i):D.fsample:standing(i+1);
+                        ctrl = standing(i):D.fsample:sitting(i+1);
                         if length(ctrl)>3
                             ctrl = [ctrl(2:(end-2))' ctrl(3:(end-1))' 0*ctrl(2:(end-2))'];
                             conditionlabels = [conditionlabels, repmat({'stand'}, 1, size(ctrl, 1))];
@@ -749,14 +769,17 @@ if ~keep, delete(S.D);  end
                 start = D.indsample(min([evv_walk.time]));
                 stop = D.indsample(max([evv_walk.time]));
                 
-                [~, onsets1]= findpeaks(zscore(diff(headY(start:stop))),...
+                [~,onsets1,widthz1]= findpeaks(zscore(diff(smooth(headY(start:stop),100))),...
                     "MinPeakHeight", 2, "MinPeakProminence", 3, 'MinPeakDistance', 5*D.fsample);
                 onsets1=onsets1+start;
-                [~, onsets2]= findpeaks(-zscore(diff(headY(start:stop))),...
+                [~,onsets2,widthz2]= findpeaks(-zscore(diff(smooth(headY(start:stop),100))),...
                     "MinPeakHeight", 2, "MinPeakProminence", 3, 'MinPeakDistance', 5*D.fsample);
                 onsets2=onsets2+start;
-                
-                onsets=sort([onsets1,onsets2], 'ascend');
+                onsets=[onsets1;onsets2];
+                widthz=[widthz1;widthz2];
+                [onsets,ind_p]=sort(onsets, 'ascend');
+                widthz=widthz(ind_p);
+
                 
                 k=[]; m=1;
                 for i=1:numel(onsets)-1
@@ -924,90 +947,92 @@ if ~keep, delete(S.D);  end
 
 
 end
-%%
-fD(cellfun('isempty', fD)) = [];
-
-if ~isempty(ecgind)
-    aD(cellfun('isempty', fD)) = [];
-end
-
-nf = numel(fD);
-
-if numel(fD)>1
+%
+if rec_id~=4
+    fD(cellfun('isempty', fD)) = [];
+    
     if ~isempty(ecgind)
-        S.D = fname(aD{1});
-        for f = 2:numel(aD)
-            S.D = strvcat(S.D, fname(aD{f}));
-        end
-        Da = spm_eeg_merge(S);
+        aD(cellfun('isempty', fD)) = [];
     end
-
-    if epoch
-        S = [];
-        S.D = fname(fD{1});
-        for f = 2:numel(fD)
-            S.D = strvcat(S.D, fname(fD{f}));
-        end
-        S.recode = 'same';
-        D = spm_eeg_merge(S);
-
-        fileind =[];
-        for f = 1:numel(fD)
-            fileind = [fileind f*ones(1, ntrials(fD{f}))];
-            D = events(D, find(fileind == f), events(fD{f}, ':'));
-            D = trialonset(D, find(fileind == f), trialonset(fD{f}, ':'));
-
-            if ~keep
-                delete(fD{f});
+    
+    nf = numel(fD);
+    
+    if numel(fD)>1
+        if ~isempty(ecgind)
+            S.D = fname(aD{1});
+            for f = 2:numel(aD)
+                S.D = strvcat(S.D, fname(aD{f}));
             end
+            Da = spm_eeg_merge(S);
         end
-        D.fileind = fileind;
-
-        fD = {D};
+    
+        if epoch
+            S = [];
+            S.D = fname(fD{1});
+            for f = 2:numel(fD)
+                S.D = strvcat(S.D, fname(fD{f}));
+            end
+            S.recode = 'same';
+            D = spm_eeg_merge(S);
+    
+            fileind =[];
+            for f = 1:numel(fD)
+                fileind = [fileind f*ones(1, ntrials(fD{f}))];
+                D = events(D, find(fileind == f), events(fD{f}, ':'));
+                D = trialonset(D, find(fileind == f), trialonset(fD{f}, ':'));
+    
+                if ~keep
+                    delete(fD{f});
+                end
+            end
+            D.fileind = fileind;
+    
+            fD = {D};
+        end
+    elseif  numel(fD)==1
+        fD{1}.fileind = ones(1, ntrials(fD{1}));
+    
+        if ~isempty(ecgind)
+            Da = aD{1};
+        end
     end
-elseif  numel(fD)==1
-    fD{1}.fileind = ones(1, ntrials(fD{1}));
-
-    if ~isempty(ecgind)
-        Da = aD{1};
+    %{
+    S = [];
+    S.D = Da;
+    S.method = 'SVD';
+    S.timewin = [0
+        100];
+    S.ncomp = 2;
+    Da = spm_eeg_spatial_confounds(S);
+    
+    S = [];
+    S.D = D;
+    S.method = 'SPMEEG';
+    S.conffile = fullfile(Da);
+    D = spm_eeg_spatial_confounds(S);
+    
+    S = [];
+    S.D = D;
+    S.correction = 'SSP';
+    D = spm_eeg_correct_sensor_data(S);
+    
+    if ~keep, delete(S.D);  end
+    
+    % Comment out to keep the heartbeat file for later examination
+    if ~keep, delete(Da);  end
+    %}
+    
+    for f = 1:numel(fD)
+        fD{f}.initials = initials;
+        fD{f} = dbs_eeg_headmodelling(fD{f});
     end
+    
+    if numel(fD)==1
+        fD = fD{1};
+    end
+    
+    %
 end
-%{
-S = [];
-S.D = Da;
-S.method = 'SVD';
-S.timewin = [0
-    100];
-S.ncomp = 2;
-Da = spm_eeg_spatial_confounds(S);
-
-S = [];
-S.D = D;
-S.method = 'SPMEEG';
-S.conffile = fullfile(Da);
-D = spm_eeg_spatial_confounds(S);
-
-S = [];
-S.D = D;
-S.correction = 'SSP';
-D = spm_eeg_correct_sensor_data(S);
-
-if ~keep, delete(S.D);  end
-
-% Comment out to keep the heartbeat file for later examination
-if ~keep, delete(Da);  end
-%}
-
-for f = 1:numel(fD)
-    fD{f}.initials = initials;
-    fD{f} = dbs_eeg_headmodelling(fD{f});
-end
-
-if numel(fD)==1
-    fD = fD{1};
-end
-
-%%
 
 
 return

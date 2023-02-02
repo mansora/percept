@@ -25,6 +25,10 @@ function [eeg_file_withvid offset_end]=dbs_eeg_percept_synchronise_video(video_f
         LED_markersEEG=find(strcmp(eventss(2,:),'T  1'));
     end
 
+    if contains(eegfile, 'LN_PR_D001_0=20220107_0007.vhdr')
+        LED_markersEEG=find(strcmp(eventss(2,:),'T  1'));
+    end
+
     xx=diff(cell2mat(eventss(3,LED_markersEEG)));
     figure, plot(xx,10,'*r')
 
@@ -53,14 +57,23 @@ function [eeg_file_withvid offset_end]=dbs_eeg_percept_synchronise_video(video_f
     %     n2=detrend(LED_conditionR_fieldtrip.trial{1});
 %         n2=detrend(video_file.LED_signal);
         n2=zscore(diff(video_file.LED_signal));
-        thresh_=7;
+        if contains(eegfile, 'LN_PR_D007_20220805_0003.vhdr') || ...
+                contains(eegfile, 'LN_PR_D009_20221021_0002.vhdr') || ...
+                contains(eegfile, 'LN_PR_D009_20221021_0004.vhdr') || ...
+                contains(eegfile, 'LN_PR_D008_20221014_0010.vhdr')
+
+            thresh_=10;
+        else
+            thresh_=7;
+        end
+        
         go_on=[];
         temp_start=[];
         while isempty(temp_start) && isempty(go_on)
             offss=500;
             TF= find(abs(n2(offss:end-1000)) > (mean(n2)+thresh_*std(n2))); 
             temp_start=round(min(TF(TF<0.4*size(n2,2))))-offss;
-            thresh_=thresh_-0.5;
+            thresh_=thresh_-1;
             if thresh_<3
                 go_on=1;
             end
@@ -72,9 +85,9 @@ function [eeg_file_withvid offset_end]=dbs_eeg_percept_synchronise_video(video_f
         go_on=[];
         temp_end=[];
         while isempty(temp_end) && isempty(go_on)
-            TF= find(abs(n2(1:end-1000)) > (mean(n2)+thresh_*std(n2))); 
+            TF= find(abs(n2(1:end-2000)) > (mean(n2)+thresh_*std(n2))); 
             temp_end=round(max(TF(TF>0.6*size(n2,2))));
-            thresh_=thresh_-0.5;
+            thresh_=thresh_-1;
             if thresh_<3
                 go_on=1;
             end

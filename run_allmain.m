@@ -1,38 +1,43 @@
 initials={'LN_PR_D001', 'LN_PR_D003','LN_PR_D004','LN_PR_D005', 'LN_PR_D006','LN_PR_D007','LN_PR_D008','LN_PR_D009'};
 tasks={'R', 'ACT', 'PMT', 'SST', 'HPT', 'POUR', 'WALK', 'SPEAK', 'WRITE', 'SGT'};
-failed_patient={};
-
-for t=1:numel(tasks)
-    failed_patient_Off={};
-    failed_patient_On={};
-    for i=1:numel(initials)
-        close all
-        try dbs_eeg_percept_prepare_spm12(initials{i}, 1, tasks{t})
-        catch failed_patient_Off=[failed_patient_Off; initials{i}];    
-        end
-
-        close all
-        try dbs_eeg_percept_prepare_spm12(initials{i}, 2, tasks{t})
-        catch failed_patient_On=[failed_patient_On; initials{i}];
-        end
-    end
-    failed_patient{t,1}=failed_patient_Off;
-    failed_patient{t,2}=failed_patient_On;
-end
+failed_patient_prep={};
+failed_patient_task={};
 
 
-% for t=2:numel(tasks)
-%     failed_patient={};
+% for t=1:numel(tasks)
+%     failed_patient_Off={};
+%     failed_patient_On={};
 %     for i=1:numel(initials)
 %         close all
-%         try run_allplots(initials{i}, tasks{t},[])
-%         catch failed_patient=[failed_patient; initials{i}];    
-%         end    
+%         try dbs_eeg_percept_prepare_spm12(initials{i}, 1, tasks{t})
+%         catch failed_patient_Off=[failed_patient_Off; initials{i}];    
+%         end
+% 
+%         close all
+%         try dbs_eeg_percept_prepare_spm12(initials{i}, 2, tasks{t})
+%         catch failed_patient_On=[failed_patient_On; initials{i}];
+%         end
 %     end
-%     failed_patient_task{t,1}=failed_patient;
+%     failed_patient_prep{t,1}=failed_patient_Off;
+%     failed_patient_prep{t,2}=failed_patient_On;
 % end
 
 
+for t=1:numel(tasks)
+    failed_patient={};
+    for i=1:numel(initials)
+        close all
+        try run_allplots(initials{i}, tasks{t},[])
+        catch failed_patient=[failed_patient; initials{i}];    
+        end    
+    end
+    failed_patient_task{t,1}=failed_patient;
+    
+end
+
+for t=1:numel(tasks)
+barplot_different_freqbands(tasks{t})
+end
 
 % for i=1:8
 %     close all

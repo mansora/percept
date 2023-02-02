@@ -70,11 +70,35 @@ if details.process_videos==1 && ~isempty(files)
         video_file.LED_offset_end=details.vidoffset(2,f);
         video_file.LED_signal=load(files{6}).LED_signal;
     else
-        [LED_offset_start, LED_offset_end, LED_signal]=dbs_eeg_percept_determine_video_offset_LED([files{5},'.mp4'], files{3}, files{1});
-        video_file.LED_offset_start=LED_offset_start;
-        video_file.LED_offset_end=LED_offset_end;
-        video_file.LED_signal=LED_signal;
+        if details.save_LED_info==1
+        txt=[];
+        while ~strcmp(txt,'y')
+            [LED_offset_start, LED_offset_end, LED_signal]=dbs_eeg_percept_determine_video_offset_LED([files{5},'.mp4'], files{3}, files{1});
+            video_file.LED_offset_start=LED_offset_start;
+            video_file.LED_offset_end=LED_offset_end;
+            video_file.LED_signal=LED_signal;
+            figure, plot(LED_signal)
+            title('are you happy with the LED signal? y/n ')
+            txt = input('are you happy with the LED signal? y/n ',"s");
+        end
         
+
+        dbsroot='\\piazzolla\vlad_shared';
+        [~, file_table] = xlsread(fullfile(dbsroot, details.initials, [details.initials '.xlsx']));
+        excel_entry=strmatch(erase(spm_file(files{1},'filename'),'.vhdr'), file_table(:,1), 'exact');
+        xlswrite(fullfile(dbsroot, details.initials, [details.initials '.xlsx']), 0, 1,['E', num2str(excel_entry)]);
+        xlswrite(fullfile(dbsroot, details.initials, [details.initials '.xlsx']), LED_offset_start, 1,['F', num2str(excel_entry)]);
+        xlswrite(fullfile(dbsroot, details.initials, [details.initials '.xlsx']), LED_offset_end, 1,['G', num2str(excel_entry)]);
+        save([strrep(files{5}, 'videos', 'signals'), '.mat'], 'LED_signal')
+        else
+            [LED_offset_start, LED_offset_end, LED_signal]=dbs_eeg_percept_determine_video_offset_LED([files{5},'.mp4'], files{3}, files{1});
+            video_file.LED_offset_start=LED_offset_start;
+            video_file.LED_offset_end=LED_offset_end;
+            video_file.LED_signal=LED_signal;
+
+        end
+
+
         % TODO write outputs of the video offset to the excel file
         % note that you may have to do this not now but after
         % dbs_eeg_percept_synchronise as it corrects stuff there, but then
@@ -103,17 +127,26 @@ end
 if details.synch_percept_stamp==1
     if ~isempty(video_file)
         [eeg_file, dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_withvid, files{1}, files{2}, details, f);
-        [eeg_file, trl]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, trl, details,f);
+        [eeg_file, trl, offset_stamp_start, offset_stamp_end]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, trl, details,f);
 
     else
         cfg = [];
         cfg.dataset = files{1};
         eeg_file_temp=ft_preprocessing(cfg);
         [eeg_file, dbs_file]=dbs_eeg_percept_prepare_for_syncing_perceptstamp(eeg_file_temp, files{1}, files{2}, details, f);
-        [eeg_file, trl]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, trl, details,f);
+        [eeg_file, trl, offset_stamp_start, offset_stamp_end]=dbs_eeg_percept_synching_perceptstamp(eeg_file, dbs_file, trl, details,f);
         
     end
 
+
+    temp=strsplit(spm_file(files{3},'filename'),'_');
+    if strcmp(temp(end-2),'REST')
+        condition='R';
+    else
+        condition=temp{end-2};
+    end
+    save([details.initials '_rec_' num2str(details.rec_id) '_' condition '_' num2str(f) '_offsets.mat'],...
+        'offset_stamp_start','offset_stamp_end')
     D=spm_eeg_ft2spm(eeg_file, [details.initials, '_synchPRstamp_', num2str(f),'.mat']);
     
 
@@ -220,11 +253,11 @@ if ~keep delete(D1); end
 S = [];
 S.D = D;
 temp=strsplit(spm_file(files{3},'filename'),'_');
-if strcmp(temp(end-3),'OFF')
-    rec_id=1;
-elseif strcmp(temp(end-3),'ON')
-    rec_id=2;
-end
+% if strcmp(temp(end-3),'OFF')
+%     rec_id=1;
+% elseif strcmp(temp(end-3),'ON')
+%     rec_id=2;
+% end
 
 if strcmp(temp(end-2),'REST')
     condition='R';
@@ -234,7 +267,7 @@ end
 
 
 
-D = copy(S.D, [details.initials '_rec_' num2str(rec_id) '_' condition '_' num2str(f) '_preproc']);
+D = copy(S.D, [details.initials '_rec_' num2str(details.rec_id) '_' condition '_' num2str(f) '_preproc']);
 
 delete(S.D)
 % D = spm_eeg_ft2spm(eeg_file, S.outfile);

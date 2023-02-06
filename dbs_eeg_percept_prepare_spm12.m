@@ -67,9 +67,9 @@ for f = 1:size(files, 1)
 
 %     if ~keep, delete(S.D);  end
 
-
     S = [];
     S.D = D;
+    
     S.type = 'butterworth';
     S.band = 'low';
     S.freq = 95;
@@ -77,21 +77,9 @@ for f = 1:size(files, 1)
     S.order = 5;
     D = spm_eeg_filter(S);
 
-%     if strcmp(details.initials,'LN_PR_D008') && strcmp(condition,'SST')
-%         S = [];
-%         S.D = D;
-%         S.type = 'butterworth';
-%         S.band = 'stop';
-%         S.freq = [48 52];
-%         S.dir = 'twopass';
-%         S.order = 5;
-%     end
+    if ~keep, delete(S.D);  end
 
 
-if ~keep, delete(S.D);  end
-
-
-%     if ~keep, delete(S.D);  end
 
 
     if details.removesync
@@ -137,6 +125,91 @@ if ~keep, delete(S.D);  end
         print(gcf,['D:\home\Data\', details.initials,'_',...
         condition, '_', num2str(rec_id),'_removesynch.jpg'],'-djpeg');
     end
+
+   
+
+    if details.hampelfilter
+        wlen     = 5;
+        ct       = 6;
+    
+        freqspan = linspace(0,D.fsample/2, size(D,2)/2+1);
+    
+        mind=@(a,b) min(abs(a-b));
+        ind=[];
+        [~, ind1]=mind(freqspan, 1000);
+        ind=[ind 1:ind1];
+        ind=unique(ind);
+    
+        eegchan  = D.indchantype('EEG');
+        lfpchan  = D.indchantype('LFP');
+    
+        %% Calculation
+        % All EEG channels FFT
+        multi_chan=fft(squeeze(D(eegchan,:,1)), [], 2);
+    
+        % Process real and imaginary parts separately and reconstruct
+        abstemp=hampelv(real(multi_chan),wlen,ct,ind,freqspan);
+        imtemp=hampelv(imag(multi_chan),wlen,ct,ind,freqspan);
+        cleaned=complex(abstemp,imtemp);
+        
+        % Correct complex conjugate so that ifft works
+        szc=size(cleaned,2)/2;
+        rev_cleaned=fliplr(cleaned(:,2:szc));
+        cleaned(:,(szc+2):end)=conj(rev_cleaned);
+        
+        % Save cleaned data
+        D(eegchan,:,1)=ifft(cleaned, [], 2); 
+    
+    
+    
+         %% Calculation
+        % All EEG channels FFT
+        multi_chan=fft(squeeze(D(lfpchan,:,1)), [], 2);
+    
+        % Process real and imaginary parts separately and reconstruct
+        abstemp=hampelv(real(multi_chan),wlen,ct,ind,freqspan);
+        imtemp=hampelv(imag(multi_chan),wlen,ct,ind,freqspan);
+        cleaned=complex(abstemp,imtemp);
+        
+        % Correct complex conjugate so that ifft works
+        szc=size(cleaned,2)/2;
+        rev_cleaned=fliplr(cleaned(:,2:szc));
+        cleaned(:,(szc+2):end)=conj(rev_cleaned);
+        
+        % Save cleaned data
+        D(lfpchan,:,1)=ifft(cleaned, [], 2); 
+
+
+
+        signal=squeeze(D(lfpchan(1),:,1));
+        Y=fft(signal);
+        
+        Fs = D.fsample; 
+        L  = size(signal,2);
+        
+        P2 = abs(Y/L);
+        P1 = P2(1:L/2+1);
+        P1(2:end-1) = 2*P1(2:end-1);
+        
+        f = Fs*(0:(L/2))/L;
+        
+        figure, plot(f,P1)
+        print(gcf,['D:\home\Data\', details.initials,'_',...
+        condition, '_', num2str(rec_id),'_hampelfilterLFP.jpg'],'-djpeg');
+        % subplot(2,1,1), plot(f,P1) 
+        title("LFP signal")
+        xlabel("f (Hz)")
+        ylabel("|P1(f)|")
+
+    end
+
+
+
+
+
+    
+   
+
 
     eegchan  = D.indchantype('EEG');
     goodind  = D.indchantype('EEG', 'GOOD');
@@ -205,6 +278,27 @@ if ~keep, delete(S.D);  end
             if ~keep, delete(S.D);  end
         end
     end
+
+
+    S = [];
+    S.D = D;
+    
+    S.type = 'butterworth';
+    S.band = 'low';
+    S.freq = 95;
+    S.dir = 'twopass';
+    S.order = 5;
+    D = spm_eeg_filter(S);
+
+    if ~keep, delete(S.D);  end
+ 
+
+
+%     if ~keep, delete(S.D);  end
+
+
+ 
+
 
 
     %% artefact detection=======================================================

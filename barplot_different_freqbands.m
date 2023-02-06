@@ -3,6 +3,8 @@ function barplot_different_freqbands(condition)
     initials={'LN_PR_D001', 'LN_PR_D003','LN_PR_D004','LN_PR_D005','LN_PR_D007','LN_PR_D008','LN_PR_D009'};
 
     for i=1:numel(initials)
+        try
+
         [files_, seq, root, details] = dbs_subjects_percept(initials{i}, 1);
         cd(fullfile(root, condition));
         
@@ -10,6 +12,7 @@ function barplot_different_freqbands(condition)
         if isempty(files)
             files = spm_select('FPList','.', ['LFP_spect_', initials{i} '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
         end
+       
         D1_LFP_temp = spm_eeg_load(files);
         lfpchan = D1_LFP_temp.indchantype('LFP');
        
@@ -18,6 +21,7 @@ function barplot_different_freqbands(condition)
         if isempty(files)
             files = spm_select('FPList','.', ['EEG_spect_', initials{i} '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
         end
+
         D1_EEG_temp = spm_eeg_load(files);
         
 
@@ -79,7 +83,16 @@ function barplot_different_freqbands(condition)
 
        
         end
+        catch
+            warning('fix this in the code!!!!!!!')
+        end
     end
+
+    limit_=15;
+    limit_LFP=4;
+
+    D1_EEG_all(3,:,:)=[];
+    D2_EEG_all(3,:,:)=[];
 
         for condz=1:numel(D1_LFP_temp.conditions)
             
@@ -107,7 +120,7 @@ function barplot_different_freqbands(condition)
             highgamma = mean(D2_EEG(:,find(D2_EEG_temp.frequencies==52):find(D2_EEG_temp.frequencies==90)),2);
         
             datapoints_D2_EEG=[theta', alpha', beta', lowgamma', highgamma'];
-            n=7;
+            n=6;  %% fix thissssss
             x1=repmat(1:5,n,1)-0.4;
             x2=repmat(1:5,n,1)+0.4;
             cgroupdata=[ones(1,n*5), zeros(1,n*5)]; % note that because cgroupdata is specified like this legend is the other way around! Do not confuse
@@ -122,7 +135,7 @@ function barplot_different_freqbands(condition)
                      'k', 'LineStyle', '--', 'LineWidth', 1,'HandleVisibility','off')
                 end
             end
-        
+            ylim([0 limit_])
             legend({'on', 'off'})
             xticklabels({'', 'theta','alpha','beta','lowgamma','highgamma'})
             xlabel('frequency bands', 'FontSize', 20, 'FontWeight','bold')
@@ -172,7 +185,7 @@ function barplot_different_freqbands(condition)
                      'k', 'LineStyle', '--', 'LineWidth', 1,'HandleVisibility','off')
                 end
             end
-        
+            ylim([0 limit_LFP])
             legend('Left on','Left off')
             xticklabels({'', 'theta','alpha','beta','lowgamma','highgamma'})
             xlabel('frequency bands', 'FontSize', 20, 'FontWeight','bold')
@@ -219,7 +232,7 @@ function barplot_different_freqbands(condition)
                      'k', 'LineStyle', '--', 'LineWidth', 1,'HandleVisibility','off')
                 end
             end
-        
+            ylim([0 limit_LFP])
             legend('Right on','Right off')
             xticklabels({'', 'theta','alpha','beta','lowgamma','highgamma'})
             xlabel('frequency bands', 'FontSize', 20, 'FontWeight','bold')
@@ -268,7 +281,7 @@ function barplot_different_freqbands(condition)
                      'k', 'LineStyle', '--', 'LineWidth', 1,'HandleVisibility','off')
                 end
             end
-            
+            ylim([0 limit_LFP])
             legend('ALL on','ALL off')
             xticklabels({'', 'theta','alpha','beta','lowgamma','highgamma'})
             xlabel('frequency bands', 'FontSize', 20, 'FontWeight','bold')

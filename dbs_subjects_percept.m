@@ -27,6 +27,7 @@ details.synch_percept_stamp=1;
 details.process_logfiles=1;
 details.process_videos=1;  % usually 1, or videos will not be processed!
 details.automatic_tracking=0;
+details.hampelfilter=1;
 
 
 % details.chanset = getfield(load(details.chanset), 'label');

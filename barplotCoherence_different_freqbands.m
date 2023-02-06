@@ -93,7 +93,6 @@ function barplotCoherence_different_freqbands(condition)
      set(gca,'linewidth',5)
      set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
 
-disp(i)
             
         
 end

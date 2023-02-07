@@ -23,7 +23,7 @@ failed_patient_task={};
 % end
 
 
-for t=1:numel(tasks)
+for t=2:3 %numel(tasks)
     failed_patient={};
     for i=1:numel(initials)
         close all
@@ -35,8 +35,9 @@ for t=1:numel(tasks)
     
 end
 
-for t=1:numel(tasks)
-barplot_different_freqbands(tasks{t})
+for t=1:3 %numel(tasks)
+    barplot_different_freqbands(tasks{t})
+    barplotCoherence_different_freqbands(tasks{t})
 end
 
 % for i=1:8

@@ -45,6 +45,8 @@ for f = 1:size(files, 1)
 
         D = chantype(D, D.indchannel(details.chan), 'LFP');
 
+        D = chantype(D, D.indchannel('StimArt'), 'PHYS');
+
         if isfield(details, 'ecgchan') && ~isempty(details.ecgchan)
             D = chantype(D, D.indchannel(details.ecgchan), 'ECG');
         end
@@ -181,19 +183,17 @@ for f = 1:size(files, 1)
 
 
 
-        signal=squeeze(D(lfpchan(1),:,1));
-        Y=fft(signal);
         
-        Fs = D.fsample; 
-        L  = size(signal,2);
+        YY=fft(squeeze(D(lfpchan(1),:,1)));
+        LL  = size(squeeze(D(lfpchan(1),:,1)),2);
         
-        P2 = abs(Y/L);
-        P1 = P2(1:L/2+1);
+        P2 = abs(YY/LL);
+        P1 = P2(1:LL/2+1);
         P1(2:end-1) = 2*P1(2:end-1);
         
-        f = Fs*(0:(L/2))/L;
+        freq_f = D.fsample*(0:(LL/2))/LL;
         
-        figure, plot(f,P1)
+        figure, plot(freq_f,P1)
         print(gcf,['D:\home\Data\', details.initials,'_',...
         condition, '_', num2str(rec_id),'_hampelfilterLFP.jpg'],'-djpeg');
         % subplot(2,1,1), plot(f,P1) 
@@ -274,6 +274,7 @@ for f = 1:size(files, 1)
         for i = 1:length(details.bandstop)
             S.D = D;
             S.freq = [-1 1]+details.bandstop(i);
+            S.freq(2) = min(S.freq(2), 0.5*D.fsample-1);
             D = spm_eeg_filter(S);
             if ~keep, delete(S.D);  end
         end
@@ -352,10 +353,15 @@ for f = 1:size(files, 1)
     end
 
 
+    ev    = D.events(':');
+    evv   = ev(strmatch('artefact_heartbeat', {ev.type}));
+    ecg_times  = [evv(:).time];
+
+    ecg_peak_indices = percept_fix_ecg_peaks(squeeze(D(D.indchannel('ECG'), :,1)), D.fsample, D.indsample(ecg_times), false);
 
 
 
-    ecgmethod = 'perceive';
+    ecgmethod = 'svd';
 
     lfpchan = D.indchantype('LFP');
     ecg = zeros(length(lfpchan), D.nsamples);
@@ -374,18 +380,12 @@ for f = 1:size(files, 1)
                     D(lfpchan(i), :, 1) = cleanlfp;
                 end
             case 'svd'
-                ev    = D.events(':');
-                evv   = ev(strmatch('artefact_heartbeat', {ev.type}));
-                ecg_times  = [evv(:).time];
-
-                figure, plot(D.time,  squeeze(D(lfpchan(i), :,1)))
-                hold on, plot(ecg_times, mean(squeeze(D(lfpchan(i), :,1))), 'r*')
-                hold on, plot(ecg_times-0.1630, mean(squeeze(D(lfpchan(i), :,1))), 'k*')
-
-
-%                 ecg_times=ecg_times-0.2530;
-%                 ecg_times=ecg_times-0.1630;
                
+                lfp_peak_indices = percept_fix_ecg_peaks(squeeze(D(lfpchan(i), :,1)), D.fsample, ecg_peak_indices, true);
+
+                figure, plot(D.time,  squeeze(D(lfpchan(i), :,1)))     
+                hold on, plot(D.time(lfp_peak_indices), squeeze(D(lfpchan(i), lfp_peak_indices, 1)), 'r*')
+
                 % for PQRST
                 pre_R_time = 0.25;
                 post_R_time = 0.4;
@@ -396,14 +396,14 @@ for f = 1:size(files, 1)
                 settings.art_time_after_peak    = post_R_time;
                 settings.Fs                     = D.fsample;
                 settings.polarity               = 1;
-                settings.thr                    = 0.1;
+%                 settings.thr                    = 0.1;
                 settings.ncomp                  = 2;
                 settings.showfigs               = 1;
                 settings.savefigs               = 1;
 
                 % for left hemisphere:
                 settings.label              = char(D.chanlabels(lfpchan(i)));
-                [cleanlfp,proj_out] = continuous_ecgremoval_new(lfp,settings, D(D.indchannel('ECG'), :));
+                [cleanlfp,proj_out] = continuous_ecgremoval_new(lfp,settings, D(D.indchannel('ECG'), :), lfp_peak_indices);
                 ecg(i, :) = lfp-cleanlfp';
                 D(lfpchan(i), :, 1) = cleanlfp';
         end

@@ -57,7 +57,7 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
         
         S = [];
         S.D = D;
-        S.timewin = [-1500 3000];
+        S.timewin = [-1500 2000];
         S.reviewtrials = 0;
         S.save = 0;
         for i = 1:size(lbl, 1)

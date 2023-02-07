@@ -21,11 +21,11 @@ ylabel("|P1(f)|")
 
 
 EEGchan=D.indchantype('EEG');
-signal=(squeeze(D(EEGchan(1),:,1)));
+signal=(squeeze(D(EEGchan(12),:,1)));
 
 Y=fft(signal);
 
-Fs = 1000; 
+Fs = D.fsample; 
 L  = size(signal,2);
 
 P2 = abs(Y/L);

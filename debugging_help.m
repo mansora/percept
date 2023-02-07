@@ -6,7 +6,11 @@ figure, plot(n1)
 hold on, plot(TF1*max(n1))
 
 figure, plot(n1)
+hold on, plot(n2)
 hold on, figure, plot(TF1*mean(n1))
+
+figure, plot(n2(abs(offset_stamp_start):end))
+hold on, plot(n1)
 
 
 reftrl = linspace(0, size_EEG/dataEEG.fsample, size_EEG);

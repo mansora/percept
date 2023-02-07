@@ -43,11 +43,11 @@ for condd=1:numel(condition)
     
     dbs_percept_lfp_spectra_plot(initials,condition{condd});
 
-    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [4 7]);
-    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [8 12]);
-    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [13 30]);
-    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [31 48]);
-    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [52 90]);
+%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [4 7]);
+%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [8 12]);
+%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [13 30]);
+%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [31 48]);
+%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [52 90]);
 
 
 

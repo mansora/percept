@@ -1,4 +1,4 @@
-function dbs_percept_EEG_spectra_plot(initials, condition, freqband)
+function dbs_percept_EEG_spectra_statsimages(initials, condition, freqband)
     
     [files_, seq, root, details] = dbs_subjects_percept(initials, 1);
     cd(fullfile(root, condition));
@@ -23,7 +23,7 @@ function dbs_percept_EEG_spectra_plot(initials, condition, freqband)
 
     S=[];
     S.D=D1_EEG;
-    S.mode='scalpxfrequency';
+    S.mode='scalp';
     S.freqwin=freqband;
     [imag_,~]=spm_eeg_convert2images(S);
     for i=1:numel(D1_EEG.conditions)

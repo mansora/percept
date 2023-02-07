@@ -127,6 +127,15 @@ function [eeg_file, logfile, offset_stamp_start, offset_stamp_end]=dbs_eeg_perce
                 offset_stamp_start=offset_stamp_end;
             end
 
+            if strcmp(details.initials,'LN_PR_D006') && f==1 && details.rec_id==2
+                offset_stamp_start=offset_stamp_end;
+            elseif strcmp(details.initials,'LN_PR_D003') && f==3 && details.rec_id==2
+                offset_stamp_start=offset_stamp_end;
+            elseif strcmp(details.initials,'LN_PR_D004') && f==2 && details.rec_id==2
+                offset_stamp_end=offset_stamp_start;
+            end
+
+
             if abs(offset_stamp_start-offset_stamp_end)>eeg_file.fsample*3
                 if strcmp(details.initials,'LN_PR_D001')
                     warning('difference between offset and stamp is too much for LN_PR_D001')

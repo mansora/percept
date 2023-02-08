@@ -36,7 +36,7 @@ else
     ds1 = diff(s1);
     fds1 = medfilt1(ds1, 10);
 
-    missed = find(abs(ds1./fds1-1)>0.1);
+    missed = find(abs(ds1./fds1-1)>0.2);
 
     fixed_peaks = s1;
     fixed_peaks(missed) = [];
@@ -51,8 +51,8 @@ else
             prev = s1(missed(i)-1);
             next = s1(find((1:n)>missed(i) & ~ismember(1:n, missed_orig), 1, 'first'));
             while (next-prev)>1.8*fds1(missed(i))
-                start = round(prev+fds1(missed(i))*0.8);
-                stop  = round(prev+fds1(missed(i))*1.2);
+                start = round(prev+fds1(missed(i))*0.5);
+                stop  = round(prev+fds1(missed(i))*1.5);
                 [~, ind] = max(ecg_enhanced(start:stop));
                 ind = ind+start-1;
                 added = [added ind];
@@ -61,19 +61,23 @@ else
         end
     end
 
-
-    fixed_peaks = sort([fixed_peaks added])+peak_corr;
-
-    for i = 1:numel(fixed_peaks)
-        start = max(1, round(fixed_peaks(i)-fs/10));
-        stop  = min(length(ecg), round(fixed_peaks(i)+fs/10));
-
-        [~, ind] = max(ecg(start:stop));
-        [~, ref] = min(abs(ecg(start:stop)-ecg(fixed_peaks(i))));
-
-        fixed_peaks(i) = fixed_peaks(i) + (ind-ref);
-    end
+    fixed_peaks = sort([fixed_peaks added])+peak_corr;    
 end
+
+fixed_peaks(fixed_peaks<1 | fixed_peaks>length(ecg)) = [];
+
+
+for i = 1:numel(fixed_peaks)
+    start = max(1, round(fixed_peaks(i)-fs/10));
+    stop  = min(length(ecg), round(fixed_peaks(i)+fs/10));
+
+    [~, ind] = max(ecg(start:stop));
+    [~, ref] = min(abs(ecg(start:stop)-ecg(fixed_peaks(i))));
+
+    fixed_peaks(i) = fixed_peaks(i) + (ind-ref);
+end
+
+return
 
 %{
 trfds1 = nan(max(rfds1), size(rfds1, 2));

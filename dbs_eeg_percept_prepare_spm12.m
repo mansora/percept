@@ -335,12 +335,9 @@ for f = 1:size(files, 1)
     S.methods(3).fun = 'threshchan';
     S.methods(3).settings.threshold = 200;
     S.methods(3).settings.excwin = 200;
-    
-    if ~contains(files{f,3}, 'LN_PR_D008_ON_SST_repetition1')
-        S.methods(4).fun = 'heartbeat';
-        S.methods(4).channels = {'ECG'};
-        S.methods(4).settings.excwin = 1;
-    end
+    S.methods(4).fun = 'heartbeat';
+    S.methods(4).channels = {'ECG'};
+    S.methods(4).settings.excwin = 1;
     
     D = spm_eeg_artefact(S);
 

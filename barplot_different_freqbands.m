@@ -23,8 +23,23 @@ function barplot_different_freqbands(condition)
         end
 
         D1_EEG_temp = spm_eeg_load(files);
-        
+        catch
+            warning(['patient ', initials{i}, ' Off stim does not have', condition])
+        end
 
+        if ~strcmp(condition, 'R')
+            cd(fullfile(root, 'R'));
+            files = spm_select('FPList','.', ['LFP_spect_', '.', initials{i} '_rec_' num2str(1) '_R_[0-9]*.mat']);
+            if isempty(files)
+                files = spm_select('FPList','.', ['LFP_spect_', initials{i} '_rec_' num2str(1) '_R_[0-9]*.mat']);
+            end
+            D1_LFP_baseline = spm_eeg_load(files);
+            D1_LFP_baseline=squeeze(D1_LFP_baseline(:,:,1,:));
+        else
+            D1_LFP_baseline=ones(2,97);
+        end
+
+        try
     
         [files_, seq, root, details] = dbs_subjects_percept(initials{i}, 2);
         cd(fullfile(root, condition));
@@ -43,6 +58,22 @@ function barplot_different_freqbands(condition)
             files = spm_select('FPList','.', ['EEG_spect_', initials{i} '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
         end
         D2_EEG_temp = spm_eeg_load(files);
+
+        catch
+            warning(['patient ', initials{i}, ' On stim does not have', condition])
+        end
+
+        if ~strcmp(condition, 'R')
+            cd(fullfile(root, 'R'));
+            files = spm_select('FPList','.', ['LFP_spect_', '.', initials{i} '_rec_' num2str(2) '_R_[0-9]*.mat']);
+            if isempty(files)
+                files = spm_select('FPList','.', ['LFP_spect_', initials{i} '_rec_' num2str(2) '_R_[0-9]*.mat']);
+            end
+            D2_LFP_baseline = spm_eeg_load(files);
+            D2_LFP_baseline=squeeze(D2_LFP_baseline(:,:,1,:));
+        else
+            D2_LFP_baseline=ones(2,97);
+        end
         
         
 
@@ -50,15 +81,15 @@ function barplot_different_freqbands(condition)
         %% 
 
         if strcmp(D1_LFP_temp.chanlabels{lfpchan(1)}(end-3),'L')
-            D1_LFP_1_all(i,:, condz)=squeeze(D1_LFP_temp(1,:,1,condz));
+            D1_LFP_1_all(i,:, condz)=squeeze(D1_LFP_temp(1,:,1,condz))./D1_LFP_baseline(1,:);
         else
-            D1_LFP_2_all(i,:, condz)=squeeze(D1_LFP_temp(1,:,1,condz));
+            D1_LFP_2_all(i,:, condz)=squeeze(D1_LFP_temp(1,:,1,condz))./D1_LFP_baseline(1,:);
         end
         if numel(lfpchan)>1
             if strcmp(D1_LFP_temp.chanlabels{lfpchan(2)}(end-3),'L')
-                D1_LFP_1_all(i,:, condz)=squeeze(D1_LFP_temp(2,:,1,condz));
+                D1_LFP_1_all(i,:, condz)=squeeze(D1_LFP_temp(2,:,1,condz))./D1_LFP_baseline(2,:);
             else
-                D1_LFP_2_all(i,:, condz)=squeeze(D1_LFP_temp(2,:,1,condz));
+                D1_LFP_2_all(i,:, condz)=squeeze(D1_LFP_temp(2,:,1,condz))./D1_LFP_baseline(2,:);
             end
         end
 
@@ -66,15 +97,15 @@ function barplot_different_freqbands(condition)
 
 
         if strcmp(D2_LFP_temp.chanlabels{lfpchan(1)}(end-3),'L')
-            D2_LFP_1_all(i,:, condz)=squeeze(D2_LFP_temp(1,:,1,condz));
+            D2_LFP_1_all(i,:, condz)=squeeze(D2_LFP_temp(1,:,1,condz))./D2_LFP_baseline(1,:);
         else
-            D2_LFP_2_all(i,:, condz)=squeeze(D2_LFP_temp(1,:,1,condz));
+            D2_LFP_2_all(i,:, condz)=squeeze(D2_LFP_temp(1,:,1,condz))./D2_LFP_baseline(1,:);
         end
         if numel(lfpchan)>1
             if strcmp(D2_LFP_temp.chanlabels{lfpchan(2)}(end-3),'L')
-                D2_LFP_1_all(i,:, condz)=squeeze(D2_LFP_temp(2,:,1,condz));
+                D2_LFP_1_all(i,:, condz)=squeeze(D2_LFP_temp(2,:,1,condz))./D2_LFP_baseline(2,:);
             else
-                D2_LFP_2_all(i,:, condz)=squeeze(D2_LFP_temp(2,:,1,condz));
+                D2_LFP_2_all(i,:, condz)=squeeze(D2_LFP_temp(2,:,1,condz))./D2_LFP_baseline(2,:);
             end
         end
 
@@ -83,16 +114,39 @@ function barplot_different_freqbands(condition)
 
        
         end
-        catch
-            warning('fix this in the code!!!!!!!')
-        end
+        
     end
 
     limit_=15;
-    limit_LFP=4;
+    limit_LFP=1.5;
 
-    D1_EEG_all(3,:,:)=[];
-    D2_EEG_all(3,:,:)=[];
+
+    for kk=size(D1_EEG_all,1):-1:1
+        if numel(find(D1_EEG_all(kk,:,1)==0))==size(D1_EEG_all,2) || numel(find(D2_EEG_all(kk,:,1)==0))==size(D2_EEG_all,2) 
+            D1_EEG_all(kk,:,:)=[];
+            D2_EEG_all(kk,:,:)=[];
+        end
+    end
+
+    for kk=size(D1_LFP_1_all,1):-1:1
+        % left side
+        if numel(find(D1_LFP_1_all(kk,:,1)==0))==size(D1_LFP_1_all,2) || numel(find(D2_LFP_1_all(kk,:,1)==0))==size(D2_LFP_1_all,2) 
+            D1_LFP_1_all(kk,:,:)=[];
+            D2_LFP_1_all(kk,:,:)=[];
+        end
+
+        % right side
+        if numel(find(D1_LFP_2_all(kk,:,1)==0))==size(D1_LFP_2_all,2) || numel(find(D2_LFP_2_all(kk,:,1)==0))==size(D2_LFP_2_all,2) 
+            D1_LFP_2_all(kk,:,:)=[];
+            D2_LFP_2_all(kk,:,:)=[];
+        end
+
+
+    end
+
+
+
+
 
         for condz=1:numel(D1_LFP_temp.conditions)
             
@@ -120,7 +174,7 @@ function barplot_different_freqbands(condition)
             highgamma = mean(D2_EEG(:,find(D2_EEG_temp.frequencies==52):find(D2_EEG_temp.frequencies==90)),2);
         
             datapoints_D2_EEG=[theta', alpha', beta', lowgamma', highgamma'];
-            n=6;  %% fix thissssss
+            n=size(D1_EEG,1);  
             x1=repmat(1:5,n,1)-0.4;
             x2=repmat(1:5,n,1)+0.4;
             cgroupdata=[ones(1,n*5), zeros(1,n*5)]; % note that because cgroupdata is specified like this legend is the other way around! Do not confuse
@@ -143,6 +197,7 @@ function barplot_different_freqbands(condition)
             a = get(gca,'XTickLabel');  
             set(gca,'linewidth',5)
             set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+            title(['EEG ', condition, ' ', D1_LFP_temp.conditions{condz}],  'FontSize', 50)
             
             spm_mkdir(['D:\home\results Percept Project\Summary']);
             saveas(gcf, ['D:\home\results Percept Project\Summary\', 'barplot_EEG_', condition, '_',D1_LFP_temp.conditions{condz}, '.png'])
@@ -151,9 +206,9 @@ function barplot_different_freqbands(condition)
         
            %% left GPis
         
-            D1_LFP_1=D1_LFP_1(4:7,:);
-            D2_LFP_1=D2_LFP_1(4:7,:);
-            n=4; % because there are only 4 left GPis
+%             D1_LFP_1=D1_LFP_1(4:7,:);
+%             D2_LFP_1=D2_LFP_1(4:7,:);
+            n=size(D1_LFP_1,1);
         
             theta     = mean(D1_LFP_1(:,find(D1_LFP_temp.frequencies==4):find(D1_LFP_temp.frequencies==7)),2);
             alpha     = mean(D1_LFP_1(:,find(D1_LFP_temp.frequencies==8):find(D1_LFP_temp.frequencies==12)),2);
@@ -193,9 +248,10 @@ function barplot_different_freqbands(condition)
             a = get(gca,'XTickLabel');  
             set(gca,'linewidth',5)
             set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+             title(['left ', condition, ' ', D1_LFP_temp.conditions{condz}],  'FontSize', 50)
         
             spm_mkdir(['D:\home\results Percept Project\Summary']);
-            saveas(gcf, ['D:\home\results Percept Project\Summary\', 'barplot_Left_', condition,  '_',D1_LFP_temp.conditions{condz}, '.png'])
+            saveas(gcf, ['D:\home\results Percept Project\Summary\', 'barplot_Left_', condition,  '_', D1_LFP_temp.conditions{condz}, '.png'])
         
             
         
@@ -217,7 +273,7 @@ function barplot_different_freqbands(condition)
             highgamma = mean(D2_LFP_2(:,find(D2_LFP_temp.frequencies==52):find(D2_LFP_temp.frequencies==90)),2);
         
             datapoints_D2_LFP=[theta', alpha', beta', lowgamma', highgamma'];
-            n=7;
+            n=size(D1_LFP_2,1);
             x1=repmat(1:5,n,1)-0.4;
             x2=repmat(1:5,n,1)+0.4;
             cgroupdata=[ones(1,n*5), zeros(1,n*5)];
@@ -240,6 +296,7 @@ function barplot_different_freqbands(condition)
             a = get(gca,'XTickLabel');  
             set(gca,'linewidth',5)
             set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+            title(['right ', condition, ' ', D1_LFP_temp.conditions{condz}],  'FontSize', 50)
             
         
             spm_mkdir(['D:\home\results Percept Project\Summary']);
@@ -249,7 +306,7 @@ function barplot_different_freqbands(condition)
             %% Both Left and Right combined
             D1_total_LFP=[D1_LFP_1; D1_LFP_2];
             D2_total_LFP=[D2_LFP_1; D2_LFP_2];
-            n=11;
+            n=size(D1_total_LFP,1);
         
             theta     = mean(D1_total_LFP(:,find(D1_LFP_temp.frequencies==4):find(D1_LFP_temp.frequencies==7)),2);
             alpha     = mean(D1_total_LFP(:,find(D1_LFP_temp.frequencies==8):find(D1_LFP_temp.frequencies==12)),2);
@@ -289,6 +346,7 @@ function barplot_different_freqbands(condition)
             a = get(gca,'XTickLabel');  
             set(gca,'linewidth',5)
             set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+             title(['bothLFP ', condition, ' ', D1_LFP_temp.conditions{condz}],  'FontSize', 50)
         
             spm_mkdir(['D:\home\results Percept Project\Summary']);
             saveas(gcf, ['D:\home\results Percept Project\Summary\', 'barplot_LFPcombined_', condition,  '_',D1_LFP_temp.conditions{condz}, '.png'])

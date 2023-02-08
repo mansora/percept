@@ -23,29 +23,36 @@ function dbs_eeg_evoked_tf_plot(initials, condition)
     n_cond=numel(D_off.conditions);
     for condd=1:n_cond
         figure('units','normalized','outerposition',[0 0 1 1]),
-        subplot(2,3,1), imagesc(D_off.time, D_off.frequencies, squeeze(mean(D_off(1:end-numel(D_off.indchantype('LFP')),:,:,condd),1)))
+        subplot(2,3,1), imagesc(D_off.time, D_off.frequencies, squeeze(mean(D_off(D_off.indchantype('EEG'),:,:,condd),1)))
         title([D_off.conditions{condd}, ' EEG off'])
         colorbar
         caxis([-c_EEG c_EEG])
         xlabel('time (s)')
         ylabel('freq (Hz)')
         
+
+         indbaseline  = find(min(abs(D_off.time-0))==abs(D_off.time-0));
+         Data_off1    = squeeze(D_off(D_off.indchannel(details.chan{1}),:,:,condd)-mean(D_off(D_off.indchannel(details.chan{1}),:,1:indbaseline,condd),3));
+          
         if numel(details.chan)>1
-            subplot(2,3,2), imagesc(D_off.time, D_off.frequencies, squeeze(mean(D_off(D_off.indchannel(details.chan{1}),:,:,condd),1)))
+
+            Data_off2    = squeeze(D_off(D_off.indchannel(details.chan{2}),:,:,condd)-mean(D_off(D_off.indchannel(details.chan{2}),:,1:indbaseline,condd),3));
+
+            subplot(2,3,2), imagesc(D_off.time, D_off.frequencies, Data_off1)
             title([D_off.conditions{condd}, ' GPi L off'])
             colorbar
             caxis([-c_lfp c_lfp])
             xlabel('time (s)')
             ylabel('freq (Hz)')
     
-            subplot(2,3,3), imagesc(D_off.time, D_off.frequencies, squeeze(mean(D_off(D_off.indchannel(details.chan{2}),:,:,condd),1)))
+            subplot(2,3,3), imagesc(D_off.time, D_off.frequencies, Data_off2)
             title([D_off.conditions{condd}, ' GPi R off'])
             colorbar
             caxis([-c_lfp c_lfp])
             xlabel('time (s)')
             ylabel('freq (Hz)')
         else
-            subplot(2,3,2), imagesc(D_off.time, D_off.frequencies, squeeze(mean(D_off(D_off.indchannel(details.chan{1}),:,:,condd),1)))
+            subplot(2,3,2), imagesc(D_off.time, D_off.frequencies, Data_off1)
             title([D_off.conditions{condd}, 'GPi', details.chan{1}(end-3), 'off'])
             colorbar
             caxis([-c_lfp c_lfp])
@@ -56,29 +63,37 @@ function dbs_eeg_evoked_tf_plot(initials, condition)
 
 
 
-        subplot(2,3,4), imagesc(D_on.time, D_on.frequencies, squeeze(mean(D_on(1:end-2,:,:,condd),1)))
+        subplot(2,3,4), imagesc(D_on.time, D_on.frequencies, squeeze(mean(D_on(D_on.indchantype('EEG'),:,:,condd),1)))
         title([D_on.conditions{condd}, ' EEG on'])
         colorbar
         caxis([-c_EEG c_EEG])
         xlabel('time (s)')
         ylabel('freq (Hz)')
+
+
+        indbaseline  = find(min(abs(D_on.time-0))==abs(D_on.time-0));
+        Data_on1    = squeeze(D_on(D_on.indchannel(details.chan{1}),:,:,condd)-mean(D_on(D_on.indchannel(details.chan{1}),:,1:indbaseline,condd),3));
+        
         
         if numel(details.chan)>1
-            subplot(2,3,5), imagesc(D_on.time, D_on.frequencies, squeeze(mean(D_on(D_on.indchannel(details.chan{1}),:,:,condd),1)))
+
+            Data_on2    = squeeze(D_on(D_on.indchannel(details.chan{2}),:,:,condd)-mean(D_on(D_on.indchannel(details.chan{2}),:,1:indbaseline,condd),3));
+
+            subplot(2,3,5), imagesc(D_on.time, D_on.frequencies, Data_on1)
             title([D_on.conditions{condd}, ' GPi L on'])
             colorbar
             caxis([-c_lfp c_lfp])
             xlabel('time (s)')
             ylabel('freq (Hz)')
     
-            subplot(2,3,6), imagesc(D_on.time, D_on.frequencies, squeeze(mean(D_on(D_on.indchannel(details.chan{2}),:,:,condd),1)))
+            subplot(2,3,6), imagesc(D_on.time, D_on.frequencies, Data_on2)
             title([D_on.conditions{condd}, ' GPi R on'])
             colorbar
             caxis([-c_lfp c_lfp])
             xlabel('time (s)')
             ylabel('freq (Hz)')
         else
-            subplot(2,3,5), imagesc(D_on.time, D_on.frequencies, squeeze(mean(D_on(D_on.indchannel(details.chan{1}),:,:,condd),1)))
+            subplot(2,3,5), imagesc(D_on.time, D_on.frequencies, Data_on1)
             title([D_on.conditions{condd}, 'GPi', details.chan{1}(end-3), 'on'])
             colorbar
             caxis([-c_lfp c_lfp])

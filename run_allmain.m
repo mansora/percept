@@ -4,26 +4,26 @@ failed_patient_prep={};
 failed_patient_task={};
 
 
-% for t=1:numel(tasks)
-%     failed_patient_Off={};
-%     failed_patient_On={};
-%     for i=1:numel(initials)
-%         close all
-%         try dbs_eeg_percept_prepare_spm12(initials{i}, 1, tasks{t})
-%         catch failed_patient_Off=[failed_patient_Off; initials{i}];    
-%         end
-% 
-%         close all
-%         try dbs_eeg_percept_prepare_spm12(initials{i}, 2, tasks{t})
-%         catch failed_patient_On=[failed_patient_On; initials{i}];
-%         end
-%     end
-%     failed_patient_prep{t,1}=failed_patient_Off;
-%     failed_patient_prep{t,2}=failed_patient_On;
-% end
+for t=1:numel(tasks)
+    failed_patient_Off={};
+    failed_patient_On={};
+    for i=1:numel(initials)
+        close all
+        try dbs_eeg_percept_prepare_spm12(initials{i}, 1, tasks{t})
+        catch failed_patient_Off=[failed_patient_Off; initials{i}];    
+        end
+
+        close all
+        try dbs_eeg_percept_prepare_spm12(initials{i}, 2, tasks{t})
+        catch failed_patient_On=[failed_patient_On; initials{i}];
+        end
+    end
+    failed_patient_prep{t,1}=failed_patient_Off;
+    failed_patient_prep{t,2}=failed_patient_On;
+end
 
 
-for t=2:3 %numel(tasks)
+for t=1:numel(tasks)
     failed_patient={};
     for i=1:numel(initials)
         close all
@@ -35,9 +35,15 @@ for t=2:3 %numel(tasks)
     
 end
 
-for t=1:3 %numel(tasks)
+for t=1:numel(tasks)
     barplot_different_freqbands(tasks{t})
-    barplotCoherence_different_freqbands(tasks{t})
+    barplotCoherence_different_freqbands(tasks{t}, 'Coherence')
+    barplotCoherence_different_freqbands(tasks{t}, 'ShuffledCoherence')
+    barplotCoherence_different_freqbands(tasks{t}, 'GrangerfromEEG')
+    barplotCoherence_different_freqbands(tasks{t}, 'GrangertoEEG')
+    barplotCoherence_different_freqbands(tasks{t}, 'ReversedGrangerfromEEG')
+    barplotCoherence_different_freqbands(tasks{t}, 'ReversedGrangertoEEG')
+
 end
 
 % for i=1:8

@@ -2,6 +2,7 @@ initials={'LN_PR_D001', 'LN_PR_D003','LN_PR_D004','LN_PR_D005', 'LN_PR_D006','LN
 tasks={'R', 'ACT', 'PMT', 'SST', 'HPT', 'POUR', 'WALK', 'SPEAK', 'WRITE', 'SGT'};
 failed_patient_prep={};
 failed_patient_task={};
+ind_patients = {};
 
 
 for t=1:numel(tasks)
@@ -36,13 +37,21 @@ for t=1:numel(tasks)
 end
 
 for t=1:numel(tasks)
+    plotLogSpectra_baselined(tasks{t})
     barplot_different_freqbands(tasks{t})
+    barplot_different_freqbandsNoNormalization(tasks{t})
     barplotCoherence_different_freqbands(tasks{t}, 'Coherence')
+    ind_patients{t,:} = plotConnectivityAverage(tasks{t}, 'Coherence')
     barplotCoherence_different_freqbands(tasks{t}, 'ShuffledCoherence')
+    ind_patients{t,:} = plotConnectivityAverage(tasks{t}, 'ShuffledCoherence')
     barplotCoherence_different_freqbands(tasks{t}, 'GrangerfromEEG')
+    ind_patients{t,:} = plotConnectivityAverage(tasks{t}, 'GrangerfromEEG')
     barplotCoherence_different_freqbands(tasks{t}, 'GrangertoEEG')
+    ind_patients{t,:} = plotConnectivityAverage(tasks{t}, 'GrangertoEEG')
     barplotCoherence_different_freqbands(tasks{t}, 'ReversedGrangerfromEEG')
+    ind_patients{t,:} = plotConnectivityAverage(tasks{t}, 'ReversedGrangerfromEEG')
     barplotCoherence_different_freqbands(tasks{t}, 'ReversedGrangertoEEG')
+    ind_patients{t,:} = plotConnectivityAverage(tasks{t}, 'ReversedGrangertoEEG')
 
 end
 

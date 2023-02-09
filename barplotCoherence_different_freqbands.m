@@ -8,7 +8,7 @@ function barplotCoherence_different_freqbands(condition, Coh_state)
     try
         files = spm_select('FPList','.', ['^.' initials{1} '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
     catch
-        files = spm_select('FPList','.', ['regexp_.*c|.*' initials{1} '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+        files = spm_select('FPList','.', ['regexp_.*c|.*' initials{1} '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
     end
     
     if isempty(files)
@@ -49,22 +49,25 @@ function barplotCoherence_different_freqbands(condition, Coh_state)
        
         
     
-        [files_, seq, root, details] = dbs_subjects(initials{i}, 1);
+        [files_, seq, root, details] = dbs_subjects(initials{i}, 2);
         cd(fullfile(root, condition));
 
 
          try
-            files = spm_select('FPList','.', ['^.' initials{i} '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
+            files = spm_select('FPList','.', ['^.' initials{i} '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
         catch
-            files = spm_select('FPList','.', ['regexp_.*c|.*' initials{i} '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+            files = spm_select('FPList','.', ['regexp_.*c|.*' initials{i} '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
         end
         
         if isempty(files)
-            files = spm_select('FPList','.', ['^' initials{i} '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
+            files = spm_select('FPList','.', ['^' initials{i} '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
         end
         
         Dchan = spm_eeg_load(files);
         lfpchan=Dchan.indchantype('LFP');
+
+        [files_, seq, root, details] = dbs_subjects(initials{i}, 1);
+        cd(fullfile(root, condition));
     
         files = spm_select('FPList','.', ['C_', condition, '_', subcondition, '.', initials{i} '_rec_' num2str(1) '_' condition '\w*.mat']);
         if isempty(files)

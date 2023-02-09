@@ -32,6 +32,8 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
     fD = {};
     for f=1:size(files, 1)
         D = spm_eeg_load(files(f,:));
+
+
         %%
         movchan = D.selectchannels({['regexp_.*hand|.*foot|.*head|.*thumb|.*index'...
             '|.*index|.*middle|.*ring|.*pinkie']});
@@ -76,7 +78,17 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
                 S.trialdef.eventvalue     = dirs{j};
         
                 [ctrl, clbl] = spm_eeg_definetrial(S);
+
+                
+
                 if ~isempty(ctrl)
+                    indrem=[];
+                    indrem=[indrem find(ctrl(:,1)<0)];
+                    indrem=[indrem find(ctrl(:,2)>size(cmov,2))];
+                    if ~isempty(indrem)
+                        ctrl(indrem,:)=[];
+                        clbl(indrem)=[];
+                    end
                     template = cmov(ctrl(1, 1):ctrl(1,2));
     
                     for m = 1:2

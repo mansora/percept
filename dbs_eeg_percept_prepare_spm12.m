@@ -161,11 +161,29 @@ for f = 1:size(files, 1)
         
         % Save cleaned data
         D(eegchan,:,1)=ifft(cleaned, [], 2); 
+
+
+        YY=fft(squeeze(D(eegchan(1),:,1)));
+        LL  = size(squeeze(D(eegchan(1),:,1)),2);
+        
+        P2 = abs(YY/LL);
+        P1 = P2(1:LL/2+1);
+        P1(2:end-1) = 2*P1(2:end-1);
+        
+        freq_f = D.fsample*(0:(LL/2))/LL;
+        
+        figure, plot(freq_f,P1)
+        print(gcf,['D:\home\Data\', details.initials,'_',...
+        condition, '_', num2str(rec_id),'_hampelfilterEEG.jpg'],'-djpeg');
+        % subplot(2,1,1), plot(f,P1) 
+        title("EEG signal")
+        xlabel("f (Hz)")
+        ylabel("|P1(f)|")
     
     
     
          %% Calculation
-        % All EEG channels FFT
+        % All LFP channels FFT
         multi_chan=fft(squeeze(D(lfpchan,:,1)), [], 2);
     
         % Process real and imaginary parts separately and reconstruct

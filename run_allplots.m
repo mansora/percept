@@ -11,8 +11,9 @@ for condd=1:numel(condition)
     if find(strcmp(evoked_blocks,condition{condd}))
         
         if find(strcmp({'ACT','PMT'},condition{condd}))
-
-            dbs_percept_mov_analyse(initials, 1, condition{condd})
+            if ~(strcmp(initials, 'LN_PR_D005') && strcmp(condition{condd}, 'PMT'))
+                dbs_percept_mov_analyse(initials, 1, condition{condd})
+            end
             dbs_percept_mov_analyse(initials, 2, condition{condd})
             
         elseif find(strcmp({'POUR','HPT','REACH','WALK','STAND'},condition{condd}))
@@ -43,11 +44,11 @@ for condd=1:numel(condition)
     
     dbs_percept_lfp_spectra_plot(initials,condition{condd});
 
-%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [4 7]);
-%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [8 12]);
-%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [13 30]);
-%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [31 48]);
-%     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [52 90]);
+    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [4 7]);
+    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [8 12]);
+    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [13 30]);
+    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [31 48]);
+    dbs_percept_EEG_spectra_plot(initials,condition{condd}, [52 90]);
 
 
 

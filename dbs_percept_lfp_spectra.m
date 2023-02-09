@@ -36,7 +36,7 @@ function D = dbs_percept_lfp_spectra(initials, rec_id, condition)
 %     if isempty(cell2mat(strfind(temp_var(1,:),'EEG_spect_'))) && ...
 %             isempty(cell2mat(strfind(temp_var(1,:),'LFP_spect_')))
 
-        if 1
+        if ~isempty(files)
      
     
         D = spm_eeg_load(files);

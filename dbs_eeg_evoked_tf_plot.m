@@ -32,13 +32,13 @@ function dbs_eeg_evoked_tf_plot(initials, condition)
         c_lfp=round(max([max(max(squeeze(mean(D_on(D_on.indchantype('LFP'),:,:,1))))), abs(min(min(squeeze(mean(D_on(D_on.indchantype('LFP'),:,:,1),1)))))]));
         n_cond=numel(D_on.conditions);
 %         EEGchannels=D_on.indchantype('EEG');
-        EEGchannels=[D_on.indchannel('C3') D_on.indchannel('C4')];
+        EEGchannels=[D_on.indchannel('C3') D_on.indchannel('C4'), D_on.indchannel('Cz')];
     catch
         c_EEG=round(max([max(max(squeeze(mean(D_off(D_off.indchantype('EEG'),:,:,1))))), abs(min(min(squeeze(mean(D_off(D_off.indchantype('EEG'),:,:,1),1)))))]));
         c_lfp=round(max([max(max(squeeze(mean(D_off(D_off.indchantype('LFP'),:,:,1))))), abs(min(min(squeeze(mean(D_off(D_off.indchantype('LFP'),:,:,1),1)))))]));
         n_cond=numel(D_off.conditions);
 %         EEGchannels=D_off.indchantype('EEG');
-        EEGchannels=[D_off.indchannel('C3') D_off.indchannel('C4')];
+        EEGchannels=[D_off.indchannel('C3') D_off.indchannel('C4') D_off.indchannel('Cz')];
     end
 
     

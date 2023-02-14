@@ -1,5 +1,5 @@
 function barplotCoherence_different_freqbands(condition, Coh_state)
-
+     close all
     initials={'LN_PR_D001', 'LN_PR_D003','LN_PR_D004','LN_PR_D005','LN_PR_D007','LN_PR_D008','LN_PR_D009'};
 
      [files_, seq, root, details] = dbs_subjects(initials{1}, 1);

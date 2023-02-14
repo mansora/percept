@@ -1,5 +1,5 @@
-function ind_patient=plotConnectivityAverage(condition, Coh_state)
-     close all
+function dbs_percept_EEG_Coherence_plot(condition, Coh_state, freqband)
+   
     initials={'LN_PR_D001', 'LN_PR_D003','LN_PR_D004','LN_PR_D005','LN_PR_D007','LN_PR_D008','LN_PR_D009'};
     ind_patient={};
 
@@ -48,6 +48,10 @@ function ind_patient=plotConnectivityAverage(condition, Coh_state)
      for i=1:numel(initials)
         
         z=1;
+        D_off_left=[];
+        D_off_right=[];
+        D_on_left=[];
+        D_on_right=[];
        
         
     
@@ -68,7 +72,7 @@ function ind_patient=plotConnectivityAverage(condition, Coh_state)
         Dchan = spm_eeg_load(files);
         lfpchan=Dchan.indchantype('LFP');
         %EEGchannels=D_on_R.indchantype('EEG');
-        EEGchannels=[Dchan.indchannel('C3') Dchan.indchannel('C4')];
+        EEGchannels=[Dchan.indchantype('EEG')];
 
         [files_, seq, root, details] = dbs_subjects(initials{i}, 1);
         cd(fullfile(root, condition));
@@ -84,20 +88,20 @@ function ind_patient=plotConnectivityAverage(condition, Coh_state)
         if numel(lfpchan)>1
             if strcmp(Dchan.chanlabels{lfpchan(2)}(end-3),'L')
                 temp=squeeze((Dc_off(start_ind:4:end,:,1,Coh_state_num)));
-                D_off_left(i,:)=mean(temp(EEGchannels, :),1);
+                D_off_left(:,:)=(temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
                 temp=squeeze((Dc_off(start_ind+2:4:end,:,1,Coh_state_num)));
-                D_off_right(i,:)=mean(temp(EEGchannels, :),1);
+                D_off_right(:,:)=(temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
             else
                 temp = squeeze((Dc_off(start_ind:4:end,:,1,Coh_state_num)));
-                D_off_right(i,:) = mean(temp(EEGchannels, :),1);
+                D_off_right(:,:) = (temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
                 temp = squeeze((Dc_off(start_ind+2:4:end,:,1,Coh_state_num)));
-                D_off_left(i,:) = mean(temp(EEGchannels, :),1);
+                D_off_left(:,:) = (temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
             end
@@ -105,20 +109,22 @@ function ind_patient=plotConnectivityAverage(condition, Coh_state)
         else
             if strcmp(Dchan.chanlabels{lfpchan(1)}(end-3),'L')
                 temp = squeeze((Dc_off(start_ind:2:end,:,1,Coh_state_num)));
-                D_off_left(i,:)= mean(temp(EEGchannels, :),1);
+                D_off_left(:,:)= (temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
             else
                 temp= squeeze((Dc_off(start_ind:2:end,:,1,Coh_state_num)));
-                D_off_right(i,:)=  mean(temp(EEGchannels, :),1);
+                D_off_right(:,:)=  (temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
             end
 
         end
-
+        
+        plottOff=1;
         catch
             warning(['patient ', initials{i}, ' Off stim does not have', condition])
+            plottOff=0;
         end
     
         [files_, seq, root, details] = dbs_subjects(initials{i}, 2);
@@ -135,20 +141,20 @@ function ind_patient=plotConnectivityAverage(condition, Coh_state)
         if numel(lfpchan)>1
             if strcmp(Dchan.chanlabels{lfpchan(2)}(end-3),'L')
                 temp=squeeze((Dc_on(start_ind:4:end,:,1,Coh_state_num)));
-                D_on_left(i,:) = mean(temp(EEGchannels, :),1);
+                D_on_left(:,:) = (temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
                 temp= squeeze((Dc_on(start_ind+2:4:end,:,1,Coh_state_num)));
-                D_on_right(i,:)= mean(temp(EEGchannels, :),1);
+                D_on_right(:,:)= (temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
             else
                 temp =squeeze((Dc_on(start_ind:4:end,:,1,Coh_state_num)));
-                D_on_right(i,:) = mean(temp(EEGchannels, :),1);
+                D_on_right(:,:) = (temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
                 temp=squeeze((Dc_on(start_ind+2:4:end,:,1,Coh_state_num)));
-                D_on_left(i,:)=mean(temp(EEGchannels, :),1);
+                D_on_left(:,:)=(temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
             end
@@ -156,109 +162,64 @@ function ind_patient=plotConnectivityAverage(condition, Coh_state)
         else
             if strcmp(Dchan.chanlabels{lfpchan(1)}(end-3),'L')
                 temp =squeeze((Dc_on(start_ind:2:end,:,1,Coh_state_num)));
-                D_on_left(i,:)=mean(temp(EEGchannels, :),1);
+                D_on_left(:,:)=(temp(EEGchannels, :));
                 [~, ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
             else
                 temp=squeeze((Dc_on(start_ind:2:end,:,1,Coh_state_num)));
-                D_on_right(i,:)=mean(temp(EEGchannels, :),1);
+                D_on_right(:,:)=(temp(EEGchannels, :));
                 [~,ind(z)]= max(mean(temp(EEGchannels, :),2));
                 z=z+1;
             end
 
         end
 
+        plottOn=1;
         catch
             warning(['patient ', initials{i}, ' On stim does not have', condition])
+            plottOn=0;
         end
 
        ind_patient{i}=ind;
-     end
-
-
+      both=[];
  
-    for kk=size(D_on_left,1):-1:1
-        if numel(find(D_on_left(kk,:)==0))==size(D_on_left,2) || numel(find(D_off_left(kk,:)==0))==size(D_off_left,2)
-            D_on_left(kk,:)=[];
-            D_off_left(kk,:)=[];
-        end
+   
 
-        if numel(find(D_on_right(kk,:)==0))==size(D_on_right,2) || numel(find(D_off_right(kk,:)==0))==size(D_off_right,2)
-            D_on_right(kk,:)=[];
-            D_off_right(kk,:)=[];
-        end
-    end
 
-        
-     
 
-     
-            %% Left
-            figure('units','normalized','outerposition',[0 0 1 1]),
-            plot(Dc_on.frequencies, D_on_left, 'b--', 'LineWidth', 2)
-            hold on, plot(Dc_on.frequencies, D_off_left, 'r--', 'LineWidth', 2)
-            h1=plot(Dc_on.frequencies, mean(D_on_left), 'b', 'LineWidth', 5)
-            h2=plot(Dc_on.frequencies, mean(D_off_left), 'r', 'LineWidth', 5)
 
-            legend([h1, h2],{'on', 'off'})
-            xlabel('frequency', 'FontSize', 20, 'FontWeight','bold')
-            ylabel('Connectivity', 'FontSize', 20, 'FontWeight','bold')
-            a = get(gca,'XTickLabel');  
-            set(gca,'linewidth',5)
-            set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
-            title(['Left ', Coh_state, condition, ' ', subcondition],  'FontSize', 50)
-            
-            spm_mkdir(['D:\home\results Percept Project\Summary']);
-            saveas(gcf, ['D:\home\results Percept Project\Summary\', Coh_state, '_LeftGPi_', condition,  '_', subcondition, '.png'])
-        
 
-            %% Right
-            figure('units','normalized','outerposition',[0 0 1 1]),
-            plot(Dc_on.frequencies, D_on_right, 'b--', 'LineWidth', 2)
-            hold on, plot(Dc_on.frequencies, D_off_right, 'r--', 'LineWidth', 2)
-            h1=plot(Dc_on.frequencies, mean(D_on_right), 'b', 'LineWidth', 5)
-            h2=plot(Dc_on.frequencies, mean(D_off_right), 'r', 'LineWidth', 5)
+    if plottOn==1 && plottOff==1
 
-            legend([h1, h2],{'on', 'off'})
-            xlabel('frequency', 'FontSize', 20, 'FontWeight','bold')
-            ylabel('Connectivity', 'FontSize', 20, 'FontWeight','bold')
-            a = get(gca,'XTickLabel');  
-            set(gca,'linewidth',5)
-            set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
-            title(['Right ',Coh_state, condition, ' ', subcondition],  'FontSize', 50)
-            
-            spm_mkdir(['D:\home\results Percept Project\Summary']);
-            saveas(gcf, ['D:\home\results Percept Project\Summary\', Coh_state, '_RightGPi_', condition,  '_', subcondition, '.png'])
-        
-
-            %% Both
-
-            D_off = [D_off_left;D_off_right];
-            D_on  = [D_on_left;D_on_right];
-
-            figure('units','normalized','outerposition',[0 0 1 1]),
-            plot(Dc_on.frequencies, D_on, 'b--', 'LineWidth', 2)
-            hold on, plot(Dc_on.frequencies, D_off, 'r--', 'LineWidth', 2)
-            h1=plot(Dc_on.frequencies, mean(D_on), 'b', 'LineWidth', 5)
-            h2=plot(Dc_on.frequencies, mean(D_off), 'r', 'LineWidth', 5)
-
-            legend([h1, h2],{'on', 'off'})
-            xlabel('frequency', 'FontSize', 20, 'FontWeight','bold')
-            ylabel('Connectivity', 'FontSize', 20, 'FontWeight','bold')
-            a = get(gca,'XTickLabel');  
-            set(gca,'linewidth',5)
-            set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
-            title(['Both ', Coh_state, condition, ' ', subcondition],  'FontSize', 50)
-            
-            spm_mkdir(['D:\home\results Percept Project\Summary']);
-            saveas(gcf, ['D:\home\results Percept Project\Summary\', Coh_state, '_bothGPi_', condition,  '_', subcondition, '.png'])
-        
-
+        ind1 = find(min(abs(Dc_on.frequencies-freqband(1)))==abs(Dc_on.frequencies-freqband(1)));
+        ind2 = find(min(abs(Dc_on.frequencies-freqband(2)))==abs(Dc_on.frequencies-freqband(2)));
     
 
+        try
+        spm_eeg_plotScalpData(squeeze(mean(D_on_left(:,ind1:ind2),2))-squeeze(mean(D_off_left(:,ind1:ind2),2)), Dchan.coor2D(Dchan.indchantype('EEG')), Dchan.chanlabels(Dchan.indchantype('EEG')));
+        title(['Coherence topoplot On-Off Left ' num2str(freqband)])
+    
+        spm_mkdir(['D:\home\results Percept Project\Summary']);
+        saveas(gcf, ['D:\home\results Percept Project\Summary\',initials{i},' Coherence topoplot On-Off Left', condition,...
+           '_', D.condlist{sub_condition} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        catch
+        end
 
-
+        try
+        spm_eeg_plotScalpData(squeeze(mean(D_on_right(:,ind1:ind2),2))-squeeze(mean(D_off_right(:,ind1:ind2),2)), Dchan.coor2D(Dchan.indchantype('EEG')), Dchan.chanlabels(Dchan.indchantype('EEG')));
+        title(['Coherence topoplot On-Off Right ' num2str(freqband)])
+    
+        spm_mkdir(['D:\home\results Percept Project\Summary']);
+        saveas(gcf, ['D:\home\results Percept Project\Summary\',initials{i},' Coherence topoplot On-Off Right', condition,...
+           '_', D.condlist{sub_condition} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        catch
+        end
 
     end
-        
+
+    end
+
+
+
+
 end

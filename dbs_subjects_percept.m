@@ -411,8 +411,8 @@ switch initials
                 'LFP_Gpi_R_12'%
                 'LFP_Gpi_R_23'
                 };
-            details.synch_ecg = 1;
-            details.synch_percept_stamp = 0;
+            details.synch_ecg = 0;
+            details.synch_percept_stamp = 1;
         end
 
         details.eeg_ref=repmat({'StimArt'},1,numel(files));
@@ -496,8 +496,8 @@ switch initials
                 'LFP_Gpi_R_12'%
                 'LFP_Gpi_R_23'
                 };
-            details.synch_ecg = 1;
-            details.synch_percept_stamp = 0;
+            details.synch_ecg = 0;
+            details.synch_percept_stamp = 1;
         end
 
         details.eeg_ref=repmat({'StimArt'},1,numel(files));
@@ -576,8 +576,8 @@ switch initials
                 'LFP_Gpi_R_12'%
                 'LFP_Gpi_R_23'
                 };
-            details.synch_ecg = 1;
-            details.synch_percept_stamp = 0;
+            details.synch_ecg = 0;
+            details.synch_percept_stamp = 1;
         end
         details.eeg_ref=repmat({'StimArt'},1,numel(files));
     case 'LN_PR_D009'
@@ -663,8 +663,8 @@ switch initials
                 'LFP_Gpi_R_12'%
                 'LFP_Gpi_R_23'
                 };
-            details.synch_ecg = 1;
-            details.synch_percept_stamp = 0;
+            details.synch_ecg = 0;
+            details.synch_percept_stamp = 1;
 
         end
         details.chan =  {'LFP_Gpi_L_02', 'LFP_Gpi_R_02'};

@@ -157,18 +157,22 @@ if details.synch_percept_stamp==1
 %     S1.conditionlabels=trialinfo;
 %     D_epoched = spm_eeg_epochs(S1);
 
-    S_trl=[];
-    S_trl.trl=[trl(:,1), trl(:,2)];
-    S_trl.conditionlabels=trialinfo;
-    ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D, files{3});
-    D = events(D, 1, {ev});
+    if details.process_logfiles==1 && ~isempty(files{3})
+        S_trl=[];
+        S_trl.trl=[trl(:,1), trl(:,2)];
+        S_trl.conditionlabels=trialinfo;
+        ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D, files{3});
+        D = events(D, 1, {ev});
+    end
 else
     % never debugged this part, TODO!
-    S_trl=[];
-    S_trl.trl=[trl(:,1), trl(:,2)];
-    S_trl.conditionlabels=trialinfo;
-    ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D1, files{3});
-    D1 = events(D1, 1, {ev});
+    if details.process_logfiles==1 && ~isempty(files{3})
+        S_trl=[];
+        S_trl.trl=[trl(:,1), trl(:,2)];
+        S_trl.conditionlabels=trialinfo;
+        ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D1, files{3});
+        D1 = events(D1, 1, {ev});
+    end
 
 
 end
@@ -198,11 +202,13 @@ end
             % never debugged this part, TODO!!!!
             load(files{2})
             D2 = spm_eeg_ft2spm(data, [details.initials '_lfp.mat']); 
-            S_trl=[];
-            S_trl.trl=[trl(:,1), trl(:,2)]; % TODO check why you wrote this bit
-            S_trl.conditionlabels=trialinfo;
-            ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D2, files{3});
-            D2 = events(D2, 1, {ev});
+            if details.process_logfiles==1 && ~isempty(files{3})
+                S_trl=[];
+                S_trl.trl=[trl(:,1), trl(:,2)]; % TODO check why you wrote this bit
+                S_trl.conditionlabels=trialinfo;
+                ev=dbs_eeg_percept_convert_logfile_to_event(S_trl, D2, files{3});
+                D2 = events(D2, 1, {ev});
+            end
         end
         
         S = [];

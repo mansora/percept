@@ -43,6 +43,7 @@ for condd=1:numel(condition)
     
     
     dbs_percept_lfp_spectra_plot(initials,condition{condd});
+    dbs_percept_lfp_spectraBaselined_plot(initials,condition{condd})
 
     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [4 7]);
     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [8 12]);

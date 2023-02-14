@@ -70,7 +70,7 @@ for i = 1:numel(data)
     
     foi     = 0:fstep:D.fsample/2;
     foi     = foi(1:(end-1));
-    fres    = 0*foi+2.5;
+    fres    = 0*foi+4;
     fres(fres>25) = 0.1*fres(fres>25);
     fres(fres>50) = 5;
     

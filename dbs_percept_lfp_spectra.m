@@ -50,7 +50,7 @@ function D = dbs_percept_lfp_spectra(initials, rec_id, condition)
         S.phase = 0;
         S.method = 'mtmfft';
         S.settings.taper = 'dpss';
-        S.settings.freqres = 1.5;
+        S.settings.freqres = 4;
         S.prefix = 'LFP_spect_';
         D_temp = spm_eeg_tf(S);
         
@@ -87,7 +87,7 @@ function D = dbs_percept_lfp_spectra(initials, rec_id, condition)
         S.phase = 0;
         S.method = 'mtmfft';
         S.settings.taper = 'dpss';
-        S.settings.freqres = 1.5;
+        S.settings.freqres = 4;
         S.prefix = 'EEG_spect_';
         D = spm_eeg_tf(S);
         

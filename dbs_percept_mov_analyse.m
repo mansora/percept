@@ -149,7 +149,7 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
     
 
     freq = 1:2.5:100;
-    res  = 2.5*ones(size(freq));
+    res  = 4*ones(size(freq));
     res(freq>25) = 0.1*freq(freq>25);
     res(freq>50) = 5;
     

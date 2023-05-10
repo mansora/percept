@@ -47,6 +47,9 @@ function [trl trialinfo]=dbs_eeg_percept_logfiles_prepare(eegfile, input_logfile
  
     events_exp=ft_read_event(eegfile); 
     events_exp=squeeze(struct2cell(events_exp));
+    if strcmp(eegfile, '\\piazzolla\vlad_shared\LN_PR_D005\raw_EEG\LN_PR_D005_20220401_00120.vhdr')
+        events_exp=events_exp(:,142:end);
+    end
     header_info=ft_read_header(eegfile);
 
     markers_match=0;

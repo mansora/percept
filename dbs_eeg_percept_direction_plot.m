@@ -78,11 +78,15 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
 
                 % plotting directional coherence
                 subplot(4,numel(D.condlist),1+sub_condition-1),
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,1), :, :, trialind(1)), 1)),'r','LineWidth',3);
-                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,1), :, :, trialind(1)), 1)),'b','LineWidth',3);
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,1), :, :, trialind(2)), 1)),'r--','LineWidth',3);
-                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,1), :, :, trialind(2)), 1)),'b--','LineWidth',3);
+                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,1), :, :, trialind(1)), 1)),'r','LineWidth',5);
+                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,1), :, :, trialind(1)), 1)),'b','LineWidth',5);
+                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,1), :, :, trialind(2)), 1)),'r--','LineWidth',5);
+                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,1), :, :, trialind(2)), 1)),'b--','LineWidth',5);
                 xlim([5 x_lim]);
+                ylim([0 0.015])
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca,'XTickLabel',a,'fontsize',15,'FontWeight','bold')
                 title(['L Gpi ', subcondition])
                 if sub_condition==1
                     legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off reversed','EEG -> LFP on reversed')
@@ -90,30 +94,42 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
                 
                 if numel(lfp)>1
                     subplot(4,numel(D.condlist),numel(D.condlist)+sub_condition),
-                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(1)), 1)),'r','LineWidth',3);
-                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(1)), 1)),'b','LineWidth',3);
-                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(2)), 1)),'r--','LineWidth',3);
-                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(2)), 1)),'b--','LineWidth',3);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(1)), 1)),'r','LineWidth',5);
+                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(1)), 1)),'b','LineWidth',5);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(2)), 1)),'r--','LineWidth',5);
+                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(2)), 1)),'b--','LineWidth',5);
                     xlim([5 x_lim]);
+                    ylim([0 0.015])
+                    a = get(gca,'XTickLabel');  
+                    set(gca,'linewidth',5)
+                    set(gca,'XTickLabel',a,'fontsize',15,'FontWeight','bold')
                     title(['R Gpi ', subcondition])
     %                 legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off reversed','EEG -> LFP on reversed')
     
                     subplot(4,numel(D.condlist),3*numel(D.condlist)+sub_condition),
-                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,2), :, :, trialind(1)), 1)),'k','LineWidth',3);
-                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,2), :, :, trialind(1)), 1)),'g','LineWidth',3);
-                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,2), :, :, trialind(2)), 1)),'k--','LineWidth',3);
-                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,2), :, :, trialind(2)), 1)),'g--','LineWidth',3);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,2), :, :, trialind(1)), 1)),'k','LineWidth',5);
+                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,2), :, :, trialind(1)), 1)),'g','LineWidth',5);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,2), :, :, trialind(2)), 1)),'k--','LineWidth',5);
+                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,2), :, :, trialind(2)), 1)),'g--','LineWidth',5);
                     xlim([5 x_lim]);
+                    ylim([0 0.015])
+                    a = get(gca,'XTickLabel');  
+                    set(gca,'linewidth',5)
+                    set(gca,'XTickLabel',a,'fontsize',15,'FontWeight','bold')
                     title(['R Gpi ', subcondition])
     %                 legend('LFP -> EEG off','LFP -> EEG on','LFP -> EEG off reversed','LFP -> EEG on reversed')
                 end
 
                 subplot(4,numel(D.condlist),2*numel(D.condlist)+sub_condition),
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,1), :, :, trialind(1)), 1)),'k','LineWidth',3);
-                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,1), :, :, trialind(1)), 1)),'g','LineWidth',3);
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,1), :, :, trialind(2)), 1)),'k--','LineWidth',3);
-                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,1), :, :, trialind(2)), 1)),'g--','LineWidth',3);
+                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,1), :, :, trialind(1)), 1)),'k','LineWidth',5);
+                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,1), :, :, trialind(1)), 1)),'g','LineWidth',5);
+                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind2_off(:,1), :, :, trialind(2)), 1)),'k--','LineWidth',5);
+                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind2_on(:,1), :, :, trialind(2)), 1)),'g--','LineWidth',5);
                 xlim([5 x_lim]);
+                ylim([0 0.015])
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca,'XTickLabel',a,'fontsize',15,'FontWeight','bold')
                 title(['L Gpi ', subcondition])
                 if sub_condition==1
                     legend('LFP -> EEG off','LFP -> EEG on','LFP -> EEG off reversed','LFP -> EEG on reversed')
@@ -125,11 +141,14 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
                 
                 % plotting nondirectional coherence
                 subplot(2,numel(D.condlist),sub_condition),
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,1), :, :, trialind(1)), 1)),'r','LineWidth',3);
-                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,1), :, :, trialind(1)), 1)),'b','LineWidth',3);
-                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,1), :, :, trialind(2)), 1)),'r--','LineWidth',3);
-                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,1), :, :, trialind(2)), 1)),'b--','LineWidth',3);
+                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,1), :, :, trialind(1)), 1)),'r','LineWidth',5);
+                hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,1), :, :, trialind(1)), 1)),'b','LineWidth',5);
+                plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,1), :, :, trialind(2)), 1)),'r--','LineWidth',5);
+                plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,1), :, :, trialind(2)), 1)),'b--','LineWidth',5);
                 xlim([5 x_lim]);
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca,'XTickLabel',a,'fontsize',15,'FontWeight','bold')
                 title(['L Gpi ', subcondition])
                 if sub_condition==1
                     legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off shifted','EEG -> LFP on shifted')
@@ -137,12 +156,15 @@ function dbs_eeg_percept_direction_plot(initials, condition, method)
                 
                 if numel(lfp)>1
                     subplot(2,numel(D.condlist),numel(D.condlist)+sub_condition),
-                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(1)), 1)),'r','LineWidth',3);
-                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(1)), 1)),'b','LineWidth',3);
-                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(2)), 1)),'r--','LineWidth',3);
-                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(2)), 1)),'b--','LineWidth',3);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(1)), 1)),'r','LineWidth',5);
+                    hold on, plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(1)), 1)),'b','LineWidth',5);
+                    plot(Dc_off.frequencies, squeeze(mean(Dc_off(ind1_off(:,2), :, :, trialind(2)), 1)),'r--','LineWidth',5);
+                    plot(Dc_on.frequencies, squeeze(mean(Dc_on(ind1_on(:,2), :, :, trialind(2)), 1)),'b--','LineWidth',5);
                     xlim([5 x_lim]);
                     title(['R Gpi ', subcondition])
+                    a = get(gca,'XTickLabel');  
+                    set(gca,'linewidth',5)
+                    set(gca,'XTickLabel',a,'fontsize',15,'FontWeight','bold')
     %                 legend('EEG -> LFP off','EEG -> LFP on','EEG -> LFP off shifted','EEG -> LFP on shifted')
                 end
 

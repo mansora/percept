@@ -1,4 +1,4 @@
-function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
+function ind_patient=plotConnectivityAverageAgainstRestCollapse(condition, Coh_state)
     close all
     initials={'LN_PR_D001', 'LN_PR_D003','LN_PR_D004','LN_PR_D005','LN_PR_D007','LN_PR_D008','LN_PR_D009'};
     ind_patient={};
@@ -68,23 +68,7 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
         Dchan = spm_eeg_load(files);
         lfpchan=Dchan.indchantype('LFP');
         %EEGchannels=D_on_R.indchantype('EEG');
-%         EEGchannels=[Dchan.indchannel('C4') Dchan.indchannel('C4') Dchan.indchannel('Cz')];
-%         EEGchannels=[Dchan.indchannel('PO3') Dchan.indchannel('PO4') Dchan.indchannel('Oz')];
-%         EEGchannels=[2,3, 10,15, 16, 17, 20, 22, 30, 34, 35, 39, 45, 46, 47, 49, 50, 51, 55, 58, 62, 63, 64];
-        EEGchannels=[
-     3
-     4
-     5
-    19
-    21
-    22
-    28
-    29
-    33
-    34
-    36
-    37
-    ];
+        EEGchannels=[Dchan.indchannel('C3') Dchan.indchannel('C4') Dchan.indchannel('Cz')];
 
         [files_, seq, root, details] = dbs_subjects(initials{i}, 1);
         cd(fullfile(root, condition));
@@ -211,7 +195,9 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
     D_off_right_temp=D_off_right;
 
 
-    if find(strcmp({'ACT','PMT'},condition))
+    load('D:\home\rest_coherence_Average.mat')
+
+  
 
 
         limb_list={'hand', 'foot'};
@@ -221,46 +207,22 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             D_off_left=squeeze(mean(D_off_left_temp(:,:,1+4*(limb-1):4+4*(limb-1)),3));
             D_on_right=squeeze(mean(D_on_right_temp(:,:,1+4*(limb-1):4+4*(limb-1)),3));
             D_off_right=squeeze(mean(D_off_right_temp(:,:,1+4*(limb-1):4+4*(limb-1)),3));
-
-             % left movement
-            D_on_left   =squeeze(mean(D_on_left_temp(:,:,1+4*(limb-1):4+4*(limb-1)-2,:),3));
-            D_off_left  =squeeze(mean(D_off_left_temp(:,:,1+4*(limb-1):4+4*(limb-1)-2,:),3));
-            D_on_right  =squeeze(mean(D_on_right_temp(:,:,1+4*(limb-1):4+4*(limb-1)-2,:),3));
-            D_off_right =squeeze(mean(D_off_right_temp(:,:,1+4*(limb-1):4+4*(limb-1)-2,:),3));   
-
-%             % right movement
-%             D_on_left   =squeeze(mean(D_on_left_temp(:,:,1+4*(limb-1)+2:4+4*(limb-1)-2,:),3));
-%             D_off_left  =squeeze(mean(D_off_left_temp(:,:,1+4*(limb-1)+2:4+4*(limb-1)-2,:),3));
-%             D_on_right  =squeeze(mean(D_on_right_temp(:,:,1+4*(limb-1)+2:4+4*(limb-1)-2,:),3));
-%             D_off_right =squeeze(mean(D_off_right_temp(:,:,1+4*(limb-1)+2:4+4*(limb-1)-2,:),3));   
- 
         
     
             %% Both
     
             D_off = [D_off_left;D_off_right];
             D_on  = [D_on_left;D_on_right];
-    
-            figure('units','normalized','outerposition',[0 0 1 1]),
-    %         plot(Dc_on.frequencies(1:80), D_on(:, 1:80), 'b--', 'LineWidth', 2)
-    %         hold on, plot(Dc_on.frequencies(1:80), D_off(:, 1:80), 'r--', 'LineWidth', 2)
-            h1=plot(Dc_on.frequencies(1:80), mean(D_on(:, 1:80)), 'b', 'LineWidth', 10)
-            hold on
-            h2=plot(Dc_on.frequencies(1:80), mean(D_off(:, 1:80)), 'b--', 'LineWidth', 10)
-    
-            box off
-            axis off
 
-    %         legend([h1, h2],{'on', 'off'})
-%             xlabel('frequency', 'FontSize', 20, 'FontWeight','bold')
-%             ylabel('Connectivity', 'FontSize', 20, 'FontWeight','bold')
-%             a = get(gca,'XTickLabel');  
-%             set(gca,'linewidth',5)
-%             set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
-    %         title([Coh_state, 'Average',' ', limb_list{limb}],  'FontSize', 50)
-            xlim([0 90])
 
-            D_diff=D_on-D_off;
+            D_off_rest = [D_off_left_temp_Rest;D_off_right_temp_Rest];
+            D_on_rest  = [D_on_left_temp_Rest;D_on_right_temp_Rest];
+
+
+    
+          
+
+            D_diff=D_off-D_off_rest(floor(linspace(1,123,109)));
             ind4 = find(min(abs(Dc_on.frequencies-4))==abs(Dc_on.frequencies-4));
             ind7 = find(min(abs(Dc_on.frequencies-7))==abs(Dc_on.frequencies-7));
             ind8 = find(min(abs(Dc_on.frequencies-8))==abs(Dc_on.frequencies-8));
@@ -273,18 +235,7 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             ind80 = find(min(abs(Dc_on.frequencies-80))==abs(Dc_on.frequencies-80));
 
             LiWidthMlines=10;
-            hold on, yline(0, 'k--', 'LineWidth', 5)
-            hold on, xline(ind4, 'm--', 'LineWidth', LiWidthMlines)
-            hold on, xline(ind8, 'm--', 'LineWidth', LiWidthMlines)
-            hold on, xline(ind12, 'm--', 'LineWidth', LiWidthMlines)
-            hold on, xline(ind31, 'm--', 'LineWidth', LiWidthMlines)
-            hold on, xline(ind52, 'm--', 'LineWidth', LiWidthMlines)
-
             
-            spm_mkdir(['D:\home\results Percept Project\ForBRST']);
-            saveas(gcf, ['D:\home\results Percept Project\ForBRST\', Coh_state,  'Average','_', condition, limb_list{limb}, '.png'])
-    
-    
             
     
             [h_theta ,    p_theta]= ttest(mean(D_diff(:,ind4:ind7),2));
@@ -311,22 +262,22 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             size_font=100;
             y1 = ylim;
             hold on, xline(ind4, 'm--', 'LineWidth', LiWidthMlines)
-%             if h_theta==1 
-%                 if p_theta<0.01
-%                     plot((ind4+ind8)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot(5, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
-%                 else
-%                     plot((ind4+ind8)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
-%                 end
-%     %             plot((ind4+ind8)/2, 0.003, 'k*', 'MarkerSize', sizestar), 
-% %                 text((ind4+ind8)/2, 0.005, num2str(round(p_theta*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'), 
-%                 a = fill([ind4 ind4 ind8 ind8], [y1(1) y1(2) y1(2) y1(1)], 'm');
-%                 a.FaceAlpha = 0.1;
-%                 a.EdgeColor='none';
-%             end
+            if h_theta==1 
+                if p_theta<0.01
+                    plot((ind4+ind8)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot(5, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                else
+                    plot((ind4+ind8)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
+                end
+    %             plot((ind4+ind8)/2, 0.003, 'k*', 'MarkerSize', sizestar), 
+%                 text((ind4+ind8)/2, 0.005, num2str(round(p_theta*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'), 
+                a = fill([ind4 ind4 ind8 ind8], [y1(1) y1(2) y1(2) y1(1)], 'm');
+                a.FaceAlpha = 0.1;
+                a.EdgeColor='none';
+            end
             xline(ind8, 'm--', 'LineWidth', LiWidthMlines)
             if h_alpha==1 
                 if p_alpha<0.01
-                    plot((ind8+ind12)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind8+ind12)/2, y1(2)-0.008, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                    plot((ind8+ind12)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind8+ind12)/2, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
                 else
                     plot((ind8+ind12)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
                 end
@@ -339,7 +290,7 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             xline(ind12, 'm--', 'LineWidth', LiWidthMlines)
             if h_beta==1 
                 if p_beta<0.01
-                    plot((ind12+ind31)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind12+ind31)/2,  y1(2)-0.008, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                    plot((ind12+ind31)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind12+ind31)/2, y1(2), y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
                 else
                     plot((ind12+ind31)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
                 end
@@ -352,7 +303,7 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             xline(ind31, 'm--', 'LineWidth', LiWidthMlines)
             if h_lowgamma==1 
                 if p_lowgamma<0.01
-                    plot((ind31+ind52)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind31+ind52)/2, y1(2)-0.008, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                    plot((ind31+ind52)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind31+ind52)/2, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
                 else
                     plot((ind31+ind52)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
                 end
@@ -365,7 +316,7 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             xline(ind52, 'm--', 'LineWidth', LiWidthMlines)
             if h_highgamma==1 
                 if p_highgamma<0.01
-                    plot((ind52+ind80)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind52+ind80)/2, y1(2)-0.008, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                    plot((ind52+ind80)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind52+ind80)/2, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
                 else
                     plot((ind52+ind80)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
                 end
@@ -389,34 +340,14 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             % figure, shadedErrorBar([],mean(D_diff,1),flipud(CI));
     
             spm_mkdir(['D:\home\results Percept Project\ForBRST']);
-            saveas(gcf, ['D:\home\results Percept Project\ForBRST\', Coh_state,  'DifferenceWithInterval','_', condition, limb_list{limb}, '.png'])
+            saveas(gcf, ['D:\home\results Percept Project\ForBRST\', Coh_state,  'OffAgainstRestDifferenceWithInterval','_', condition, limb_list{limb}, '.png'])
     
 
-        end
-    else
 
-            D_on_left=squeeze(mean(D_on_left_temp(:,:,:),3));
-            D_off_left=squeeze(mean(D_off_left_temp(:,:,:),3));
-            D_on_right=squeeze(mean(D_on_right_temp(:,:,:),3));
-            D_off_right=squeeze(mean(D_off_right_temp(:,:,:),3));
-    
-    
-            D_off = [D_off_left;D_off_right];
-            D_on  = [D_on_left;D_on_right];
-    
-            figure('units','normalized','outerposition',[0 0 1 1]),
-    %         plot(Dc_on.frequencies(1:80), D_on(:, 1:80), 'b--', 'LineWidth', 2)
-    %         hold on, plot(Dc_on.frequencies(1:80), D_off(:, 1:80), 'r--', 'LineWidth', 2)
-            h1=plot(Dc_on.frequencies(1:80), mean(D_on(:, 1:80)), 'b', 'LineWidth', 10)
-            hold on
-            h2=plot(Dc_on.frequencies(1:80), mean(D_off(:, 1:80)), 'b--', 'LineWidth', 10)
-    
-            box off
-            axis off
-            LiWidthMlines=10;
-            hold on, yline(0, 'k--', 'LineWidth', 5)
 
-            D_diff=D_on-D_off;
+
+            %%
+            D_diff=D_on-D_on_rest(floor(linspace(1,123,109)));
             ind4 = find(min(abs(Dc_on.frequencies-4))==abs(Dc_on.frequencies-4));
             ind7 = find(min(abs(Dc_on.frequencies-7))==abs(Dc_on.frequencies-7));
             ind8 = find(min(abs(Dc_on.frequencies-8))==abs(Dc_on.frequencies-8));
@@ -428,24 +359,8 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             ind52 = find(min(abs(Dc_on.frequencies-52))==abs(Dc_on.frequencies-52));
             ind80 = find(min(abs(Dc_on.frequencies-80))==abs(Dc_on.frequencies-80));
 
-            hold on, xline(ind4, 'm--', 'LineWidth', LiWidthMlines)
-            hold on, xline(ind8, 'm--', 'LineWidth', LiWidthMlines)
-            hold on, xline(ind12, 'm--', 'LineWidth', LiWidthMlines)
-            hold on, xline(ind31, 'm--', 'LineWidth', LiWidthMlines)
-            hold on, xline(ind52, 'm--', 'LineWidth', LiWidthMlines)
-    %         legend([h1, h2],{'on', 'off'})
-%             xlabel('frequency', 'FontSize', 20, 'FontWeight','bold')
-%             ylabel('Connectivity', 'FontSize', 20, 'FontWeight','bold')
-%             a = get(gca,'XTickLabel');  
-%             set(gca,'linewidth',5)
-%             set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
-    %         title([Coh_state, 'Average',' ', limb_list{limb}],  'FontSize', 50)
-            xlim([0 90])
+            LiWidthMlines=10;
             
-            spm_mkdir(['D:\home\results Percept Project\ForBRST']);
-            saveas(gcf, ['D:\home\results Percept Project\ForBRST\', Coh_state,  'Average','_', condition '.png'])
-    
-    
             
     
             [h_theta ,    p_theta]= ttest(mean(D_diff(:,ind4:ind7),2));
@@ -469,30 +384,30 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             hold on, h1=plot(freqs, meanD_diff, 'k', 'LineWidth', 10);
             hold on, yline(0, 'k--', 'LineWidth', 5)
             sizestar=40;
-            size_font=80;
+            size_font=100;
             y1 = ylim;
-%             hold on, xline(ind4, 'm--', 'LineWidth', LiWidthMlines)
-%             if h_theta==1 
-%                 if p_theta<0.01
-%                     plot((ind4+ind8)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind4+ind8)/2, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
-%                 else
-%                     plot((ind4+ind8)/2, y1(2), 'k*', 'MarkerSize', sizestar,'LineWidth', LiWidthMlines),
-%                 end
-%     %             plot((ind4+ind8)/2, 0.003, 'k*', 'MarkerSize', sizestar), 
-% %                 text((ind4+ind8)/2-2, -0.004, num2str(round(p_theta*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'), 
-%                 a = fill([ind4 ind4 ind8 ind8], [y1(1) y1(2) y1(2) y1(1)], 'm');
-%                 a.FaceAlpha = 0.1;
-%                 a.EdgeColor='none';
-%             end
+            hold on, xline(ind4, 'm--', 'LineWidth', LiWidthMlines)
+            if h_theta==1 
+                if p_theta<0.01
+                    plot((ind4+ind8)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot(5, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                else
+                    plot((ind4+ind8)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
+                end
+    %             plot((ind4+ind8)/2, 0.003, 'k*', 'MarkerSize', sizestar), 
+%                 text((ind4+ind8)/2, 0.005, num2str(round(p_theta*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'), 
+                a = fill([ind4 ind4 ind8 ind8], [y1(1) y1(2) y1(2) y1(1)], 'm');
+                a.FaceAlpha = 0.1;
+                a.EdgeColor='none';
+            end
             xline(ind8, 'm--', 'LineWidth', LiWidthMlines)
             if h_alpha==1 
                 if p_alpha<0.01
-                    plot((ind8+ind12)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind8+ind12)/2, y1(2)-0.007, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                    plot((ind8+ind12)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind8+ind12)/2, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
                 else
                     plot((ind8+ind12)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
                 end
     %             plot((ind8+ind12)/2, 0.003, 'k*', 'MarkerSize', sizestar), 
-%                 text((ind8+ind12)/2-2, 0.012, num2str(round(p_alpha*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'),
+%                 text((ind8+ind12)/2, 0.005, num2str(round(p_alpha*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'),
                 a = fill([ind8 ind8 ind12 ind12], [y1(1) y1(2) y1(2) y1(1)], 'm');
                 a.FaceAlpha = 0.1;
                 a.EdgeColor='none';
@@ -500,12 +415,12 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             xline(ind12, 'm--', 'LineWidth', LiWidthMlines)
             if h_beta==1 
                 if p_beta<0.01
-                    plot((ind12+ind31)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind12+ind31)/2, y1(2)-0.007, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                    plot((ind12+ind31)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind12+ind31)/2, y1(2), y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
                 else
                     plot((ind12+ind31)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
                 end
     %             plot((ind12+ind31)/2, 0.003, 'k*', 'MarkerSize', sizestar), 
-%                 text((ind12+ind31)/2, 0.004, num2str(round(p_beta*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'),
+%                 text((ind12+ind31)/2, 0.005, num2str(round(p_beta*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'),
                 a = fill([ind12 ind12 ind31 ind31], [y1(1) y1(2) y1(2) y1(1)], 'm');
                 a.FaceAlpha = 0.1;
                 a.EdgeColor='none';
@@ -513,12 +428,12 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             xline(ind31, 'm--', 'LineWidth', LiWidthMlines)
             if h_lowgamma==1 
                 if p_lowgamma<0.01
-                    plot((ind31+ind52)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind31+ind52)/2, y1(2)-0.007, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                    plot((ind31+ind52)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind31+ind52)/2, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
                 else
                     plot((ind31+ind52)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
                 end
     %             plot((ind31+ind52)/2, 0.003, 'k*', 'MarkerSize', sizestar),
-%                 text((ind31+ind52)/2, -0.009, num2str(round(p_lowgamma*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'),
+%                 text((ind31+ind52)/2, 0.005, num2str(round(p_lowgamma*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'),
                 a = fill([ind31 ind31 ind52 ind52], [y1(1) y1(2) y1(2) y1(1)], 'm');
                 a.FaceAlpha = 0.1;
                 a.EdgeColor='none';
@@ -526,12 +441,12 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             xline(ind52, 'm--', 'LineWidth', LiWidthMlines)
             if h_highgamma==1 
                 if p_highgamma<0.01
-                    plot((ind52+ind80)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind52+ind80)/2, y1(2)-0.007, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
+                    plot((ind52+ind80)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),  plot((ind52+ind80)/2, y1(2)-0.001, 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines)
                 else
                     plot((ind52+ind80)/2, y1(2), 'k*', 'MarkerSize', sizestar, 'LineWidth', LiWidthMlines),
                 end
     %             plot((ind52+ind80)/2, 0.003, 'k*', 'MarkerSize', sizestar),
-%                 text((ind31+ind52)/2, 0.004, num2str(round(p_highgamma*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'), 
+%                 text((ind52+ind80)/2, 0.005, num2str(round(p_highgamma*1000)/1000), 'FontSize', size_font, 'FontWeight','bold'), 
                 a = fill([ind52 ind52 ind80 ind80], [y1(1) y1(2) y1(2) y1(1)], 'm');
                 a.FaceAlpha = 0.1;
                 a.EdgeColor='none';
@@ -539,7 +454,7 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
         
     
             box off
-            axis off
+%             axis off
 %             xlabel('frequency', 'FontSize', 20, 'FontWeight','bold')
 %             ylabel('On - Off (95%CI)', 'FontSize', 20, 'FontWeight','bold')
 %             a = get(gca,'XTickLabel');  
@@ -550,11 +465,11 @@ function ind_patient=plotConnectivityAverageCollapse(condition, Coh_state)
             % figure, shadedErrorBar([],mean(D_diff,1),flipud(CI));
     
             spm_mkdir(['D:\home\results Percept Project\ForBRST']);
-            saveas(gcf, ['D:\home\results Percept Project\ForBRST\', Coh_state,  'DifferenceWithInterval','_', condition, '.png'])
+            saveas(gcf, ['D:\home\results Percept Project\ForBRST\', Coh_state,  'OnAgainstRestDifferenceWithInterval','_', condition, limb_list{limb}, '.png'])
     
-        
 
-    end
+        end
+    
 
 
 

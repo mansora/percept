@@ -196,36 +196,52 @@ function dbs_percept_Coherence_topoplotAveraged(condition, Coh_state, freqband)
     limb_list={'hand', 'foot'};
     for limb=1:2
 
-        D_on_left   =squeeze(mean(D_on_left_temp(:,:,1+4*(limb-1):4+4*(limb-1),:),3));
-        D_off_left  =squeeze(mean(D_off_left_temp(:,:,1+4*(limb-1):4+4*(limb-1),:),3));
-        D_on_right  =squeeze(mean(D_on_right_temp(:,:,1+4*(limb-1):4+4*(limb-1),:),3));
-        D_off_right =squeeze(mean(D_off_right_temp(:,:,1+4*(limb-1):4+4*(limb-1),:),3));
+       if find(strcmp({'ACT','PMT'},condition))
+            % left movement
+            D_on_left   =squeeze(mean(D_on_left_temp(:,:,1+4*(limb-1):4+4*(limb-1)-2,:),3));
+            D_off_left  =squeeze(mean(D_off_left_temp(:,:,1+4*(limb-1):4+4*(limb-1)-2,:),3));
+            D_on_right  =squeeze(mean(D_on_right_temp(:,:,1+4*(limb-1):4+4*(limb-1)-2,:),3));
+            D_off_right =squeeze(mean(D_off_right_temp(:,:,1+4*(limb-1):4+4*(limb-1)-2,:),3));   
 
-        ind1 = find(min(abs(Dc_on.frequencies-freqband(1)))==abs(Dc_on.frequencies-freqband(1)));
-        ind2 = find(min(abs(Dc_on.frequencies-freqband(2)))==abs(Dc_on.frequencies-freqband(2)));
+%             % right movement
+%             D_on_left   =squeeze(mean(D_on_left_temp(:,:,1+4*(limb-1)+2:4+4*(limb-1)-2,:),3));
+%             D_off_left  =squeeze(mean(D_off_left_temp(:,:,1+4*(limb-1)+2:4+4*(limb-1)-2,:),3));
+%             D_on_right  =squeeze(mean(D_on_right_temp(:,:,1+4*(limb-1)+2:4+4*(limb-1)-2,:),3));
+%             D_off_right =squeeze(mean(D_off_right_temp(:,:,1+4*(limb-1)+2:4+4*(limb-1)-2,:),3));   
+       else
+           D_on_left   =squeeze(mean(D_on_left_temp(:,:,:,:),3));
+           D_off_left  =squeeze(mean(D_off_left_temp(:,:,:,:),3));
+           D_on_right  =squeeze(mean(D_on_right_temp(:,:,:,:),3));
+           D_off_right =squeeze(mean(D_off_right_temp(:,:,:,:),3));   
+           
+       end
 
-        D_on_left   = squeeze(mean(D_on_left(:,ind1:ind2,:),2));
-        D_off_left  = squeeze(mean(D_off_left(:,ind1:ind2,:),2));
-        D_on_right  = squeeze(mean(D_on_right(:,ind1:ind2,:),2));
-        D_off_right = squeeze(mean(D_off_right(:,ind1:ind2,:),2));
+       ind1 = find(min(abs(Dc_on.frequencies-freqband(1)))==abs(Dc_on.frequencies-freqband(1)));
+       ind2 = find(min(abs(Dc_on.frequencies-freqband(2)))==abs(Dc_on.frequencies-freqband(2)));
+
+       D_on_left   = squeeze(mean(D_on_left(:,ind1:ind2,:),2));
+       D_off_left  = squeeze(mean(D_off_left(:,ind1:ind2,:),2));
+       D_on_right  = squeeze(mean(D_on_right(:,ind1:ind2,:),2));
+       D_off_right = squeeze(mean(D_off_right(:,ind1:ind2,:),2));
+
     
 
        
-        spm_eeg_plotScalpData((squeeze(mean(D_on_left,2))-squeeze(mean(D_off_left,2))), D.coor2D(D.indchantype('EEG')), D.chanlabels(D.indchantype('EEG')));
-%         title(['Coherence topoplot On-Off Left ' num2str(freqband)])
-    
-        spm_mkdir(['D:\home\results Percept Project\ForBRST']);
-        saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On-Off Left Averaged', condition,...
-           '_', limb_list{limb} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
-        
-
-        
-        spm_eeg_plotScalpData((squeeze(mean(D_on_right,2))-squeeze(mean(D_off_right,2))), D.coor2D(D.indchantype('EEG')), D.chanlabels(D.indchantype('EEG')));
-%         title(['Coherence topoplot On-Off Right ' num2str(freqband)])
-    
-        spm_mkdir(['D:\home\results Percept Project\ForBRST']);
-        saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On-Off Right Averaged', condition,...
-           '_', limb_list{limb} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+%         spm_eeg_plotScalpData((squeeze(mean(D_on_left,2))-squeeze(mean(D_off_left,2))), D.coor2D(D.indchantype('EEG')), D.chanlabels(D.indchantype('EEG')));
+% %         title(['Coherence topoplot On-Off Left ' num2str(freqband)])
+%     
+%         spm_mkdir(['D:\home\results Percept Project\ForBRST']);
+%         saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On-Off Left Averaged', condition,...
+%            '_', limb_list{limb} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+%         
+% 
+%         
+%         spm_eeg_plotScalpData((squeeze(mean(D_on_right,2))-squeeze(mean(D_off_right,2))), D.coor2D(D.indchantype('EEG')), D.chanlabels(D.indchantype('EEG')));
+% %         title(['Coherence topoplot On-Off Right ' num2str(freqband)])
+%     
+%         spm_mkdir(['D:\home\results Percept Project\ForBRST']);
+%         saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On-Off Right Averaged', condition,...
+%            '_', limb_list{limb} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
 
 
         chanlabelsflipped= {'Fp2', 'Fz', 'F4','F8','FT10','FC6','FC2','C4','T7','TP10','CP6','CP2',...
@@ -237,15 +253,72 @@ function dbs_percept_Coherence_topoplotAveraged(condition, Coh_state, freqband)
         D_on_left_switched   = D_on_left(indices_flipped,:);
         D_off_left_switched  = D_off_left(indices_flipped,:);
 
-        D_off = [D_on_left_switched,D_off_right];
-        D_on  = [D_off_left_switched,D_on_right];
+        D_off = [D_off_left_switched,D_off_right];
+        D_on  = [D_on_left_switched,D_on_right];
 
+        
+        
         spm_eeg_plotScalpData((squeeze(mean(D_on,2))-squeeze(mean(D_off,2))), D.coor2D(D.indchantype('EEG')), D.chanlabels(D.indchantype('EEG')));
 %         title(['Coherence topoplot On-Off Right ' num2str(freqband)])
+        colormap(jet)
+        c = colorbar;
+        c.LineWidth = 5;
+        c.FontSize  =20;
+        c.FontWeight = 'bold';
+        set(gcf,'color','w');
+        caxis([-0.01 0.01])
     
         spm_mkdir(['D:\home\results Percept Project\ForBRST']);
-        saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On-Off BothSides Averaged', condition,...
-           '_', limb_list{limb} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        if find(strcmp({'ACT','PMT'},condition))
+            saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On-Off BothSides Averaged', condition,...
+               '_', limb_list{limb} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        else
+            saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On-Off BothSides Averaged', condition,...
+               '_','_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        end
+
+
+       
+        spm_eeg_plotScalpData((squeeze(mean(D_on,2))), D.coor2D(D.indchantype('EEG')), D.chanlabels(D.indchantype('EEG')));
+%         title(['Coherence topoplot On-Off Right ' num2str(freqband)])
+        colormap(hot)
+        c = colorbar;
+        c.LineWidth = 5;
+        c.FontSize  =20;
+        c.FontWeight = 'bold';
+        set(gcf,'color','w');
+        caxis([0.03 0.06])
+
+        spm_mkdir(['D:\home\results Percept Project\ForBRST']);
+
+        if find(strcmp({'ACT','PMT'},condition))
+            saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On BothSides Averaged', condition,...
+               '_', limb_list{limb} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        else
+            saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot On BothSides Averaged', condition,...
+               '_','_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        end
+
+        spm_eeg_plotScalpData((squeeze(mean(D_off,2))), D.coor2D(D.indchantype('EEG')), D.chanlabels(D.indchantype('EEG')));
+%         title(['Coherence topoplot On-Off Right ' num2str(freqband)])
+    
+        colormap(hot)
+        c = colorbar;
+        c.LineWidth = 5;
+        c.FontSize  =20;
+        c.FontWeight = 'bold';
+        set(gcf,'color','w');
+        caxis([0.02 0.06])
+
+        if find(strcmp({'ACT','PMT'},condition))
+            saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot Off BothSides Averaged', condition,...
+               '_', limb_list{limb} ,'_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        else
+            saveas(gcf, ['D:\home\results Percept Project\ForBRST\Coherence topoplot Off BothSides Averaged', condition,...
+               '_','_freqband_',num2str(freqband(1)),'_',num2str(freqband(2)),'.png'])
+        end
+
+
 
 
 

@@ -1,4 +1,4 @@
-function D = dbs_percept_lfp_spectra(initials, rec_id, condition)
+function D = dbs_percept_new_lfp_spectra(initials, rec_id, condition)
 
 
 
@@ -19,13 +19,13 @@ function D = dbs_percept_lfp_spectra(initials, rec_id, condition)
     
     % files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
     try
-        files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+        files = spm_select('FPList','.', ['^' 'new_' '^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
     catch
-        files = spm_select('FPList','.', ['regexp_.*c|.*' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+        files = spm_select('FPList','.', ['^' 'new_' 'regexp_.*c|.*' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
     end
     
     if isempty(files)
-        files = spm_select('FPList','.', ['^' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+        files = spm_select('FPList','.', ['^' 'new_' '.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
     end
 
 % for n=1:size(files,1)
@@ -50,7 +50,7 @@ function D = dbs_percept_lfp_spectra(initials, rec_id, condition)
         S.phase = 0;
         S.method = 'mtmfft';
         S.settings.taper = 'dpss';
-        S.settings.freqres = 1;
+        S.settings.freqres = 4;
         S.prefix = 'LFP_spect_';
         D_temp = spm_eeg_tf(S);
         
@@ -87,7 +87,7 @@ function D = dbs_percept_lfp_spectra(initials, rec_id, condition)
         S.phase = 0;
         S.method = 'mtmfft';
         S.settings.taper = 'dpss';
-        S.settings.freqres = 1;
+        S.settings.freqres = 4;
         S.prefix = 'EEG_spect_';
         D = spm_eeg_tf(S);
         

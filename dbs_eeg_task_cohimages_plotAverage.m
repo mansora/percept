@@ -15,11 +15,11 @@ function dbs_eeg_task_cohimages_plotAverage(condition)
             if strfind(files(f,:), 'Gpi_R')
                 D_off_R = spm_eeg_load(files(f,:));
                 EEGchannels=[D_off_R.indchannel('P3') D_off_R.indchannel('P4') D_off_R.indchannel('Pz')];
-                D_off_R_temp(i,:,:,:)=(mean(D_off_R(EEGchannels,:,:,:),1));
+                D_off_R_temp(i,:,:,:)=squeeze(mean(D_off_R(EEGchannels,:,:,:),1));
             elseif strfind(files(f,:), 'Gpi_L')
                 D_off_L = spm_eeg_load(files(f,:));
                 EEGchannels=[D_off_L.indchannel('P3') D_off_L.indchannel('P4') D_off_L.indchannel('Pz')];
-                D_off_L_temp(i,:,:,:)=(mean(D_off_L(EEGchannels,:,:,:),1));
+                D_off_L_temp(i,:,:,:)=squeeze(mean(D_off_L(EEGchannels,:,:,:),1));
             else
                 error('datafile is wrong')
             end
@@ -73,12 +73,17 @@ function dbs_eeg_task_cohimages_plotAverage(condition)
 
 
         limb_list={'hand', 'foot'};
-        for limb=1:2
+        for limb=1 %:2
     
-            D_on_left=squeeze(mean(D_on_L_temp(:,:,:,1+4*(limb-1):4+4*(limb-1)),4));
-            D_off_left=squeeze(mean(D_off_L_temp(:,:,:,1+4*(limb-1):4+4*(limb-1)),4));
-            D_on_right=squeeze(mean(D_on_R_temp(:,:,:,1+4*(limb-1):4+4*(limb-1)),4));
-            D_off_right=squeeze(mean(D_off_R_temp(:,:,:,1+4*(limb-1):4+4*(limb-1)),4));
+%             D_on_left=squeeze(mean(D_on_L_temp(:,:,:,1+4*(limb-1):4+4*(limb-1)),4));
+%             D_off_left=squeeze(mean(D_off_L_temp(:,:,:,1+4*(limb-1):4+4*(limb-1)),4));
+%             D_on_right=squeeze(mean(D_on_R_temp(:,:,:,1+4*(limb-1):4+4*(limb-1)),4));
+%             D_off_right=squeeze(mean(D_off_R_temp(:,:,:,1+4*(limb-1):4+4*(limb-1)),4));
+
+            D_on_left=D_on_L_temp;
+            D_off_left=D_off_L_temp;
+            D_on_right=D_on_R_temp;
+            D_off_right=D_off_R_temp;
 
             D_off = cat( 1, D_off_left, D_off_right);
             D_off = squeeze(mean(D_off,1));

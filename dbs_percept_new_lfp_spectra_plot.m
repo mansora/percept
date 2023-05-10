@@ -1,18 +1,18 @@
-function dbs_percept_lfp_spectra_plot(initials, condition)
+function dbs_percept_new_lfp_spectra_plot(initials, condition)
 
     
     [files_, seq, root, details] = dbs_subjects_percept(initials, 1);
     cd(fullfile(root, condition));
     try
-        files = spm_select('FPList','.', ['LFP_spect_', '.', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
+        files = spm_select('FPList','.', ['LFP_spect_new_', '.', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
         if isempty(files)
-            files = spm_select('FPList','.', ['LFP_spect_', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
+            files = spm_select('FPList','.', ['LFP_spect_new_', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
         end
         D1_LFP = spm_eeg_load(files);
     
-        files = spm_select('FPList','.', ['EEG_spect_', '.', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
+        files = spm_select('FPList','.', ['EEG_spect_new_', '.', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
         if isempty(files)
-            files = spm_select('FPList','.', ['EEG_spect_', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
+            files = spm_select('FPList','.', ['EEG_spect_new_', initials '_rec_' num2str(1) '_' condition '_[0-9]*.mat']);
         end
         D1_EEG = spm_eeg_load(files);
     catch
@@ -23,15 +23,15 @@ function dbs_percept_lfp_spectra_plot(initials, condition)
     cd(fullfile(root, condition));
     
     try
-        files = spm_select('FPList','.', ['LFP_spect_', '.', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
+        files = spm_select('FPList','.', ['LFP_spect_new_', '.', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
         if isempty(files)
-            files = spm_select('FPList','.', ['LFP_spect_', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
+            files = spm_select('FPList','.', ['LFP_spect_new_', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
         end
         D2_LFP = spm_eeg_load(files);
     
-        files = spm_select('FPList','.', ['EEG_spect_', '.', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
+        files = spm_select('FPList','.', ['EEG_spect_new_', '.', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
         if isempty(files)
-            files = spm_select('FPList','.', ['EEG_spect_', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
+            files = spm_select('FPList','.', ['EEG_spect_new_', initials '_rec_' num2str(2) '_' condition '_[0-9]*.mat']);
         end
         D2_EEG = spm_eeg_load(files);
     catch
@@ -47,32 +47,21 @@ function dbs_percept_lfp_spectra_plot(initials, condition)
                 titl_fig=[condition, '' , strsplit(D2_LFP.conditions{cond},'_')];
                 titl_fig_save=[condition, '' , D2_LFP.conditions{cond}];
                 
-%                 newcolors = {'red','blue'};
-%                 colororder(newcolors)
-                subplot(1, numel(D1_LFP.conditions),cond), plot(D2_LFP.frequencies, squeeze(D2_LFP(:,:,1,cond)),'LineWidth',5)
-                hold on, plot(D1_LFP.frequencies, squeeze(D1_LFP(:,:,1,cond)),'--','LineWidth',5)
+                subplot(1, numel(D1_LFP.conditions),cond), plot(D2_LFP.frequencies, squeeze(D2_LFP(:,:,1,cond)),'LineWidth',3)
+                hold on, plot(D1_LFP.frequencies, squeeze(D1_LFP(:,:,1,cond)),'--','LineWidth',3)
                 if numel(details.chan)==1
                     legend(append(details.chan{1}(end-3), ' on'),append(details.chan{1}(end-3), ' off'))
                 else
                     legend('L on','R on', 'L off', 'R off')
                 end
-%                 title(titl_fig)
-%                 ylabel('PSD', 'FontSize', 30, 'FontWeight','bold')
-%                 xlabel('frequency (Hz)', 'FontSize', 30, 'FontWeight','bold')   
+                title(titl_fig)
                 set(gca,'FontSize',18)
-                set(gca,'LineWidth',5)
-                a = get(gca,'XTickLabel');  
-                set(gca,'linewidth',5)
-                set(gca,'XTickLabel',a,'fontsize',30,'FontWeight','bold')
-
+                set(gca,'LineWidth',3)
                 
             end
     
             spm_mkdir(['D:\home\results Percept Project\', initials]);
             saveas(gcf, ['D:\home\results Percept Project\', initials,'\',initials,'_lfp_spectra', condition, '.png'])
-
-%             spm_mkdir(['D:\home\results Percept Project\']);
-%             saveas(gcf, ['D:\home\results Percept Project\',initials,'_lfp_spectra', condition, '.png'])
         end
 
         if exist('D2_EEG', 'var') && exist('D1_EEG', 'var')
@@ -97,15 +86,9 @@ function dbs_percept_lfp_spectra_plot(initials, condition)
     %             hold on, p2=patch([D1_EEG.frequencies fliplr(D1_EEG.frequencies)], [x1_EEG_down fliplr(x1_EEG_up)], 'b')
     %             p2.FaceAlpha = 0.2;
                 legend([h1,h2], {'EEG on','EEG off'})
-                ylabel('PSD', 'FontSize', 30, 'FontWeight','bold')
-                xlabel('frequency (Hz)', 'FontSize', 30, 'FontWeight','bold')   
                 title(titl_fig)
                 set(gca,'FontSize',18)
                 set(gca,'LineWidth',3)
-                a = get(gca,'XTickLabel');  
-                set(gca,'linewidth',5)
-                set(gca,'XTickLabel',a,'fontsize',30,'FontWeight','bold')
-
                 
             end
     

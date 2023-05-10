@@ -1,4 +1,4 @@
-function plotLogSpectra_baselinedAverage(condition)
+function plotdifferenceACTPMTwithrest(condition)
      close all
     initials={'LN_PR_D001', 'LN_PR_D003','LN_PR_D004','LN_PR_D005','LN_PR_D007','LN_PR_D008','LN_PR_D009'};
 
@@ -29,17 +29,23 @@ function plotLogSpectra_baselinedAverage(condition)
             warning(['patient ', initials{i}, ' Off stim does not have', condition])
         end
 
-        if ~strcmp(condition, 'R')
+        
             cd(fullfile(root, 'R'));
             files = spm_select('FPList','.', ['LFP_spect_', '.', initials{i} '_rec_' num2str(1) '_R_[0-9]*.mat']);
             if isempty(files)
                 files = spm_select('FPList','.', ['LFP_spect_', initials{i} '_rec_' num2str(1) '_R_[0-9]*.mat']);
             end
             D1_LFP_baseline = spm_eeg_load(files);
-            D1_LFP_baseline=squeeze(D1_LFP_baseline(:,:,1,:));
-        else
-            D1_LFP_baseline=ones(2,97);
-        end
+
+
+            cd(fullfile(root, 'R'));
+            files = spm_select('FPList','.', ['EEG_spect_', '.', initials{i} '_rec_' num2str(1) '_R_[0-9]*.mat']);
+            if isempty(files)
+                files = spm_select('FPList','.', ['EEG_spect_', initials{i} '_rec_' num2str(1) '_R_[0-9]*.mat']);
+            end
+            D1_EEG_baseline = spm_eeg_load(files);
+            
+       
 
         
     
@@ -66,17 +72,23 @@ function plotLogSpectra_baselinedAverage(condition)
             warning(['patient ', initials{i}, ' On stim does not have', condition])
         end
 
-        if ~strcmp(condition, 'R')
+        
             cd(fullfile(root, 'R'));
             files = spm_select('FPList','.', ['LFP_spect_', '.', initials{i} '_rec_' num2str(2) '_R_[0-9]*.mat']);
             if isempty(files)
                 files = spm_select('FPList','.', ['LFP_spect_', initials{i} '_rec_' num2str(2) '_R_[0-9]*.mat']);
             end
             D2_LFP_baseline = spm_eeg_load(files);
-            D2_LFP_baseline=squeeze(D2_LFP_baseline(:,:,1,:));
-        else
-            D2_LFP_baseline=ones(2,97);
-        end
+            
+            cd(fullfile(root, 'R'));
+            files = spm_select('FPList','.', ['EEG_spect_', '.', initials{i} '_rec_' num2str(2) '_R_[0-9]*.mat']);
+            if isempty(files)
+                files = spm_select('FPList','.', ['EEG_spect_', initials{i} '_rec_' num2str(2) '_R_[0-9]*.mat']);
+            end
+            D2_EEG_baseline = spm_eeg_load(files);
+            
+        
+        
         
         
 
@@ -84,39 +96,49 @@ function plotLogSpectra_baselinedAverage(condition)
         %% 
 
         if strcmp(D1_LFP_temp.chanlabels{lfpchan(1)}(end-3),'L')
-            D1_LFP_1_all(i,:, condz)=log(squeeze(D1_LFP_temp(1,:,1,condz))) - log(D1_LFP_baseline(1,:));
+            D1_LFP_1_all(i,:, condz)=(squeeze(D1_LFP_temp(1,:,1,condz))) ;
+            D1_LFP_baseline_1_all(i,:,1)=(squeeze(D1_LFP_baseline(1,:,1,:)));
         else
-            D1_LFP_2_all(i,:, condz)=log(squeeze(D1_LFP_temp(1,:,1,condz))) - log(D1_LFP_baseline(1,:));
+            D1_LFP_2_all(i,:, condz)=(squeeze(D1_LFP_temp(1,:,1,condz))) ;
+             D1_LFP_baseline_2_all(i,:,1)=(squeeze(D1_LFP_baseline(1,:,1,:)));
         end
         if numel(lfpchan)>1
             if strcmp(D1_LFP_temp.chanlabels{lfpchan(2)}(end-3),'L')
-                D1_LFP_1_all(i,:, condz)=log(squeeze(D1_LFP_temp(2,:,1,condz))) - log(D1_LFP_baseline(2,:));
+                D1_LFP_1_all(i,:, condz)=(squeeze(D1_LFP_temp(2,:,1,condz))) ;
+                 D1_LFP_baseline_1_all(i,:,1)=(squeeze(D1_LFP_baseline(2,:,1,:)));
             else
-                D1_LFP_2_all(i,:, condz)=log(squeeze(D1_LFP_temp(2,:,1,condz))) - log(D1_LFP_baseline(2,:));
+                D1_LFP_2_all(i,:, condz)=(squeeze(D1_LFP_temp(2,:,1,condz))) ;
+                D1_LFP_baseline_2_all(i,:,1)=(squeeze(D1_LFP_baseline(2,:,1,:)));
             end
         end
     
         %         EEGchannels=D1_EEG_temp.indchantype('EEG');
         EEGchannels=[D1_EEG_temp.indchannel('C3') D1_EEG_temp.indchannel('C4'), D1_EEG_temp.indchannel('Cz')];
-        D1_EEG_all(i,:, condz)=mean(log(squeeze(D1_EEG_temp(EEGchannels,:,1,condz))),1);
+        D1_EEG_all(i,:, condz)=mean((squeeze(D1_EEG_temp(EEGchannels,:,1,condz))),1);
+        D1_EEG_baseline_all(i,:,1)=mean(squeeze(D1_EEG_baseline(EEGchannels,:,1,:)),1);
 
 
         if strcmp(D2_LFP_temp.chanlabels{lfpchan(1)}(end-3),'L')
-            D2_LFP_1_all(i,:, condz)=log(squeeze(D2_LFP_temp(1,:,1,condz))) - log(D2_LFP_baseline(1,:));
+            D2_LFP_1_all(i,:, condz)=(squeeze(D2_LFP_temp(1,:,1,condz))) ;
+            D2_LFP_baseline_1_all(i,:,1)=(squeeze(D2_LFP_baseline(1,:,1,:)));
         else
-            D2_LFP_2_all(i,:, condz)=log(squeeze(D2_LFP_temp(1,:,1,condz))) - log(D2_LFP_baseline(1,:));
+            D2_LFP_2_all(i,:, condz)=(squeeze(D2_LFP_temp(1,:,1,condz))) ;
+            D2_LFP_baseline_2_all(i,:,1)=(squeeze(D2_LFP_baseline(1,:,1,:)));
         end
         if numel(lfpchan)>1
             if strcmp(D2_LFP_temp.chanlabels{lfpchan(2)}(end-3),'L')
-                D2_LFP_1_all(i,:, condz)=log(squeeze(D2_LFP_temp(2,:,1,condz))) - log(D2_LFP_baseline(2,:));
+                D2_LFP_1_all(i,:, condz)=(squeeze(D2_LFP_temp(2,:,1,condz))) ;
+                D2_LFP_baseline_1_all(i,:,1)=(squeeze(D2_LFP_baseline(2,:,1,:)));
             else
-                D2_LFP_2_all(i,:, condz)=log(squeeze(D2_LFP_temp(2,:,1,condz))) - log(D2_LFP_baseline(2,:));
+                D2_LFP_2_all(i,:, condz)=(squeeze(D2_LFP_temp(2,:,1,condz)));
+                D2_LFP_baseline_2_all(i,:,1)=(squeeze(D2_LFP_baseline(2,:,1,:)));
             end
         end
 
         %         EEGchannels=D2_EEG_temp.indchantype('EEG');
         EEGchannels=[D2_EEG_temp.indchannel('C3') D2_EEG_temp.indchannel('C4'), D2_EEG_temp.indchannel('Cz')];
-        D2_EEG_all(i,:, condz)=mean(log(squeeze(D2_EEG_temp(EEGchannels,:,1,condz))),1);
+        D2_EEG_all(i,:, condz)=mean((squeeze(D2_EEG_temp(EEGchannels,:,1,condz))),1);
+        D2_EEG_baseline_all(i,:,1)=mean(squeeze(D2_EEG_baseline(EEGchannels,:,1,:)),1);
 
 
        
@@ -152,6 +174,32 @@ function plotLogSpectra_baselinedAverage(condition)
 
 
     end
+
+
+    %%
+    for kk=size(D1_EEG_baseline_all,1):-1:1
+        if numel(find(D1_EEG_baseline_all(kk,:,1)==0))==size(D1_EEG_baseline_all,2) || numel(find(D2_EEG_baseline_all(kk,:,1)==0))==size(D2_EEG_baseline_all,2) 
+            D1_EEG_baseline_all(kk,:,:)=[];
+            D2_EEG_baseline_all(kk,:,:)=[];
+        end
+    end
+
+    for kk=size(D1_LFP_baseline_1_all,1):-1:1
+        % left side
+        if numel(find(D1_LFP_baseline_1_all(kk,:,1)==0))==size(D1_LFP_baseline_1_all,2) || numel(find(D2_LFP_baseline_1_all(kk,:,1)==0))==size(D2_LFP_baseline_1_all,2) 
+            D1_LFP_baseline_1_all(kk,:,:)=[];
+            D2_LFP_baseline_1_all(kk,:,:)=[];
+        end
+
+        % right side
+        if numel(find(D1_LFP_baseline_2_all(kk,:,1)==0))==size(D1_LFP_baseline_2_all,2) || numel(find(D2_LFP_baseline_2_all(kk,:,1)==0))==size(D2_LFP_baseline_2_all,2) 
+            D1_LFP_baseline_2_all(kk,:,:)=[];
+            D2_LFP_baseline_2_all(kk,:,:)=[];
+        end
+
+
+    end
+
 
 
 

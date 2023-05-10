@@ -9,8 +9,8 @@ figure, plot(n1)
 hold on, plot(n2)
 hold on, figure, plot(TF1*mean(n1))
 
-figure, plot(n2(abs(offset_stamp_start):end))
-hold on, plot(n1)
+figure, plot(n1)
+hold on, plot(n2(abs(offset_stamp_start)-3704:end)+15)
 
 
 reftrl = linspace(0, size_EEG/dataEEG.fsample, size_EEG);
@@ -73,5 +73,59 @@ hold on, plot([eventss(2).sample, eventss(end).sample], mean(LED_signal),'*r')
 LED_signal(225518-1000:225518+1000)=-2;
 LED_signal(136258-1000:136258+1000)=-5;
 
+figure,
+for i=1:12
+    subplot(6,2,i), plot(dbs_file.trial{1}(i,:))
+    title(dbs_file.label{i})
+end
+
+figure, plot(eeg_file.trial{1}(72,:))
 
 
+figure,
+for i=1:12
+    figure, plot(data.trial{1}(i,:))
+    title(data.label{i})
+end
+
+
+figure,
+for i=1:12
+    subplot(6,2,i), plot(squeeze(D_ecg(i+106,:,1)))
+%     hold on, plot(squeeze(Dpreproc(72,:,1)))
+end
+
+figure, 
+subplot(2,1,1), plot(squeeze(D_tap(111,:,1)))
+hold on, plot(squeeze(D_tap(72,:,1))/200)
+title('patient 5 tap sync')
+
+subplot(2,1,2), plot(squeeze(D_ecg(110,:,1)))
+hold on, plot(squeeze(D_ecg(72,:,1))/200)
+title('patient 5 ecg sync')
+
+
+
+
+figure, plot(squeeze(D_ecg3(82,:,1))/10)
+hold on, plot(squeeze(D_ecg3(40,:,1))/10-100)
+title('patient 3 ecg sync')
+
+figure, plot(squeeze(D_ecg4(81,:,1)))
+hold on, plot(squeeze(D_ecg4(35,:,1))/10-100)
+title('patient 4 ecg sync')
+
+figure, plot(squeeze(D_ecg8(118,:,1)))
+hold on, plot(squeeze(D_ecg8(72,:,1))/200)
+title('patient 8 ecg sync')
+
+figure, plot(squeeze(D_ecg9(112,:,1)))
+% hold on, plot(squeeze(D_ecg9_removed(114,:,1)))
+hold on, plot(squeeze(D_ecg9(72,:,1))/200)
+title('patient 9 ecg sync')
+
+
+figure, plot(squeeze(D_ecgL01(113,:,1)))
+% hold on, plot(squeeze(D_ecg9_removed(114,:,1)))
+hold on, plot(squeeze(D_ecgL01(72,:,1))/200)
+title('patient 9 ecg sync')

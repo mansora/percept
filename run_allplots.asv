@@ -25,17 +25,17 @@ for condd=1:numel(condition)
             warning('this block is not evoked')
         end
 
-%         % condition={'PMT', 'ACT', 'POUR', 'REACH', 'WALK', 'HPT'};
+        % condition={'PMT', 'ACT', 'POUR', 'REACH', 'WALK', 'HPT'};
 %         dbs_eeg_evoked_tf_plot(initials,condition{condd})
-% 
-%         % condition={'PMT', 'ACT', 'POUR', 'REACH', 'WALK'};
+
+        % condition={'PMT', 'ACT', 'POUR', 'REACH', 'WALK'};
 %         dbs_eeg_task_cohimages_plot(initials, condition{condd})
 
         
     end
 
 
-%     dbs_percept_rawdata_plot(initials, condition{condd})
+    dbs_percept_rawdata_plot(initials, condition{condd})
 
 
     dbs_percept_lfp_spectra(initials, 1, condition{condd});
@@ -43,7 +43,7 @@ for condd=1:numel(condition)
     
     
     dbs_percept_lfp_spectra_plot(initials,condition{condd});
-%     dbs_percept_lfp_spectraBaselined_plot(initials,condition{condd})
+    dbs_percept_lfp_spectraBaselined_plot(initials,condition{condd})
 
 %     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [4 7]);
 %     dbs_percept_EEG_spectra_plot(initials,condition{condd}, [8 12]);
@@ -54,14 +54,14 @@ for condd=1:numel(condition)
 
 
 
-%     % % condition={'PMT', 'ACT', 'POUR', 'R', 'REACH', 'WALK', 'WRITE'};
-%     dbs_eeg_percept_direction(initials, 1, condition{condd})
-%     dbs_eeg_percept_direction(initials, 2, condition{condd})
-%     % 
-%     %  
-%     % % condition={'PMT', 'ACT', 'POUR', 'R', 'REACH', 'WALK', 'WRITE'};
-%     dbs_eeg_percept_direction_plot(initials, condition{condd}, 'Granger')
-%     dbs_eeg_percept_direction_plot(initials, condition{condd}, 'Coherence')
+    % % condition={'PMT', 'ACT', 'POUR', 'R', 'REACH', 'WALK', 'WRITE'};
+    dbs_eeg_percept_direction(initials, 1, condition{condd})
+    dbs_eeg_percept_direction(initials, 2, condition{condd})
+    % 
+    %  
+    % % condition={'PMT', 'ACT', 'POUR', 'R', 'REACH', 'WALK', 'WRITE'};
+    dbs_eeg_percept_direction_plot(initials, condition{condd}, 'Granger')
+    dbs_eeg_percept_direction_plot(initials, condition{condd}, 'Coherence')
     
     
     

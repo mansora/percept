@@ -59,7 +59,9 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
         
         S = [];
         S.D = D;
-        S.timewin = [-1500 2000];
+        S.timewin = [-997 2000];
+%         S.timewin = [0 1000];
+%         S.timewin = [0 1000];
         S.reviewtrials = 0;
         S.save = 0;
         for i = 1:size(lbl, 1)
@@ -99,19 +101,26 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
                         end
                         maxshift = 150;
                         for k = 1:size(ctrl, 1)
+
                             cdat = cmov(ctrl(k, 1):ctrl(k,2));
                             [c, lags] = xcorr(template, cdat, 'coeff', D.fsample);
                             [mc mci] = max(c(find(abs(lags)<maxshift)));
                             mci = mci - find(lags(find(abs(lags)<maxshift)) == 0);
                             ctrl(k, 1:2) = ctrl(k, 1:2)-mci;
-                            cdat = cmov(ctrl(k, 1):ctrl(k,2));
-                            if m == 1
-                                template = ((k-1)*template+cdat)./k;
+                            if ctrl(k,2)<size(cmov,2)
+                                cdat = cmov(ctrl(k, 1):ctrl(k,2));
+                                if m == 1
+                                    template = ((k-1)*template+cdat)./k;
+                                end
+                            else
+                               ctrl(k,:)=[];
+                               clbl(k)=[];
                             end
                         end
                     end
                     trl = [trl;ctrl];
                     conditionlabels = [conditionlabels clbl];
+%                     conditionlabels = [conditionlabels repmat({'move'}, size(clbl))];
                 end
             end
         end
@@ -120,7 +129,111 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
         S.D = D;
         S.trl = trl;
         S.conditionlabels = conditionlabels(:);
-        fD{f} = spm_eeg_epochs(S);
+        D = spm_eeg_epochs(S);
+
+        D=conditions(D, 1:D.ntrials, 'movement');
+        save(D);
+
+
+        S = [];
+        S.D = D;
+        S.badchanthresh = 0.3;
+        S.methods(1).fun = 'events';
+        S.methods(1).channels = {'EEG'};
+        S.methods(1).settings.whatevents.artefacts = 1;
+        S.methods(2).channels = {'EEG'};
+        S.methods(2).fun = 'threshchan';
+        S.methods(2).settings.threshold = 200;
+        S.methods(2).settings.excwin = 200;
+        Dorig = spm_eeg_artefact(S);
+
+        if ~keep, delete(S.D);  end
+
+        if numel(Dorig.badchannels)<30
+            warning([num2str(numel(Dorig.badchannels)) ' bad channels, intrapolating...'])
+
+            goodchannels=setdiff(1:Dorig.nchannels, Dorig.badchannels);
+            badchannels=Dorig.badchannels;
+
+            S=[];
+            S.prefix='';
+            S.dataset=Dorig.fname;
+            S.channels=D.chanlabels(goodchannels);
+            D=spm_eeg_convert(S);
+            
+        else 
+            error('too many bad channels to intrapolate')
+
+        end
+
+        
+
+        S = [];
+        S.D = D;
+        S.badchanthresh = 0.1;
+        S.methods(1).fun = 'events';
+        S.methods(1).channels = {'EEG'};
+        S.methods(1).settings.whatevents.artefacts = 1;
+        S.methods(2).channels = {'EEG'};
+        S.methods(2).fun = 'threshchan';
+        S.methods(2).settings.threshold = 200;
+        S.methods(2).settings.excwin = 200;
+        D = spm_eeg_artefact(S);
+
+        if ~keep, delete(S.D);  end
+
+        S = [];
+        S.D = D;
+        S.badchanthresh = 1;
+        S.methods(1).channels = {'LFP'};
+        S.methods(1).fun = 'zscore';
+        S.methods(1).settings.threshold = 5;
+
+        D = spm_eeg_artefact(S);
+
+        if ~keep, delete(S.D);  end
+
+
+        
+        Dorig=badtrials(Dorig,1:Dorig.ntrials,0);
+        save(Dorig)
+
+        Dorig=badtrials(Dorig,D.badtrials,1);
+        save(Dorig)
+        S = [];
+        S.D = Dorig;
+        Dorig = spm_eeg_remove_bad_trials(S);
+    
+         if ~keep, delete(S.D);  end
+
+        S = [];
+        S.D = D;
+        D = spm_eeg_remove_bad_trials(S);
+
+
+
+%         evv=D.events(':');
+%         condd=D.conditions;
+%         trialonsetss=D.trialonset;
+        D=dbs_eeg_percept_interpolate_channels(D, badchannels);
+%         Dnew = events(Dnew, 1, {evv});
+%         Dnew=conditions(Dnew, 1:D.ntrials, 'movement');
+%         Dnew=trialonset(Dnew, 1:D.ntrials, trialonsetss);
+%         Dnew=type(Dnew,'single');
+%         Dnew=badchannels(Dnew,[]);
+%         save(Dnew);
+
+         Dnew = clone(Dorig, ['c' fname(Dorig)], [Dorig.nchannels Dorig.nsamples Dorig.ntrials]);
+         Dnew(:)=D(:);
+         save(Dnew);
+
+        
+        fD{f} = Dnew;
+
+        if ~keep, delete(S.D);  end
+        if ~keep, delete(Dorig);  end
+        if ~keep, delete(D);  end
+
         %%
 %         for i = 1:size(lbl, 1)
 %             for j = 1:numel(dirs)
@@ -234,8 +347,10 @@ function dbs_percept_mov_analyse(initials, rec_id, condition)
 
     S = [];
     S.D = De;
-    
-    De = move(S.D, erase(S.D.fname, '_cont'));
+
+%     De = move(S.D, ['maintrials_' erase(S.D.fname, '_cont')]);
+    De = move(S.D, [erase(S.D.fname, {'cra','_cont'})]);
+
 
 
 end

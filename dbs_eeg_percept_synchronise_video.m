@@ -17,6 +17,8 @@ function [eeg_file_withvid offset_end]=dbs_eeg_percept_synchronise_video(video_f
 
     elseif contains(eegfile, 'LN_PR_D005_20220401_0012.vhdr')
         eventss=eventss(:,1:141);
+    elseif contains(eegfile, 'LN_PR_D007_20220805_0016.vhdr')
+        eventss=eventss(:,7:end);
     end
     LED_markersEEG=find(strcmp(eventss(1,:),'Toggle'));
     if ~isempty(find(strcmp(eventss(2,LED_markersEEG), 'T  2')))

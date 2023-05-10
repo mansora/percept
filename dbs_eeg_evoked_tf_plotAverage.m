@@ -15,7 +15,7 @@ function dbs_eeg_evoked_tf_plotAverage(condition)
             end
             D_off = spm_eeg_load(files);
             lfpchan=D_off.indchantype('LFP');
-            EEGchannels=[D_off.indchannel('P3') D_off.indchannel('P4') D_off.indchannel('Pz')];
+            EEGchannels=[D_off.indchannel('C3') D_off.indchannel('C4') D_off.indchannel('Cz')];
             D1_EEG_all(i,:,:,:)=mean(D_off(EEGchannels,:,:,:),1);
     
             indbaseline  = find(min(abs(D_off.time-0))==abs(D_off.time-0));
@@ -52,15 +52,15 @@ function dbs_eeg_evoked_tf_plotAverage(condition)
     
             indbaseline  = find(min(abs(D_on.time-0))==abs(D_on.time-0));
             if strcmp(D_on.chanlabels{lfpchan(1)}(end-3),'L')
-                D2_LFP_1_all(i,:,:,:)=D_on(lfpchan(1),:,:,:) - mean(D_on(lfpchan(1),:,1:indbaseline,:),3);
+                D2_LFP_1_all(i,:,:,:)=D_on(lfpchan(1),:,:,:) - mean(D_on(lfpchan(1),:,18:indbaseline,:),3);
             else
-                D2_LFP_2_all(i,:,:,:)=D_on(lfpchan(1),:,:,:) - mean(D_on(lfpchan(1),:,1:indbaseline,:),3);
+                D2_LFP_2_all(i,:,:,:)=D_on(lfpchan(1),:,:,:) - mean(D_on(lfpchan(1),:,18:indbaseline,:),3);
             end
             if numel(lfpchan)>1
                 if strcmp(D_on.chanlabels{lfpchan(2)}(end-3),'L')
-                    D2_LFP_1_all(i,:,:,:)=D_on(lfpchan(2),:,:,:) - mean(D_on(lfpchan(2),:,1:indbaseline,:),3);
+                    D2_LFP_1_all(i,:,:,:)=D_on(lfpchan(2),:,:,:) - mean(D_on(lfpchan(2),:,18:indbaseline,:),3);
                 else
-                    D2_LFP_2_all(i,:,:,:)=D_on(lfpchan(2),:,:,:) - mean(D_on(lfpchan(2),:,1:indbaseline,:),3);
+                    D2_LFP_2_all(i,:,:,:)=D_on(lfpchan(2),:,:,:) - mean(D_on(lfpchan(2),:,18:indbaseline,:),3);
                 end
             end
         catch
@@ -93,19 +93,31 @@ function dbs_eeg_evoked_tf_plotAverage(condition)
 
 
    limb_list={'hand', 'foot'};
-        for limb=1:2
+
+        for limb=1 %:2
     
-            D1_EEG=mean(D1_EEG_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
-            D2_EEG=mean(D2_EEG_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
+%             D1_EEG=mean(D1_EEG_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
+%             D2_EEG=mean(D2_EEG_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
+% 
+%             D1_EEG=squeeze(mean(D1_EEG,1));
+%             D2_EEG=squeeze(mean(D2_EEG,1));
+           
 
-            D1_EEG=squeeze(mean(D1_EEG,1));
-            D2_EEG=squeeze(mean(D2_EEG,1));
+%             D1_LFP_1=mean(D1_LFP_1_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
+%             D2_LFP_1=mean(D2_LFP_1_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
+% 
+%             D1_LFP_2=mean(D1_LFP_2_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
+%             D2_LFP_2=mean(D2_LFP_2_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
 
-            D1_LFP_1=mean(D1_LFP_1_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
-            D2_LFP_1=mean(D2_LFP_1_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
 
-            D1_LFP_2=mean(D1_LFP_2_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
-            D2_LFP_2=mean(D2_LFP_2_all(:,:,:,1+4*(limb-1):4+4*(limb-1)),4);
+             D1_EEG=squeeze(mean(squeeze(D1_EEG_all),1));
+             D2_EEG=squeeze(mean(squeeze(D2_EEG_all),1));
+
+             D1_LFP_1=squeeze(D1_LFP_1_all);
+             D2_LFP_1=squeeze(D2_LFP_1_all);
+
+             D1_LFP_2=squeeze(D1_LFP_2_all);
+             D2_LFP_2=squeeze(D2_LFP_2_all);
 
 
           
@@ -118,7 +130,7 @@ function dbs_eeg_evoked_tf_plotAverage(condition)
         %         sgtitle([' GPi ', condition])
             
                    
-            subplot(1,2,1), imagesc(D_on.time, D_on.frequencies, D1_EEG)
+            subplot(1,2,1), imagesc(D_on.time, D_on.frequencies(5:end), D1_EEG(5:end,:))
             axis xy
             title([limb_list{limb}, ' off'])
             colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
@@ -131,7 +143,7 @@ function dbs_eeg_evoked_tf_plotAverage(condition)
             set(gca, 'fontsize',25,'FontWeight','bold')
             set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
         
-            subplot(1,2,2),  imagesc(D_on.time, D_on.frequencies, D2_EEG)
+            subplot(1,2,2),  imagesc(D_on.time, D_on.frequencies(5:end), D2_EEG(5:end,:))
             axis xy
             title([limb_list{limb}, ' on'])
             colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
@@ -172,7 +184,7 @@ function dbs_eeg_evoked_tf_plotAverage(condition)
         %         sgtitle([' GPi ', condition])
             
                    
-            subplot(1,2,1), imagesc(D_on.time, D_on.frequencies, D1)
+            subplot(1,2,1), imagesc(D_on.time, D_on.frequencies(17:end), D1(17:end,:))
             axis xy
             title([limb_list{limb}, ' off'])
             colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
@@ -185,7 +197,7 @@ function dbs_eeg_evoked_tf_plotAverage(condition)
             set(gca, 'fontsize',25,'FontWeight','bold')
             set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
         
-            subplot(1,2,2),  imagesc(D_on.time, D_on.frequencies, D2)
+            subplot(1,2,2),  imagesc(D_on.time, D_on.frequencies(17:end), D2(17:end,:))
             axis xy
             title([limb_list{limb}, ' on'])
             colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)

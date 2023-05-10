@@ -18,6 +18,16 @@ end
 cd(fullfile(root, condition));
 
 % files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+% try
+%     files = spm_select('FPList','.', ['^' 'new_' '^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+% catch
+%     files = spm_select('FPList','.', ['^' 'new_' 'regexp_.*c|.*' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+% end
+% 
+% if isempty(files)
+%     files = spm_select('FPList','.', ['^' 'new_' ,'.', initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
+% end
+
 try
     files = spm_select('FPList','.', ['^.' initials '_rec_' num2str(rec_id) '_' condition '_[0-9]*.mat']);
 catch
@@ -29,6 +39,9 @@ if isempty(files)
 end
 
 D = spm_eeg_load(files);
+
+% D=conditions(D, 1:D.ntrials, 'movement');
+% save(D);
 
 for sub_condition=1:numel(D.condlist)
 subcondition =D.condlist{sub_condition};% 'foot_L_up';
@@ -78,6 +91,9 @@ for i = 1:numel(data)
     cfg.output ='fourier';
     cfg.channelcmb=channelcmb;
     
+    if D.ntrials>80
+        cfg.trials = randperm(D.ntrials,80);
+    end
     cfg.keeptrials = 'yes';
     cfg.keeptapers='yes';
     cfg.taper = 'dpss';
@@ -91,6 +107,7 @@ for i = 1:numel(data)
     cfg = [];
     cfg.channelcmb=channelcmb;
     cfg.method  = 'coh';
+    cfg.jackknife = 'yes';
     
     res{1, i} = ft_connectivityanalysis(cfg, inp{i});
     

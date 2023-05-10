@@ -47,41 +47,69 @@ function dbs_eeg_evoked_tf_plot(initials, condition)
         figure('units','normalized','outerposition',[0 0 1 1]),
 
         if exist('D_off', 'var')
-            subplot(2,3,1), imagesc(D_off.time, D_off.frequencies, squeeze(mean(D_off(EEGchannels,:,:,condd),1)))
-            title([D_off.conditions{condd}, ' EEG off'])
-            colorbar
+            subplot(2,3,1), imagesc(D_off.time(1:38), D_off.frequencies(1:32), squeeze(mean(D_off(EEGchannels,1:32,1:38,condd),1)))
+            axis xy
+%             title([D_off.conditions{condd}, ' EEG off'])
+            colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
             caxis([-c_EEG c_EEG])
-            xlabel('time (s)')
-            ylabel('freq (Hz)')
+%             xlabel('time (s)', 'FontSize', 20, 'FontWeight','bold')
+%             ylabel('freq (Hz)', 'FontSize', 20, 'FontWeight','bold')
+            a = get(gca,'XTickLabel');  
+            set(gca,'linewidth',5)
+            set(gca, 'fontsize',25,'FontWeight','bold')
+            set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+            set(gca,'XTickLabel',[]);
             
     
              indbaseline  = find(min(abs(D_off.time-0))==abs(D_off.time-0));
-             Data_off1    = squeeze(D_off(D_off.indchannel(details.chan{1}),:,:,condd)-mean(D_off(D_off.indchannel(details.chan{1}),:,1:indbaseline,condd),3));
-              
+             Data_off1    = squeeze(D_off(D_off.indchannel(details.chan{1}),1:32,1:38,condd)-mean(D_off(D_off.indchannel(details.chan{1}),1:32,1:indbaseline,condd),3));
+%              Data_off1    = squeeze(D_off(D_off.indchannel(details.chan{1}),1:32,18:60,condd)); 
             if numel(details.chan)>1
     
-                Data_off2    = squeeze(D_off(D_off.indchannel(details.chan{2}),:,:,condd)-mean(D_off(D_off.indchannel(details.chan{2}),:,1:indbaseline,condd),3));
-    
-                subplot(2,3,2), imagesc(D_off.time, D_off.frequencies, Data_off1)
-                title([D_off.conditions{condd}, ' GPi L off'])
-                colorbar
+                Data_off2    = squeeze(D_off(D_off.indchannel(details.chan{2}),1:32,1:38,condd)-mean(D_off(D_off.indchannel(details.chan{2}),1:32,1:indbaseline,condd),3));
+%                 Data_off2    = squeeze(D_off(D_off.indchannel(details.chan{2}),1:32,18:60,condd));
+
+                subplot(2,3,2), imagesc(D_off.time(1:38), D_off.frequencies(1:32), Data_off1)
+                axis xy
+%                 title([D_off.conditions{condd}, ' GPi L off'])
+%                 colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
                 caxis([-c_lfp c_lfp])
-                xlabel('time (s)')
-                ylabel('freq (Hz)')
+%                 xlabel('time (s)', 'FontSize', 20, 'FontWeight','bold')
+%                 ylabel('freq (Hz)', 'FontSize', 20, 'FontWeight','bold')
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca, 'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',[]);
+                set(gca,'YTickLabel',[]);
         
-                subplot(2,3,3), imagesc(D_off.time, D_off.frequencies, Data_off2)
-                title([D_off.conditions{condd}, ' GPi R off'])
-                colorbar
+                subplot(2,3,3), imagesc(D_off.time(1:38), D_off.frequencies(1:32), Data_off2)
+                axis xy
+%                 title([D_off.conditions{condd}, ' GPi R off'])
+                colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
                 caxis([-c_lfp c_lfp])
-                xlabel('time (s)')
-                ylabel('freq (Hz)')
+%                 xlabel('time (s)', 'FontSize', 20, 'FontWeight','bold')
+%                 ylabel('freq (Hz)', 'FontSize', 20, 'FontWeight','bold')
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca, 'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',[]);
+                set(gca,'YTickLabel',[]);
             else
-                subplot(2,3,2), imagesc(D_off.time, D_off.frequencies, Data_off1)
-                title([D_off.conditions{condd}, 'GPi', details.chan{1}(end-3), 'off'])
-                colorbar
+                subplot(2,3,2), imagesc(D_off.time(1:38), D_off.frequencies(1:32), Data_off1)
+                axis xy
+%                 title([D_off.conditions{condd}, 'GPi', details.chan{1}(end-3), 'off'])
+                colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
                 caxis([-c_lfp c_lfp])
-                xlabel('time (s)')
-                ylabel('freq (Hz)')
+%                 xlabel('time (s)', 'FontSize', 20, 'FontWeight','bold')
+%                 ylabel('freq (Hz)', 'FontSize', 20, 'FontWeight','bold')
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca, 'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',[]);
+                set(gca,'YTickLabel',[]);
             end
 
         end
@@ -89,42 +117,66 @@ function dbs_eeg_evoked_tf_plot(initials, condition)
 
 
         if exist('D_on', 'var')
-            subplot(2,3,4), imagesc(D_on.time, D_on.frequencies, squeeze(mean(D_on(EEGchannels,:,:,condd),1)))
-            title([D_on.conditions{condd}, ' EEG on'])
-            colorbar
+            subplot(2,3,4), imagesc(D_on.time(1:38), D_on.frequencies(1:32), squeeze(mean(D_on(EEGchannels,1:32,1:38,condd),1)))
+            axis xy
+%             title([D_on.conditions{condd}, ' EEG on'])
+            colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
             caxis([-c_EEG c_EEG])
-            xlabel('time (s)')
-            ylabel('freq (Hz)')
+%             xlabel('time (s)', 'FontSize', 20, 'FontWeight','bold')
+%             ylabel('freq (Hz)', 'FontSize', 20, 'FontWeight','bold')
+            a = get(gca,'XTickLabel');  
+            set(gca,'linewidth',5)
+            set(gca, 'fontsize',25,'FontWeight','bold')
+            set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
     
     
             indbaseline  = find(min(abs(D_on.time-0))==abs(D_on.time-0));
-            Data_on1    = squeeze(D_on(D_on.indchannel(details.chan{1}),:,:,condd)-mean(D_on(D_on.indchannel(details.chan{1}),:,1:indbaseline,condd),3));
-            
+            Data_on1    = squeeze(D_on(D_on.indchannel(details.chan{1}),1:32,1:38,condd)-mean(D_on(D_on.indchannel(details.chan{1}),1:32,1:indbaseline,condd),3));
+%             Data_on1    = squeeze(D_on(D_on.indchannel(details.chan{1}),1:32,18:60,condd));
             
             if numel(details.chan)>1
     
-                Data_on2    = squeeze(D_on(D_on.indchannel(details.chan{2}),:,:,condd)-mean(D_on(D_on.indchannel(details.chan{2}),:,1:indbaseline,condd),3));
+                Data_on2    = squeeze(D_on(D_on.indchannel(details.chan{2}),1:32,1:38,condd)-mean(D_on(D_on.indchannel(details.chan{2}),1:32,1:indbaseline,condd),3));
+%                 Data_on2    = squeeze(D_on(D_on.indchannel(details.chan{2}),1:32,18:60,condd));
     
-                subplot(2,3,5), imagesc(D_on.time, D_on.frequencies, Data_on1)
-                title([D_on.conditions{condd}, ' GPi L on'])
-                colorbar
+                subplot(2,3,5), imagesc(D_on.time(1:38), D_on.frequencies(1:32), Data_on1)
+                axis xy
+%                 title([D_on.conditions{condd}, ' GPi L on'])
+%                 colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
                 caxis([-c_lfp c_lfp])
-                xlabel('time (s)')
-                ylabel('freq (Hz)')
+%                 xlabel('time (s)', 'FontSize', 20, 'FontWeight','bold')
+%                 ylabel('freq (Hz)', 'FontSize', 20, 'FontWeight','bold')
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca, 'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+                set(gca,'YTickLabel',[]);
         
-                subplot(2,3,6), imagesc(D_on.time, D_on.frequencies, Data_on2)
-                title([D_on.conditions{condd}, ' GPi R on'])
-                colorbar
+                subplot(2,3,6), imagesc(D_on.time(1:38), D_on.frequencies(1:32), Data_on2)
+                axis xy
+%                 title([D_on.conditions{condd}, ' GPi R on'])
+                colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
                 caxis([-c_lfp c_lfp])
-                xlabel('time (s)')
-                ylabel('freq (Hz)')
+%                 xlabel('time (s)', 'FontSize', 20, 'FontWeight','bold')
+%                 ylabel('freq (Hz)', 'FontSize', 20, 'FontWeight','bold')
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca, 'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+                set(gca,'YTickLabel',[]);
             else
-                subplot(2,3,5), imagesc(D_on.time, D_on.frequencies, Data_on1)
-                title([D_on.conditions{condd}, 'GPi', details.chan{1}(end-3), 'on'])
-                colorbar
+                subplot(2,3,5), imagesc(D_on.time(1:38), D_on.frequencies(1:32), Data_on1)
+                axis xy
+%                 title([D_on.conditions{condd}, 'GPi', details.chan{1}(end-3), 'on'])
+                colorbar('fontsize',25,'FontWeight','bold', 'linewidth',5)
                 caxis([-c_lfp c_lfp])
-                xlabel('time (s)')
-                ylabel('freq (Hz)')
+%                 xlabel('time (s)', 'FontSize', 20, 'FontWeight','bold')
+%                 ylabel('freq (Hz)', 'FontSize', 20, 'FontWeight','bold')
+                a = get(gca,'XTickLabel');  
+                set(gca,'linewidth',5)
+                set(gca, 'fontsize',25,'FontWeight','bold')
+                set(gca,'XTickLabel',a,'fontsize',25,'FontWeight','bold')
+                set(gca,'YTickLabel',[]);
             end
         end
 

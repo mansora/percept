@@ -144,6 +144,8 @@ function [eeg_file, logfile, offset_stamp_start, offset_stamp_end]=dbs_eeg_perce
                     offset_stamp_end=offset_stamp_start;
                 elseif strcmp(details.initials,'LN_PR_D007') && f==2 % add details.rec_id
                     offset_stamp_start=offset_stamp_end;
+                elseif strcmp(details.initials,'LN_PR_D007') && details.rec_id==5
+                    offset_stamp_end=offset_stamp_start;
                 else
                     error('difference between start and end offset of percept stamping is too large')
                 end
